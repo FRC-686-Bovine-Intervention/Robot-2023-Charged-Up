@@ -88,6 +88,7 @@ public abstract class StatusBase implements LoggableInputs, Loggable{
             break;
         }
         updateInputs();
+        Logger.getInstance().processInputs(this.getClass().getSimpleName(), this);
     }
     public abstract void updateInputs();
 
