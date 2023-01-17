@@ -3,6 +3,7 @@ package frc.robot.controls;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
+import frc.robot.subsystems.drive.DriveCommand;
 
 public class Controls {
     private static Controls instance;
@@ -51,5 +52,25 @@ public class Controls {
             case FAST_FORWARD:              return thrustmaster.getRawButton(Thrustmaster.kRightThumbButton);
             default:                        return false;
         }
+    }
+
+    public DriveCommand getDriveCommand() {return getDriveCommand(false);}
+    public DriveCommand getDriveCommand(boolean inverted)
+    {
+        double x = getAxis(JoystickEnum.THRUSTMASTER).getX();
+        double y = getAxis(JoystickEnum.THRUSTMASTER).getY();
+        x = 0.8*x*x*x - 0.8*x + x;
+        y = 0.7*y*y*y - 0.7*y + y;
+
+        x *= 0.7;
+
+        if(inverted)
+        {
+            y *= -1;
+        }
+
+        double leftPower = y-x;
+        double rightPower = y+x;
+        return new DriveCommand(leftPower, rightPower);
     }
 }

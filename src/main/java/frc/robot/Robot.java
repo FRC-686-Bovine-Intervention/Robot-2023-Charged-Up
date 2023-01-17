@@ -11,6 +11,7 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.framework.SubsystemController;
 import frc.robot.subsystems.vision.Vision;
 
@@ -27,7 +28,7 @@ public class Robot extends LoggedRobot {
   public void robotInit() {
     setUseTiming(isReal()); // Run as fast as possible during replay
     //LoggedNetworkTables.getInstance().addTable("/SmartDashboard"); // Log & replay "SmartDashboard" values (no tables are logged by default).
-    Logger.getInstance().recordMetadata("ProjectName", "MyProject"); // Set a metadata value
+    Logger.getInstance().recordMetadata("ProjectName", "BullWhip"); // Set a metadata value
 
     if (isReal()) {
       Logger.getInstance().addDataReceiver(new WPILOGWriter("/media/sda1"));
@@ -42,6 +43,7 @@ public class Robot extends LoggedRobot {
 
     subsystemController = SubsystemController.getInstance();
     subsystemController.register(Vision.getInstance());
+    subsystemController.register(Drive.getInstance());
     subsystemController.start();
     io.github.oblarg.oblog.Logger.configureLoggingAndConfig(this, false);
   }
@@ -59,7 +61,9 @@ public class Robot extends LoggedRobot {
   @Override
   public void teleopInit() {}
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    DriverInteraction.getInstance().run();
+  }
   @Override
   public void disabledInit() {}
   @Override

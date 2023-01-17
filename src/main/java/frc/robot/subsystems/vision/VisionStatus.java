@@ -1,22 +1,20 @@
 package frc.robot.subsystems.vision;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.LongStream;
+
 import org.littletonrobotics.junction.LogTable;
 
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Quaternion;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
+import frc.robot.AdvantageUtil;
 import frc.robot.subsystems.framework.StatusBase;
-import io.github.oblarg.oblog.annotations.Log;
 
 public class VisionStatus extends StatusBase {
-    public static VisionStatus instance;
-    public static VisionStatus getInstance(){
-        if(instance == null){
-            instance = new VisionStatus();
-        }
-        return instance;
-    }
+    private static VisionStatus instance;
+    public static VisionStatus getInstance(){if(instance == null){instance = new VisionStatus();}return instance;}
 
     private VisionStatus()
     {
@@ -26,44 +24,47 @@ public class VisionStatus extends StatusBase {
     private final VisionHAL HAL = VisionHAL.getInstance();
 
     //@Log(name = "Vision Pose")
-    private Pose3d visionPose = new Pose3d();
-    public Pose3d getVisionPose() {return visionPose;}
-    public VisionStatus setVisionPose(Pose3d visionPose) {
-        this.visionPose = visionPose;
-        return this;
-    }
+    private ArrayList<Pose2d> visionPoses = new ArrayList<Pose2d>();
+    public ArrayList<Pose2d> getVisionPoses() {return visionPoses;}
+    public VisionStatus setVisionPoses(ArrayList<Pose2d> visionPoses) {this.visionPoses = visionPoses; return this;}
 
     @Override
     public void exportToTable(LogTable table, String prefix) {
-        double[] deconstructedPose = new double[]{
-            visionPose.getX(),
-            visionPose.getY(),
-            visionPose.getZ(),
-            visionPose.getRotation().getQuaternion().getW(),
-            visionPose.getRotation().getQuaternion().getX(),
-            visionPose.getRotation().getQuaternion().getY(),
-            visionPose.getRotation().getQuaternion().getZ()
-        };
-        table.put(prefix + "/Vision Pose", deconstructedPose);
+        table.put(prefix + "/Vision Poses", AdvantageUtil.deconstructPose2ds(visionPoses));
+        long[] tagIDs = new long[0];
+        ArrayList<Pose3d> tagPoses = new ArrayList<Pose3d>();
+
+        for(AprilTag tag : HAL.getAprilTagFieldLayout().getTags())
+        {
+            tagPoses.add(tag.pose);
+            tagIDs = LongStream.concat(Arrays.stream(tagIDs), Arrays.stream(new long[]{tag.ID})).toArray();
+        }
+
+        ArrayList<Pose3d> visiblePoses = new ArrayList<Pose3d>();
+
+        for(AprilTag target : HAL.getVisibleTags())
+        {
+            visiblePoses.add(target.pose);
+        }
+
+        table.put(prefix + "/AprilTag Poses", AdvantageUtil.deconstructPose3ds(tagPoses));
+        table.put(prefix + "/AprilTag IDs", tagIDs);
+        table.put(prefix + "/Visible Tag Poses", AdvantageUtil.deconstructPose3ds(visiblePoses));
     }
 
     @Override
     public void importFromTable(LogTable table, String prefix) {
-        double[] deconstructedPose = table.getDoubleArray(prefix + "/Vision Pose", null);
-        setVisionPose(new Pose3d(new Translation3d(deconstructedPose[0],deconstructedPose[1],deconstructedPose[2]), new Rotation3d(new Quaternion(deconstructedPose[3],deconstructedPose[4],deconstructedPose[5],deconstructedPose[6]))));
+        setVisionPoses(AdvantageUtil.reconstructPose2d(table.getDoubleArray(prefix + "/Vision Poses", null)));
     }
 
     @Override
     public void updateInputs() {
-        Pose3d estimatedPose = HAL.getEstimatedGlobalPose(visionPose);
-        if(estimatedPose != null)
-            setVisionPose(estimatedPose);
+        setVisionPoses(HAL.getVisionPoses());
     }
 
     @Override
     public void recordOutputs(String prefix) {
-        // TODO Auto-generated method stub
-        
+
     }
     
 }

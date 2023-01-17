@@ -32,7 +32,7 @@ public abstract class StatusBase implements LoggableInputs, Loggable{
     @Override
     public final void toLog(LogTable table)
     {
-        String prefix = Subsystem.getClass().getSimpleName();
+        String prefix = "";
         table.put(prefix + "/Enabled Switch", EnabledSwitch);
         table.put(prefix + "/Enabled State", Enabled.name());
         exportToTable(table, prefix);
@@ -42,7 +42,7 @@ public abstract class StatusBase implements LoggableInputs, Loggable{
     @Override
     public final void fromLog(LogTable table)
     {
-        String prefix = Subsystem.getClass().getSimpleName();
+        String prefix = "";
         EnabledSwitch = table.getBoolean(prefix + "/Enabled Switch", true);
         switch(table.getString(prefix + "/Enabled State", "Default"))
         {

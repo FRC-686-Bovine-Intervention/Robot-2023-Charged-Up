@@ -2,8 +2,6 @@ package frc.robot.subsystems.framework;
 
 import java.util.ArrayList;
 
-import org.littletonrobotics.junction.Logger;
-
 import io.github.oblarg.oblog.Loggable;
 
 public class SubsystemController implements Loggable
