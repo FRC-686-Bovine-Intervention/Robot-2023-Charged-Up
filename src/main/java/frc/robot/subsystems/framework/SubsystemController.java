@@ -3,7 +3,9 @@ package frc.robot.subsystems.framework;
 import java.util.ArrayList;
 
 import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Log;
 
+@Log.Exclude
 public class SubsystemController implements Loggable
 {
     private static SubsystemController instance;

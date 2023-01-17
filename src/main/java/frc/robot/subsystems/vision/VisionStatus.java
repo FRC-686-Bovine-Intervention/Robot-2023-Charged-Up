@@ -25,8 +25,8 @@ public class VisionStatus extends StatusBase {
 
     //@Log(name = "Vision Pose")
     private ArrayList<Pose2d> visionPoses = new ArrayList<Pose2d>();
-    public ArrayList<Pose2d> getVisionPoses() {return visionPoses;}
-    public VisionStatus setVisionPoses(ArrayList<Pose2d> visionPoses) {this.visionPoses = visionPoses; return this;}
+    public ArrayList<Pose2d>    getVisionPoses()                                {return visionPoses;}
+    public VisionStatus         setVisionPoses(ArrayList<Pose2d> visionPoses)   {this.visionPoses = visionPoses; return this;}
 
     @Override
     public void exportToTable(LogTable table, String prefix) {

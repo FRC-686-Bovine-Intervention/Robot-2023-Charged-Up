@@ -14,6 +14,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.framework.SubsystemController;
 import frc.robot.subsystems.vision.Vision;
+import io.github.oblarg.oblog.annotations.Log;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -21,6 +22,7 @@ import frc.robot.subsystems.vision.Vision;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
+@Log.Exclude
 public class Robot extends LoggedRobot {
   private SubsystemController subsystemController;
 

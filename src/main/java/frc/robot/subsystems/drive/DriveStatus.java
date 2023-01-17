@@ -18,7 +18,7 @@ public class DriveStatus extends StatusBase {
 
     private DriveCommand command = DriveCommand.COAST();
     public DriveCommand getCommand()                    {return command;}
-    public DriveStatus setCommand(DriveCommand command) {this.command = command; return this;}
+    public DriveStatus  setCommand(DriveCommand command) {this.command = command; return this;}
 
     private ControlMode talonControlMode = ControlMode.Disabled;
     public ControlMode  getTalonMode()                      {return talonControlMode;}

@@ -13,12 +13,12 @@ public class OdometryStatus extends StatusBase {
     public static OdometryStatus getInstance(){if(instance == null){instance = new OdometryStatus();}return instance;}
 
     private Pose2d robotPose = new Pose2d();
-    public Pose2d getRobotPose()                            {return robotPose;}
-    public OdometryStatus setRobotPose(Pose2d robotPose)    {this.robotPose = robotPose; return this;}
+    public Pose2d           getRobotPose()                  {return robotPose;}
+    public OdometryStatus   setRobotPose(Pose2d robotPose)  {this.robotPose = robotPose; return this;}
 
     private WheelSpeeds robotSpeed = new WheelSpeeds();
-    public WheelSpeeds getRobotSpeed()                          {return robotSpeed;}
-    public OdometryStatus setRobotSpeed(WheelSpeeds robotSpeed) {this.robotSpeed = robotSpeed; return this;}
+    public WheelSpeeds      getRobotSpeed()                         {return robotSpeed;}
+    public OdometryStatus   setRobotSpeed(WheelSpeeds robotSpeed)   {this.robotSpeed = robotSpeed; return this;}
 
     @Override
     public void recordOutputs(String prefix) {
