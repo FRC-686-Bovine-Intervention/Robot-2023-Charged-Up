@@ -50,7 +50,7 @@ public abstract class LoopBase {
     private void checkForSubsystem()
     {
         if(Subsystem == null)
-            throw new NullPointerException(this.getClass().getName() + " has not defined the super variable _Subsystem\n");
+            throw new NullPointerException(this.getClass().getName() + " has not defined the super variable Subsystem\n");
     }
 
     /**
