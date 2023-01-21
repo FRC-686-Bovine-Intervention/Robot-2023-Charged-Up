@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.stream.LongStream;
 
 import org.littletonrobotics.junction.LogTable;
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,8 +30,8 @@ public class VisionStatus extends StatusBase {
     public VisionStatus         setVisionPoses(ArrayList<Pose2d> visionPoses)   {this.visionPoses = visionPoses; return this;}
 
     @Override
-    public void exportToTable(LogTable table, String prefix) {
-        table.put(prefix + "/Vision Poses", AdvantageUtil.deconstructPose2ds(visionPoses));
+    public void exportToTable(LogTable table) {
+        table.put("Vision Poses", AdvantageUtil.deconstructPose2ds(visionPoses));
         long[] tagIDs = new long[0];
         ArrayList<Pose3d> tagPoses = new ArrayList<Pose3d>();
 
@@ -47,14 +48,14 @@ public class VisionStatus extends StatusBase {
             visiblePoses.add(target.pose);
         }
 
-        table.put(prefix + "/AprilTag Poses", AdvantageUtil.deconstructPose3ds(tagPoses));
-        table.put(prefix + "/AprilTag IDs", tagIDs);
-        table.put(prefix + "/Visible Tag Poses", AdvantageUtil.deconstructPose3ds(visiblePoses));
+        table.put("AprilTag Poses", AdvantageUtil.deconstructPose3ds(tagPoses));
+        table.put("AprilTag IDs", tagIDs);
+        table.put("Visible Tag Poses", AdvantageUtil.deconstructPose3ds(visiblePoses));
     }
 
     @Override
-    public void importFromTable(LogTable table, String prefix) {
-        setVisionPoses(AdvantageUtil.reconstructPose2d(table.getDoubleArray(prefix + "/Vision Poses", null)));
+    public void importFromTable(LogTable table) {
+        setVisionPoses(AdvantageUtil.reconstructPose2d(table.getDoubleArray("Vision Poses", null)));
     }
 
     @Override
@@ -62,9 +63,5 @@ public class VisionStatus extends StatusBase {
         setVisionPoses(HAL.getVisionPoses());
     }
 
-    @Override
-    public void recordOutputs(String prefix) {
-
-    }
-    
+    @Override public void recordOutputs(Logger logger, String prefix) {}
 }

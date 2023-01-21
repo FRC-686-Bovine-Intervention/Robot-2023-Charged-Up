@@ -6,6 +6,9 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import frc.robot.subsystems.framework.StatusBase;
@@ -35,18 +38,27 @@ public class DriveStatus extends StatusBase {
     public DriveStatus  setRightDistanceInches(double rDistanceInches)  {this.rDistanceInches = rDistanceInches; return this;}
     public DriveStatus  setDistanceInches(double lDistanceInches, double rDistanceInches) {setLeftDistanceInches(lDistanceInches); setRightDistanceInches(rDistanceInches); return this;}
     
-	private double lSpeedInchesPerSec, rSpeedInchesPerSec;
-    public double       getLeftSpeedInchesPerSec()                              {return lSpeedInchesPerSec;}
-    public double       getRightSpeedInchesPerSec()                             {return rSpeedInchesPerSec;}
-    public DriveStatus  setLeftSpeedInchesPerSec(double lSpeedInchesPerSec)     {this.lSpeedInchesPerSec = lSpeedInchesPerSec; return this;}
-    public DriveStatus  setRightSpeedInchesPerSec(double rSpeedInchesPerSec)    {this.rSpeedInchesPerSec = rSpeedInchesPerSec; return this;}
-    public DriveStatus  setSpeedInchesPerSec(double lSpeedInchesPerSec, double rSpeedInchesPerSec) {setLeftSpeedInchesPerSec(lSpeedInchesPerSec); setRightSpeedInchesPerSec(rSpeedInchesPerSec); return this;}
+    private WheelSpeeds wheelSpeeds = new WheelSpeeds();
+    public WheelSpeeds  getWheelSpeeds()                                        {return wheelSpeeds;}
+    public double       getLeftSpeedInchesPerSec()                              {return wheelSpeeds.left;}
+    public double       getRightSpeedInchesPerSec()                             {return wheelSpeeds.right;}
+    public DriveStatus  setWheelSpeeds(WheelSpeeds wheelSpeeds)                 {this.wheelSpeeds = wheelSpeeds; return this;}
+    public DriveStatus  setLeftSpeedInchesPerSec(double lSpeedInchesPerSec)     {this.wheelSpeeds.left = lSpeedInchesPerSec; return this;}
+    public DriveStatus  setRightSpeedInchesPerSec(double rSpeedInchesPerSec)    {this.wheelSpeeds.right = rSpeedInchesPerSec; return this;}
     
-	private double headingRad;
-    public double       getHeadingRad()                     {return headingRad;}
-    public double       getHeadingDeg()                     {return headingRad/Math.PI*180.0;}
-    public DriveStatus  setHeadingRad(double headingRad)    {this.headingRad = headingRad; return this;}
-    public DriveStatus  setHeadingDeg(double headingDeg)    {this.headingRad = headingDeg*Math.PI/180.0; return this;}
+	private Rotation2d rotation = new Rotation2d();
+    public Rotation2d   getRotation()                       {return rotation;}
+    public double       getHeadingRad()                     {return rotation.getRadians();}
+    public double       getHeadingDeg()                     {return rotation.getDegrees();}
+    public DriveStatus  setRotation(Rotation2d rotation)    {this.rotation = rotation; return this;}
+    public DriveStatus  setHeadingRad(double headingRad)    {this.rotation = Rotation2d.fromRadians(headingRad); return this;}
+    public DriveStatus  setHeadingDeg(double headingDeg)    {this.rotation = Rotation2d.fromDegrees(headingDeg); return this;}
+
+    private double pitchDeg;
+    public double       getPitchDeg()                   {return pitchDeg;}
+    public double       getPitchRad()                   {return Units.degreesToRadians(getPitchDeg());}
+    public DriveStatus  setPitchDeg(double pitchDeg)    {this.pitchDeg = pitchDeg; return this;}
+    public DriveStatus  setPitchRad(double pitchRad)    {setPitchDeg(Units.radiansToDegrees(pitchRad)); return this;}
 	
 	private double lMotorCurrent, rMotorCurrent;
     public double       getLeftMotorCurrent()                       {return lMotorCurrent;}
@@ -76,58 +88,58 @@ public class DriveStatus extends StatusBase {
     }
 
     @Override
-    public void exportToTable(LogTable table, String prefix) {
-        table.put(prefix + "/Encoded Distance (In)/Left",   getLeftDistanceInches());
-        table.put(prefix + "/Encoded Distance (In)/Right",  getRightDistanceInches());
-        table.put(prefix + "/Encoded Speed (In|Sec)/Left",  getLeftSpeedInchesPerSec());
-        table.put(prefix + "/Encoded Speed (In|Sec)/Right", getRightSpeedInchesPerSec());
-        table.put(prefix + "/Gyro Heading (Rad)",           getHeadingRad());
-        table.put(prefix + "/Motor Current (Amps)/Left",    getLeftMotorCurrent());
-        table.put(prefix + "/Motor Current (Amps)/Right",   getRightMotorCurrent());
-        table.put(prefix + "/Motor PID Error/Left",         getLeftMotorPIDError());
-        table.put(prefix + "/Motor PID Error/Right",        getRightMotorPIDError());
+    public void exportToTable(LogTable table) {
+        table.put("Encoded Distance (In)/Left",   getLeftDistanceInches());
+        table.put("Encoded Distance (In)/Right",  getRightDistanceInches());
+        table.put("Encoded Speed (In|Sec)/Left",  getLeftSpeedInchesPerSec());
+        table.put("Encoded Speed (In|Sec)/Right", getRightSpeedInchesPerSec());
+        table.put("Gyro/Heading (Rad)",           getHeadingRad());
+        table.put("Motor Current (Amps)/Left",    getLeftMotorCurrent());
+        table.put("Motor Current (Amps)/Right",   getRightMotorCurrent());
+        table.put("Motor PID Error/Left",         getLeftMotorPIDError());
+        table.put("Motor PID Error/Right",        getRightMotorPIDError());
     }
     @Override
-    public void importFromTable(LogTable table, String prefix) {
-        setLeftDistanceInches       (table.getDouble(prefix + "/Encoded Distance (In)/Left",    getLeftDistanceInches()));
-        setRightDistanceInches      (table.getDouble(prefix + "/Encoded Distance (In)/Right",   getRightDistanceInches()));
-        setLeftSpeedInchesPerSec    (table.getDouble(prefix + "/Encoded Speed (In|Sec)/Left",   getLeftSpeedInchesPerSec()));
-        setRightSpeedInchesPerSec   (table.getDouble(prefix + "/Encoded Speed (In|Sec)/Right",  getRightSpeedInchesPerSec()));
-        setHeadingRad               (table.getDouble(prefix + "/Gyro Heading (Rad)",            getHeadingRad()));
-        setLeftMotorCurrent         (table.getDouble(prefix + "/Motor Current (Amps)/Left",     getLeftMotorCurrent()));
-        setRightMotorCurrent        (table.getDouble(prefix + "/Motor Current (Amps)/Right",    getRightMotorCurrent()));
-        setLeftMotorPIDError        (table.getDouble(prefix + "/Motor PID Error/Left",          getLeftMotorPIDError()));
-        setRightMotorPIDError       (table.getDouble(prefix + "/Motor PID Error/Right",         getRightMotorPIDError()));
+    public void importFromTable(LogTable table) {
+        setLeftDistanceInches       (table.getDouble("Encoded Distance (In)/Left",    getLeftDistanceInches()));
+        setRightDistanceInches      (table.getDouble("Encoded Distance (In)/Right",   getRightDistanceInches()));
+        setLeftSpeedInchesPerSec    (table.getDouble("Encoded Speed (In|Sec)/Left",   getLeftSpeedInchesPerSec()));
+        setRightSpeedInchesPerSec   (table.getDouble("Encoded Speed (In|Sec)/Right",  getRightSpeedInchesPerSec()));
+        setHeadingRad               (table.getDouble("Gyro/Heading (Rad)",            getHeadingRad()));
+        setLeftMotorCurrent         (table.getDouble("Motor Current (Amps)/Left",     getLeftMotorCurrent()));
+        setRightMotorCurrent        (table.getDouble("Motor Current (Amps)/Right",    getRightMotorCurrent()));
+        setLeftMotorPIDError        (table.getDouble("Motor PID Error/Left",          getLeftMotorPIDError()));
+        setRightMotorPIDError       (table.getDouble("Motor PID Error/Right",         getRightMotorPIDError()));
     }
     @Override
     public void updateInputs() {
         setDistanceInches(HAL.getLeftDistanceInches(), HAL.getRightDistanceInches());
-        setSpeedInchesPerSec(HAL.getLeftSpeedInchesPerSec(), HAL.getRightSpeedInchesPerSec());
-        setHeadingRad(HAL.getHeadingRad());
+        setWheelSpeeds(new WheelSpeeds(HAL.getLeftSpeedInchesPerSec(), HAL.getRightSpeedInchesPerSec()));
+        setRotation(HAL.getRotation());
         // setMotorCurrent(HAL.getLeftCurrent(), HAL.getRightCurrent());
         setMotorPIDError(HAL.getLeftPIDError(), HAL.getRightPIDError());
     }
     @Override
-    public void recordOutputs(String prefix) {
-        Logger.getInstance().recordOutput(prefix + "/Control Mode",                 getTalonMode().name());
-        Logger.getInstance().recordOutput(prefix + "/Neutral Mode",                 getNeutralMode().name());
-        Logger.getInstance().recordOutput(prefix + "/Encoded Distance (In)/Left",   getLeftDistanceInches());
-        Logger.getInstance().recordOutput(prefix + "/Encoded Distance (In)/Right",  getRightDistanceInches());
-        Logger.getInstance().recordOutput(prefix + "/Encoded Speed (In|Sec)/Left",  getLeftSpeedInchesPerSec());
-        Logger.getInstance().recordOutput(prefix + "/Encoded Speed (In|Sec)/Right", getRightSpeedInchesPerSec());
-        Logger.getInstance().recordOutput(prefix + "/Gyro Heading/Radians",         getHeadingRad());
-        Logger.getInstance().recordOutput(prefix + "/Gyro Heading/Degrees",         getHeadingDeg());
-        Logger.getInstance().recordOutput(prefix + "/Motor Current (Amps)/Left",    getLeftMotorCurrent());
-        Logger.getInstance().recordOutput(prefix + "/Motor Current (Amps)/Right",   getRightMotorCurrent());
-        Logger.getInstance().recordOutput(prefix + "/Motor Status/Left",            getLeftMotorStatus());
-        Logger.getInstance().recordOutput(prefix + "/Motor Status/Right",           getRightMotorStatus());
-        Logger.getInstance().recordOutput(prefix + "/Motor PID Error/Left",         getLeftMotorPIDError());
-        Logger.getInstance().recordOutput(prefix + "/Motor PID Error/Right",        getRightMotorPIDError());
+    public void recordOutputs(Logger logger, String prefix) {
+        logger.recordOutput(prefix + "Control Mode",                 getTalonMode().name());
+        logger.recordOutput(prefix + "Neutral Mode",                 getNeutralMode().name());
+        logger.recordOutput(prefix + "Encoded Distance (In)/Left",   getLeftDistanceInches());
+        logger.recordOutput(prefix + "Encoded Distance (In)/Right",  getRightDistanceInches());
+        logger.recordOutput(prefix + "Encoded Speed (In|Sec)/Left",  getLeftSpeedInchesPerSec());
+        logger.recordOutput(prefix + "Encoded Speed (In|Sec)/Right", getRightSpeedInchesPerSec());
+        logger.recordOutput(prefix + "Gyro/Heading/Radians",         getHeadingRad());
+        logger.recordOutput(prefix + "Gyro/Heading/Degrees",         getHeadingDeg());
+        logger.recordOutput(prefix + "Motor Current (Amps)/Left",    getLeftMotorCurrent());
+        logger.recordOutput(prefix + "Motor Current (Amps)/Right",   getRightMotorCurrent());
+        logger.recordOutput(prefix + "Motor Status/Left",            getLeftMotorStatus());
+        logger.recordOutput(prefix + "Motor Status/Right",           getRightMotorStatus());
+        logger.recordOutput(prefix + "Motor PID Error/Left",         getLeftMotorPIDError());
+        logger.recordOutput(prefix + "Motor PID Error/Right",        getRightMotorPIDError());
 
-        Logger.getInstance().recordOutput(prefix + "/Command/Drive Mode",           getCommand().getDriveMode().name());
-        Logger.getInstance().recordOutput(prefix + "/Command/Talon Control Mode",   getCommand().getTalonMode().name());
-        Logger.getInstance().recordOutput(prefix + "/Command/Drive Setpoint/Left",  getCommand().getWheelSpeed().left);
-        Logger.getInstance().recordOutput(prefix + "/Command/Drive Setpoint/Right", getCommand().getWheelSpeed().right);
+        logger.recordOutput(prefix + "Command/Drive Mode",           getCommand().getDriveMode().name());
+        logger.recordOutput(prefix + "Command/Talon Control Mode",   getCommand().getTalonMode().name());
+        logger.recordOutput(prefix + "Command/Drive Setpoint/Left",  getCommand().getWheelSpeed().left);
+        logger.recordOutput(prefix + "Command/Drive Setpoint/Right", getCommand().getWheelSpeed().right);
     }
     
 }

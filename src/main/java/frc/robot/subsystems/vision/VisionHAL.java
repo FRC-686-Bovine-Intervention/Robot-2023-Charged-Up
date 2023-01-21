@@ -16,6 +16,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.subsystems.framework.HALBase;
 
 public class VisionHAL extends HALBase {
@@ -34,12 +35,14 @@ public class VisionHAL extends HALBase {
     {
         aprilTags.add(new AprilTag(1, new Pose3d(Units.inchesToMeters(162), Units.inchesToMeters(-59), Units.inchesToMeters(78), new Rotation3d(0,0,Math.PI))));
         aprilTags.add(new AprilTag(2, new Pose3d(Units.inchesToMeters(162), Units.inchesToMeters(54), Units.inchesToMeters(79), new Rotation3d(0,0,Math.PI))));
-
-        cameraPairs.add(new Pair<PhotonCamera, Transform3d>(
-                        new PhotonCamera("TestCam"),
-                        new Transform3d(new Translation3d(Units.inchesToMeters(15), 0, Units.inchesToMeters(30)), new Rotation3d())));
-        
         aprilTagFieldLayout = new AprilTagFieldLayout(aprilTags, Units.inchesToMeters(40*12), Units.inchesToMeters(20*12));
+
+        if(RobotBase.isReal())
+        {
+            cameraPairs.add(new Pair<PhotonCamera, Transform3d>(
+                            new PhotonCamera("TestCam"),
+                            new Transform3d(new Translation3d(Units.inchesToMeters(15), 0, Units.inchesToMeters(30)), new Rotation3d())));
+        }
         
         // robotPoseEstimator = new RobotPoseEstimator(aprilTagFieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, cameraPairs);
     }

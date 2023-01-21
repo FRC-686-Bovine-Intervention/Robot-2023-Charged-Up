@@ -6,15 +6,15 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
-import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
-import com.ctre.phoenix.motorcontrol.can.BaseTalon;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import com.ctre.phoenix.sensors.BasePigeon;
+import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 
-import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.framework.HALBase;
 
@@ -41,17 +41,18 @@ public class DriveHAL extends HALBase {
 
 	public enum GyroSelectionEnum { BNO055, NAVX, PIGEON; }
     public static final GyroSelectionEnum GyroSelection = GyroSelectionEnum.PIGEON;
+    private final BasePigeon gyro;
 
     //TODO: Update Drive Coefficients
 	// Wheels
-	public static final double kDriveWheelCircumInches    = 6*Math.PI*190.5/188.2;
-	public static final double kTrackWidthInches          = 22.000;
+	public static final double kDriveWheelCircumInches    = 6*Math.PI;
+	public static final double kTrackWidthInches          = 24.500;
 	public static final double kTrackEffectiveDiameter    = 22.5; //Went 707in in 10 rotations       (kTrackWidthInches * kTrackWidthInches + kTrackLengthInches * kTrackLengthInches) / kTrackWidthInches;
 	public static final double kTrackScrubFactor          = 1.0;
 
 	// Wheel Encoder
 	public static final int    kTalonFXEncoderUnitsPerRev    = 2048*2;
-	public static final double kDriveGearRatio				= (50.0/14.0)*(50.0/14.0);
+	public static final double kDriveGearRatio				= 1;
 	public static final double kFalconEncoderStatusFramePeriod = 0.100;	// 100 ms
 
 	// CONTROL LOOP GAINS   
@@ -118,88 +119,117 @@ public class DriveHAL extends HALBase {
 
     private DriveHAL()
     {
-        lMotorMaster = new WPI_TalonSRX(Constants.kLeftMasterID);
-        rMotorMaster = new WPI_TalonSRX(Constants.kRightMasterID);
-        lMotorSlaves.add(new WPI_VictorSPX(Constants.kLeftSlaveID));
-        rMotorSlaves.add(new WPI_VictorSPX(Constants.kRightSlaveID));
+        if(RobotBase.isReal())
+        {
+            lMotorMaster = new WPI_TalonSRX(Constants.kLeftMasterID);
+            rMotorMaster = new WPI_TalonSRX(Constants.kRightMasterID);
+            lMotorSlaves.add(new WPI_VictorSPX(Constants.kLeftSlaveID));
+            rMotorSlaves.add(new WPI_VictorSPX(Constants.kRightSlaveID));
+    
+            gyro = new WPI_PigeonIMU(Constants.kPigeonID);
+        }
+        else
+        {
+            lMotorMaster = null;
+            rMotorMaster = null;
+    
+            gyro = null;
+        }
 
-        lMotorMaster.configFactoryDefault();
-        rMotorMaster.configFactoryDefault();
+        if(lMotorMaster != null)
+        {
+            lMotorMaster.configFactoryDefault();
 
-        //Config masters here
-        // Get status at 100Hz (faster than default 50 Hz)
-		lMotorMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0.value, 10, kTalonTimeoutMs);
-		rMotorMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0.value, 10, kTalonTimeoutMs);
+            // Get status at 100Hz (faster than default 50 Hz)
+            lMotorMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0.value, 10, kTalonTimeoutMs);
 
-		lMotorMaster.set(ControlMode.PercentOutput, 0.0);
-		rMotorMaster.set(ControlMode.PercentOutput, 0.0);
-		lMotorMaster.setNeutralMode(NeutralMode.Coast);
-		rMotorMaster.setNeutralMode(NeutralMode.Coast);
+            // Set up the encoders
+            lMotorMaster.setInverted(kLeftMotorInverted);
 
-		// Set up the encoders
-		lMotorMaster.setInverted(kLeftMotorInverted);
-		rMotorMaster.setInverted(kRightMotorInverted);
+            lMotorMaster.setSensorPhase(true);
 
-        lMotorMaster.setSensorPhase(true);
-        rMotorMaster.setSensorPhase(true);
-		
-		// Load velocity control gains
-		lMotorMaster.config_kF(kVelocityControlSlot, kDriveVelocityKf, kTalonTimeoutMs);
-		lMotorMaster.config_kP(kVelocityControlSlot, kDriveVelocityKp, kTalonTimeoutMs);
-		lMotorMaster.config_kI(kVelocityControlSlot, kDriveVelocityKi, kTalonTimeoutMs);
-		lMotorMaster.config_kD(kVelocityControlSlot, kDriveVelocityKd, kTalonTimeoutMs);
-		lMotorMaster.config_IntegralZone(kVelocityControlSlot, kDriveVelocityIZone, kTalonTimeoutMs);
+            // Load velocity control gains
+            lMotorMaster.config_kF(kVelocityControlSlot, kDriveVelocityKf, kTalonTimeoutMs);
+            lMotorMaster.config_kP(kVelocityControlSlot, kDriveVelocityKp, kTalonTimeoutMs);
+            lMotorMaster.config_kI(kVelocityControlSlot, kDriveVelocityKi, kTalonTimeoutMs);
+            lMotorMaster.config_kD(kVelocityControlSlot, kDriveVelocityKd, kTalonTimeoutMs);
+            lMotorMaster.config_IntegralZone(kVelocityControlSlot, kDriveVelocityIZone, kTalonTimeoutMs);
 
-		rMotorMaster.config_kF(kVelocityControlSlot, kDriveVelocityKf, kTalonTimeoutMs);
-		rMotorMaster.config_kP(kVelocityControlSlot, kDriveVelocityKp, kTalonTimeoutMs);
-		rMotorMaster.config_kI(kVelocityControlSlot, kDriveVelocityKi, kTalonTimeoutMs);
-		rMotorMaster.config_kD(kVelocityControlSlot, kDriveVelocityKd, kTalonTimeoutMs);
-		rMotorMaster.config_IntegralZone(kVelocityControlSlot, kDriveVelocityIZone, kTalonTimeoutMs);
-		
-		lMotorMaster.configAllowableClosedloopError(kVelocityControlSlot, kDriveVelocityAllowableError, kTalonTimeoutMs);
-		rMotorMaster.configAllowableClosedloopError(kVelocityControlSlot, kDriveVelocityAllowableError, kTalonTimeoutMs);
+            lMotorMaster.configAllowableClosedloopError(kVelocityControlSlot, kDriveVelocityAllowableError, kTalonTimeoutMs);
 
-		
-		// Load position control gains
-		lMotorMaster.config_kF(kPositionControlSlot, kDrivePositionKf, kTalonTimeoutMs);
-		lMotorMaster.config_kP(kPositionControlSlot, kDrivePositionKp, kTalonTimeoutMs);
-		lMotorMaster.config_kI(kPositionControlSlot, kDrivePositionKi, kTalonTimeoutMs);
-		lMotorMaster.config_kD(kPositionControlSlot, kDrivePositionKd, kTalonTimeoutMs);
-		lMotorMaster.config_IntegralZone(kPositionControlSlot, kDrivePositionIZone, kTalonTimeoutMs);
+            // Load position control gains
+            lMotorMaster.config_kF(kPositionControlSlot, kDrivePositionKf, kTalonTimeoutMs);
+            lMotorMaster.config_kP(kPositionControlSlot, kDrivePositionKp, kTalonTimeoutMs);
+            lMotorMaster.config_kI(kPositionControlSlot, kDrivePositionKi, kTalonTimeoutMs);
+            lMotorMaster.config_kD(kPositionControlSlot, kDrivePositionKd, kTalonTimeoutMs);
+            lMotorMaster.config_IntegralZone(kPositionControlSlot, kDrivePositionIZone, kTalonTimeoutMs);
 
-		rMotorMaster.config_kF(kPositionControlSlot, kDrivePositionKf, kTalonTimeoutMs);
-		rMotorMaster.config_kP(kPositionControlSlot, kDrivePositionKp, kTalonTimeoutMs);
-		rMotorMaster.config_kI(kPositionControlSlot, kDrivePositionKi, kTalonTimeoutMs);
-		rMotorMaster.config_kD(kPositionControlSlot, kDrivePositionKd, kTalonTimeoutMs);
-		rMotorMaster.config_IntegralZone(kPositionControlSlot, kDrivePositionIZone, kTalonTimeoutMs);
+            lMotorMaster.configAllowableClosedloopError(kPositionControlSlot, kDrivePositionAllowableError, kTalonTimeoutMs);
 
-		lMotorMaster.configAllowableClosedloopError(kPositionControlSlot, kDrivePositionAllowableError, kTalonTimeoutMs);
-		rMotorMaster.configAllowableClosedloopError(kPositionControlSlot, kDrivePositionAllowableError, kTalonTimeoutMs);
+            // Load MotionMagic control gains
+            lMotorMaster.config_kF(kMotionMagicControlSlot, kDriveMotionMagicKf, kTalonTimeoutMs);
+            lMotorMaster.config_kP(kMotionMagicControlSlot, kDriveMotionMagicKp, kTalonTimeoutMs);
+            lMotorMaster.config_kI(kMotionMagicControlSlot, kDriveMotionMagicKi, kTalonTimeoutMs);
+            lMotorMaster.config_kD(kMotionMagicControlSlot, kDriveMotionMagicKd, kTalonTimeoutMs);
+            lMotorMaster.config_IntegralZone(kMotionMagicControlSlot, kDriveMotionMagicIZone, kTalonTimeoutMs);
 
+            lMotorMaster.configAllowableClosedloopError(kMotionMagicControlSlot, kDriveMotionMagicAllowableError, kTalonTimeoutMs);
 
-		// Load MotionMagic control gains
-		lMotorMaster.config_kF(kMotionMagicControlSlot, kDriveMotionMagicKf, kTalonTimeoutMs);
-		lMotorMaster.config_kP(kMotionMagicControlSlot, kDriveMotionMagicKp, kTalonTimeoutMs);
-		lMotorMaster.config_kI(kMotionMagicControlSlot, kDriveMotionMagicKi, kTalonTimeoutMs);
-		lMotorMaster.config_kD(kMotionMagicControlSlot, kDriveMotionMagicKd, kTalonTimeoutMs);
-		lMotorMaster.config_IntegralZone(kMotionMagicControlSlot, kDriveMotionMagicIZone, kTalonTimeoutMs);
+            lMotorMaster.configMotionCruiseVelocity(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxVel), kTalonTimeoutMs);
+            lMotorMaster.configMotionAcceleration(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxAccel), kTalonTimeoutMs);
 
-		rMotorMaster.config_kF(kMotionMagicControlSlot, kDriveMotionMagicKf, kTalonTimeoutMs);
-		rMotorMaster.config_kP(kMotionMagicControlSlot, kDriveMotionMagicKp, kTalonTimeoutMs);
-		rMotorMaster.config_kI(kMotionMagicControlSlot, kDriveMotionMagicKi, kTalonTimeoutMs);
-		rMotorMaster.config_kD(kMotionMagicControlSlot, kDriveMotionMagicKd, kTalonTimeoutMs);
-		rMotorMaster.config_IntegralZone(kMotionMagicControlSlot, kDriveMotionMagicIZone, kTalonTimeoutMs);
+            lMotorMaster.configOpenloopRamp(kDriveOpenLoopRampRate, 0);
+        }
 
-		lMotorMaster.configAllowableClosedloopError(kMotionMagicControlSlot, kDriveMotionMagicAllowableError, kTalonTimeoutMs);
-		rMotorMaster.configAllowableClosedloopError(kMotionMagicControlSlot, kDriveMotionMagicAllowableError, kTalonTimeoutMs);
+        if(rMotorMaster != null)
+        {
+            rMotorMaster.configFactoryDefault();
+            
+            // Get status at 100Hz (faster than default 50 Hz)
+            rMotorMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0.value, 10, kTalonTimeoutMs);
+    
+            // Set up the encoders
+            rMotorMaster.setInverted(kRightMotorInverted);
+            
+            rMotorMaster.setSensorPhase(true);
+            
+            // Load velocity control gains
+            rMotorMaster.config_kF(kVelocityControlSlot, kDriveVelocityKf, kTalonTimeoutMs);
+            rMotorMaster.config_kP(kVelocityControlSlot, kDriveVelocityKp, kTalonTimeoutMs);
+            rMotorMaster.config_kI(kVelocityControlSlot, kDriveVelocityKi, kTalonTimeoutMs);
+            rMotorMaster.config_kD(kVelocityControlSlot, kDriveVelocityKd, kTalonTimeoutMs);
+            rMotorMaster.config_IntegralZone(kVelocityControlSlot, kDriveVelocityIZone, kTalonTimeoutMs);
+            
+            rMotorMaster.configAllowableClosedloopError(kVelocityControlSlot, kDriveVelocityAllowableError, kTalonTimeoutMs);
+            
+            // Load position control gains
+            rMotorMaster.config_kF(kPositionControlSlot, kDrivePositionKf, kTalonTimeoutMs);
+            rMotorMaster.config_kP(kPositionControlSlot, kDrivePositionKp, kTalonTimeoutMs);
+            rMotorMaster.config_kI(kPositionControlSlot, kDrivePositionKi, kTalonTimeoutMs);
+            rMotorMaster.config_kD(kPositionControlSlot, kDrivePositionKd, kTalonTimeoutMs);
+            rMotorMaster.config_IntegralZone(kPositionControlSlot, kDrivePositionIZone, kTalonTimeoutMs);
+    
+            rMotorMaster.configAllowableClosedloopError(kPositionControlSlot, kDrivePositionAllowableError, kTalonTimeoutMs);
+    
+            // Load MotionMagic control gains
+            rMotorMaster.config_kF(kMotionMagicControlSlot, kDriveMotionMagicKf, kTalonTimeoutMs);
+            rMotorMaster.config_kP(kMotionMagicControlSlot, kDriveMotionMagicKp, kTalonTimeoutMs);
+            rMotorMaster.config_kI(kMotionMagicControlSlot, kDriveMotionMagicKi, kTalonTimeoutMs);
+            rMotorMaster.config_kD(kMotionMagicControlSlot, kDriveMotionMagicKd, kTalonTimeoutMs);
+            rMotorMaster.config_IntegralZone(kMotionMagicControlSlot, kDriveMotionMagicIZone, kTalonTimeoutMs);
+    
+            rMotorMaster.configAllowableClosedloopError(kMotionMagicControlSlot, kDriveMotionMagicAllowableError, kTalonTimeoutMs);
+            
+            rMotorMaster.configMotionCruiseVelocity(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxVel), kTalonTimeoutMs);
+            rMotorMaster.configMotionAcceleration(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxAccel), kTalonTimeoutMs);
+            
+            rMotorMaster.configOpenloopRamp(kDriveOpenLoopRampRate, 0);
+        }
 
-		lMotorMaster.configMotionCruiseVelocity(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxVel), kTalonTimeoutMs);
-		rMotorMaster.configMotionCruiseVelocity(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxVel), kTalonTimeoutMs);
-		lMotorMaster.configMotionAcceleration(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxAccel), kTalonTimeoutMs);
-		rMotorMaster.configMotionAcceleration(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxAccel), kTalonTimeoutMs);
-
-		lMotorMaster.configOpenloopRamp(kDriveOpenLoopRampRate, 0);
-		rMotorMaster.configOpenloopRamp(kDriveOpenLoopRampRate, 0);
+        if(gyro != null)
+        {
+            gyro.configFactoryDefault();
+        }
 
         for (BaseMotorController lMotorSlave : lMotorSlaves) 
         {
@@ -272,47 +302,53 @@ public class DriveHAL extends HALBase {
                 rVal = 0;
             break;
         }
-        lMotorMaster.set(controlMode, lVal);
-        rMotorMaster.set(controlMode, rVal);
+        if(lMotorMaster != null)
+            lMotorMaster.set(controlMode, lVal);
+        if(rMotorMaster != null)
+            rMotorMaster.set(controlMode, rVal);
         return this;
     }
 
     public DriveHAL setNeutralMode(NeutralMode neutralMode)
     {
-        lMotorMaster.setNeutralMode(neutralMode);
-        lMotorMaster.setNeutralMode(neutralMode);
+        if(lMotorMaster != null)
+            lMotorMaster.setNeutralMode(neutralMode);
+        if(rMotorMaster != null)
+            rMotorMaster.setNeutralMode(neutralMode);
         for (BaseMotorController lMotorSlave : lMotorSlaves)
-				lMotorSlave.setNeutralMode(neutralMode);
+            lMotorSlave.setNeutralMode(neutralMode);
         for (BaseMotorController rMotorSlave : rMotorSlaves)
             rMotorSlave.setNeutralMode(neutralMode);
         return this;
     }
 
-    //TODO: Add gyro to DriveHAL
     public DriveHAL setEncoders() {return setEncoders(0,0);}
     public DriveHAL setEncoders(double leftInches, double rightInches)
     {
-        lMotorMaster.setSelectedSensorPosition(inchesToEncoderUnits(leftInches));
-        rMotorMaster.setSelectedSensorPosition(inchesToEncoderUnits(rightInches));
+        if(lMotorMaster != null)
+            lMotorMaster.setSelectedSensorPosition(inchesToEncoderUnits(leftInches));
+        if(rMotorMaster != null)
+            rMotorMaster.setSelectedSensorPosition(inchesToEncoderUnits(rightInches));
         return this;
     }
 
-    public double getLeftDistanceInches()   {return encoderUnitsToInches(lMotorMaster.getSelectedSensorPosition(kTalonPidIdx));}
-    public double getRightDistanceInches()  {return encoderUnitsToInches(rMotorMaster.getSelectedSensorPosition(kTalonPidIdx));}
+    public double getLeftDistanceInches()   {return lMotorMaster != null ? encoderUnitsToInches(lMotorMaster.getSelectedSensorPosition(kTalonPidIdx)) : 0;}
+    public double getRightDistanceInches()  {return rMotorMaster != null ? encoderUnitsToInches(rMotorMaster.getSelectedSensorPosition(kTalonPidIdx)) : 0;}
 
-    public double getLeftSpeedInchesPerSec()    {return encoderUnitsPerFrameToInchesPerSecond(lMotorMaster.getSelectedSensorVelocity(kTalonPidIdx));}
-    public double getRightSpeedInchesPerSec()   {return encoderUnitsPerFrameToInchesPerSecond(rMotorMaster.getSelectedSensorVelocity(kTalonPidIdx));}
+    public double getLeftSpeedInchesPerSec()    {return lMotorMaster != null ? encoderUnitsPerFrameToInchesPerSecond(lMotorMaster.getSelectedSensorVelocity(kTalonPidIdx)) : 0;}
+    public double getRightSpeedInchesPerSec()   {return rMotorMaster != null ? encoderUnitsPerFrameToInchesPerSecond(rMotorMaster.getSelectedSensorVelocity(kTalonPidIdx)) : 0;}
 
-    // public double getLeftCurrent()  {return lMotorMaster.getStatorCurrent();}
-    // public double getRightCurrent() {return rMotorMaster.getStatorCurrent();}
+    // public double getLeftCurrent()  {return lMotorMaster != null ? lMotorMaster.getStatorCurrent() : 0;}
+    // public double getRightCurrent() {return rMotorMaster != null ? rMotorMaster.getStatorCurrent() : 0;}
 
-    public double getLeftPIDError()     {return lMotorMaster.getClosedLoopError(kTalonPidIdx);}
-    public double getRightPIDError()    {return rMotorMaster.getClosedLoopError(kTalonPidIdx);}
+    public double getLeftPIDError()     {return lMotorMaster != null ? lMotorMaster.getClosedLoopError(kTalonPidIdx) : 0;}
+    public double getRightPIDError()    {return rMotorMaster != null ? rMotorMaster.getClosedLoopError(kTalonPidIdx) : 0;}
 
     public double getLeftMotorStatus()     {return getMotorStatus(lMotorMaster);}
     public double getRightMotorStatus()    {return getMotorStatus(rMotorMaster);}
     private double getMotorStatus(BaseMotorController motor)
     {
+        if(motor == null) return 0;
         switch(motor.getControlMode())
         {
             case PercentOutput:
@@ -327,9 +363,11 @@ public class DriveHAL extends HALBase {
         }
     }
 
-    //TODO: Add gyro
-    public double getHeadingRad()   {return -686;}
-    public double getHeadingDeg()   {return -686;}
+    public Rotation2d getRotation() {return Rotation2d.fromDegrees(getHeadingDeg());}
+    public double getPitchRad()     {return Units.degreesToRadians(getPitchDeg());}
+    public double getPitchDeg()     {return gyro != null ? gyro.getPitch() : 0;}
+    public double getHeadingRad()   {return Units.degreesToRadians(getHeadingDeg());}
+    public double getHeadingDeg()   {return gyro != null ? gyro.getYaw() : 0;}
 
     // public MotorControllerGroup[] getMotorControllerGroups() {return new MotorControllerGroup[]{lControllerGroup, rControllerGroup};}
 }

@@ -6,8 +6,8 @@ public class VisionLoop extends LoopBase {
     private static VisionLoop instance;
     public static VisionLoop getInstance(){if(instance == null){instance = new VisionLoop();}return instance;}
 
-    private final VisionHAL HAL = VisionHAL.getInstance();
-    private final VisionStatus status = VisionStatus.getInstance();
+    // private final VisionHAL HAL = VisionHAL.getInstance();
+    // private final VisionStatus status = VisionStatus.getInstance();
 
     private VisionLoop()
     {

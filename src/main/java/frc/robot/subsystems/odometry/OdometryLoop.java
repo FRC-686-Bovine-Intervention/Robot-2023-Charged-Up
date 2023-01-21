@@ -7,8 +7,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.drive.DriveHAL;
+import frc.robot.subsystems.drive.DriveStatus;
 import frc.robot.subsystems.framework.LoopBase;
+import frc.robot.subsystems.vision.VisionStatus;
 
 public class OdometryLoop extends LoopBase {
     private static OdometryLoop instance;
@@ -27,7 +30,15 @@ public class OdometryLoop extends LoopBase {
     
     @Override
     public void Update() {
-        
+        DriveStatus driveStatus = DriveStatus.getInstance();
+        for(Pose2d poseEstimate : VisionStatus.getInstance().getVisionPoses())
+        {
+            poseEstimator.addVisionMeasurement(poseEstimate, Timer.getFPGATimestamp());
+        }
+        Pose2d poseEstimate = poseEstimator.update(driveStatus.getRotation(), Units.inchesToMeters(driveStatus.getLeftDistanceInches()), Units.inchesToMeters(driveStatus.getRightDistanceInches()));
+
+        OdometryStatus.getInstance().setRobotPose(poseEstimate);
+        OdometryStatus.getInstance().setRobotSpeed(driveStatus.getWheelSpeeds());
     }
     
     @Override public void Enabled() {}

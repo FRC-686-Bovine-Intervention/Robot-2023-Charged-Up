@@ -32,19 +32,17 @@ public abstract class StatusBase implements LoggableInputs, Loggable{
     @Override
     public final void toLog(LogTable table)
     {
-        String prefix = "";
-        table.put(prefix + "/Enabled Switch", EnabledSwitch);
-        table.put(prefix + "/Enabled State", Enabled.name());
-        exportToTable(table, prefix);
+        table.put("Enabled Switch", EnabledSwitch);
+        table.put("Enabled State", Enabled.name());
+        exportToTable(table);
     }
-    public abstract void exportToTable(LogTable table, String prefix);
+    public abstract void exportToTable(LogTable table);
 
     @Override
     public final void fromLog(LogTable table)
     {
-        String prefix = "";
-        EnabledSwitch = table.getBoolean(prefix + "/Enabled Switch", true);
-        switch(table.getString(prefix + "/Enabled State", "Default"))
+        EnabledSwitch = table.getBoolean("Enabled Switch", true);
+        switch(table.getString("Enabled State", "Default"))
         {
             case "Starting":
                 Enabled = EnabledState.Starting;
@@ -60,11 +58,11 @@ public abstract class StatusBase implements LoggableInputs, Loggable{
             break;
             default: break;
         }
-        importFromTable(table, prefix);
+        importFromTable(table);
     }
-    public abstract void importFromTable(LogTable table, String prefix);
+    public abstract void importFromTable(LogTable table);
 
-    public final void inputs()
+    public final void runPreLoop()
     {
         if(EnabledEntry == null)
             EnabledSwitch = true;
@@ -92,12 +90,12 @@ public abstract class StatusBase implements LoggableInputs, Loggable{
     }
     public abstract void updateInputs();
 
-    public final void record()
+    public final void runPostLoop()
     {
-        String prefix = Subsystem.getClass().getSimpleName();
-        Logger.getInstance().recordOutput(prefix + "/Enabled Switch", EnabledSwitch);
-        Logger.getInstance().recordOutput(prefix + "/Enabled State", Enabled.name());
-        recordOutputs(prefix);
+        String prefix = Subsystem.getClass().getSimpleName() + "/";
+        Logger.getInstance().recordOutput(prefix + "Enabled Switch", EnabledSwitch);
+        Logger.getInstance().recordOutput(prefix + "Enabled State", Enabled.name());
+        recordOutputs(Logger.getInstance(), prefix);
     }
-    public abstract void recordOutputs(String prefix);
+    public abstract void recordOutputs(Logger logger, String prefix);
 }
