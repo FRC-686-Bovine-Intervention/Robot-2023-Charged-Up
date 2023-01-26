@@ -28,10 +28,10 @@ public class SubsystemController implements Loggable
     {
         for (SubsystemBase sub : subsystems)
         {
-            sub.init();
-            sub.status.runPreLoop();
-            sub.loop.onStart();
-            sub.status.runPostLoop();
+            sub.initialize();
+            sub.Status.runPreLoop();
+            sub.Loop.onStart();
+            sub.Status.runPostLoop();
         }
         return this;
     }
@@ -40,9 +40,9 @@ public class SubsystemController implements Loggable
     {
         for (SubsystemBase sub : subsystems)
         {
-            sub.status.runPreLoop();
-            sub.loop.onLoop();
-            sub.status.runPostLoop();
+            sub.Status.runPreLoop();
+            sub.Loop.onLoop();
+            sub.Status.runPostLoop();
         }
         return this;
     }
@@ -51,9 +51,9 @@ public class SubsystemController implements Loggable
     {
         for (SubsystemBase sub : subsystems)
         {
-            sub.status.runPreLoop();
-            sub.loop.onStop();
-            sub.status.runPostLoop();
+            sub.Status.runPreLoop();
+            sub.Loop.onStop();
+            sub.Status.runPostLoop();
         }
         return this;
     }

@@ -14,6 +14,7 @@ public class DriverInteractionLoop extends LoopBase {
     public static DriverInteractionLoop getInstance() {if(instance == null){instance = new DriverInteractionLoop();}return instance;}
 
     private final Drive drive = Drive.getInstance();
+    private final DriverAssist driverAssist = DriverAssist.getInstance();
 
     private DriverInteractionLoop()
     {
@@ -46,9 +47,7 @@ public class DriverInteractionLoop extends LoopBase {
         if(DriverControlButtons.InvertControls.getRisingEdge())
             invertDriveControls = !invertDriveControls;
         
-        if(DriverControlButtons.DriverAssist.getRisingEdge())
-            DriverAssist.getInstance().setCommand(new DriverAssistCommand());
-            
+        driverAssist.setCommand(new DriverAssistCommand());
         drive.setDriveCommand(generateDriveCommand());
     }
 

@@ -11,30 +11,23 @@ public abstract class LoopBase {
      */
     protected SubsystemBase Subsystem;
 
-    public final void onStart()
-    {
-        checkForSubsystem();
-        Subsystem.status.Enabled = EnabledState.Starting;
-        onEverything();
-    }
+    public final void onStart() {onEverything(EnabledState.Starting);}
 
-    public final void onLoop()
-    {
-        onEverything();
-    }
+    public final void onLoop() {onEverything();}
 
-    public final void onStop()
-    {
-        checkForSubsystem();
-        Subsystem.status.Enabled = EnabledState.Stopping;
-        onEverything();
-    }
+    public final void onStop() {onEverything(EnabledState.Stopping);}
 
-    private void onEverything()
+    private void onEverything() {onEverything(null);}
+    private void onEverything(EnabledState state)
     {
-        checkForSubsystem();
+        if(Subsystem == null)
+            throw new NullPointerException(this.getClass().getName() + " has not defined the super variable Subsystem\n");
+
+        if(state != null)
+            Subsystem.Status.Enabled = state;
+
         Update();
-        switch(Subsystem.status.Enabled)
+        switch(Subsystem.Status.Enabled)
         {
             case Starting:
             case Enabled:
@@ -47,28 +40,22 @@ public abstract class LoopBase {
         }
     }
 
-    private void checkForSubsystem()
-    {
-        if(Subsystem == null)
-            throw new NullPointerException(this.getClass().getName() + " has not defined the super variable Subsystem\n");
-    }
-
     /**
      * <h3>Runs every loop tick when the subsystem is enabled</h3><p>
      * All code that should run when the subsystem is enabled goes here<p>
      * This should be for actuating motors and other objects on the robot
      */
-    public abstract void Enabled();
+    protected abstract void Enabled();
     /**
      * <h3>Runs every loop tick when the subsystem is disabled</h3><p>
      * All code that should run when the system is disabled goes here<p>
      * This should be for stopping objects and reseting variables
      */
-    public abstract void Disabled();
+    protected abstract void Disabled();
     /**
      * <h3>Runs every loop tick</h3><p>
      * All code that should run regardless of the system status goes here<p>
      * This should be for things like updating Shuffleboard
      */
-    public abstract void Update();
+    protected abstract void Update();
 }

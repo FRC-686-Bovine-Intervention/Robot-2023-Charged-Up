@@ -17,9 +17,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
-import frc.robot.subsystems.framework.HALBase;
 
-public class VisionHAL extends HALBase {
+public class VisionHAL {
     private static VisionHAL instance;
     public static VisionHAL getInstance(){if(instance == null){instance = new VisionHAL();}return instance;}
 

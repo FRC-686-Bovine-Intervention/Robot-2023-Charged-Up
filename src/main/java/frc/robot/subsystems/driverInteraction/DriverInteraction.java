@@ -8,7 +8,7 @@ public class DriverInteraction extends SubsystemBase {
 
     @Override
     public void init() {
-        loop = DriverInteractionLoop.getInstance();
-        status = DriverInteractionStatus.getInstance();
+        Loop = DriverInteractionLoop.getInstance();
+        Status = DriverInteractionStatus.getInstance();
     }
 }

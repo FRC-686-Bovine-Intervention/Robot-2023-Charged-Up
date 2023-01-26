@@ -33,6 +33,7 @@ public class RamseteFollower {
     
     private double startTime;
     public double getStartTime() {return startTime;}
+    public RamseteFollower setStartTime() {return setStartTime(Timer.getFPGATimestamp());}
     public RamseteFollower setStartTime(double startTime) {this.startTime = startTime; return this;}
     
     private double lastEvalTime;
@@ -52,7 +53,7 @@ public class RamseteFollower {
 
     public boolean getFinished()
     {
-        double allowableTimeError = 0.2;
-        return lastEvalTime - startTime - allowableTimeError >= trajectory.getTotalTimeSeconds();
+        double allowableTimeError = 0.01;
+        return lastEvalTime - startTime >= trajectory.getTotalTimeSeconds() - allowableTimeError;
     }
 }

@@ -36,7 +36,7 @@ public abstract class StatusBase implements LoggableInputs, Loggable{
         table.put("Enabled State", Enabled.name());
         exportToTable(table);
     }
-    public abstract void exportToTable(LogTable table);
+    protected abstract void exportToTable(LogTable table);
 
     @Override
     public final void fromLog(LogTable table)
@@ -60,9 +60,9 @@ public abstract class StatusBase implements LoggableInputs, Loggable{
         }
         importFromTable(table);
     }
-    public abstract void importFromTable(LogTable table);
+    protected abstract void importFromTable(LogTable table);
 
-    public final void runPreLoop()
+    protected final void runPreLoop()
     {
         if(EnabledEntry == null)
             EnabledSwitch = true;
@@ -88,14 +88,16 @@ public abstract class StatusBase implements LoggableInputs, Loggable{
         updateInputs();
         Logger.getInstance().processInputs(this.getClass().getSimpleName(), this);
     }
-    public abstract void updateInputs();
+    protected abstract void updateInputs();
 
-    public final void runPostLoop()
+    protected final void runPostLoop()
     {
+        if(Subsystem == null)
+            throw new NullPointerException(this.getClass().getName() + " has not defined the super variable Subsystem\n");
         String prefix = Subsystem.getClass().getSimpleName() + "/";
         Logger.getInstance().recordOutput(prefix + "Enabled Switch", EnabledSwitch);
         Logger.getInstance().recordOutput(prefix + "Enabled State", Enabled.name());
         recordOutputs(Logger.getInstance(), prefix);
     }
-    public abstract void recordOutputs(Logger logger, String prefix);
+    protected abstract void recordOutputs(Logger logger, String prefix);
 }

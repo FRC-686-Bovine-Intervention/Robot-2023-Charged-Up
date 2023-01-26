@@ -7,7 +7,7 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveCommand;
 
 public class RamseteFollowerAction implements Action {
-    private final RamseteFollower controller;
+    public final RamseteFollower controller;
     private final Drive drive = Drive.getInstance();
 
     public RamseteFollowerAction(Trajectory path, RamseteController controller)
@@ -17,7 +17,7 @@ public class RamseteFollowerAction implements Action {
 
     @Override
     public void start() {
-        
+        controller.setStartTime();
     }
 
     @Override

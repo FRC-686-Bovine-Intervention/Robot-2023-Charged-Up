@@ -10,15 +10,14 @@ import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.ctre.phoenix.sensors.BasePigeon;
-import com.ctre.phoenix.sensors.WPI_PigeonIMU;
+import com.ctre.phoenix.sensors.WPI_Pigeon2;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Constants;
-import frc.robot.subsystems.framework.HALBase;
 
-public class DriveHAL extends HALBase {
+public class DriveHAL {
     private static DriveHAL instance;
     public static DriveHAL getInstance(){if(instance == null){instance = new DriveHAL();}return instance;}
 
@@ -126,7 +125,7 @@ public class DriveHAL extends HALBase {
             lMotorSlaves.add(new WPI_VictorSPX(Constants.kLeftSlaveID));
             rMotorSlaves.add(new WPI_VictorSPX(Constants.kRightSlaveID));
     
-            gyro = new WPI_PigeonIMU(Constants.kPigeonID);
+            gyro = new WPI_Pigeon2(Constants.kPigeonID);
         }
         else
         {
@@ -141,7 +140,7 @@ public class DriveHAL extends HALBase {
             lMotorMaster.configFactoryDefault();
 
             // Get status at 100Hz (faster than default 50 Hz)
-            lMotorMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0.value, 10, kTalonTimeoutMs);
+            lMotorMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0.value, 20, kTalonTimeoutMs);
 
             // Set up the encoders
             lMotorMaster.setInverted(kLeftMotorInverted);
@@ -186,7 +185,7 @@ public class DriveHAL extends HALBase {
             rMotorMaster.configFactoryDefault();
             
             // Get status at 100Hz (faster than default 50 Hz)
-            rMotorMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0.value, 10, kTalonTimeoutMs);
+            rMotorMaster.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0.value, 20, kTalonTimeoutMs);
     
             // Set up the encoders
             rMotorMaster.setInverted(kRightMotorInverted);
@@ -365,7 +364,7 @@ public class DriveHAL extends HALBase {
 
     public Rotation2d getRotation() {return Rotation2d.fromDegrees(getHeadingDeg());}
     public double getPitchRad()     {return Units.degreesToRadians(getPitchDeg());}
-    public double getPitchDeg()     {return gyro != null ? gyro.getPitch() : 0;}
+    public double getPitchDeg()     {return gyro != null ? -gyro.getPitch() : 0;}
     public double getHeadingRad()   {return Units.degreesToRadians(getHeadingDeg());}
     public double getHeadingDeg()   {return gyro != null ? gyro.getYaw() : 0;}
 

@@ -8,8 +8,8 @@ public class Vision extends SubsystemBase {
 
     @Override
     public void init() {
-        loop = VisionLoop.getInstance();
-        status = VisionStatus.getInstance();
+        Loop = VisionLoop.getInstance();
+        Status = VisionStatus.getInstance();
     }
     
 }

@@ -118,28 +118,27 @@ public class DriveStatus extends StatusBase {
         setRotation(HAL.getRotation());
         // setMotorCurrent(HAL.getLeftCurrent(), HAL.getRightCurrent());
         setMotorPIDError(HAL.getLeftPIDError(), HAL.getRightPIDError());
+        setHeadingDeg(HAL.getHeadingDeg());
+        setPitchDeg(HAL.getPitchDeg());
     }
     @Override
     public void recordOutputs(Logger logger, String prefix) {
-        logger.recordOutput(prefix + "Control Mode",                 getTalonMode().name());
-        logger.recordOutput(prefix + "Neutral Mode",                 getNeutralMode().name());
-        logger.recordOutput(prefix + "Encoded Distance (In)/Left",   getLeftDistanceInches());
-        logger.recordOutput(prefix + "Encoded Distance (In)/Right",  getRightDistanceInches());
-        logger.recordOutput(prefix + "Encoded Speed (In|Sec)/Left",  getLeftSpeedInchesPerSec());
-        logger.recordOutput(prefix + "Encoded Speed (In|Sec)/Right", getRightSpeedInchesPerSec());
-        logger.recordOutput(prefix + "Gyro/Heading/Radians",         getHeadingRad());
-        logger.recordOutput(prefix + "Gyro/Heading/Degrees",         getHeadingDeg());
-        logger.recordOutput(prefix + "Motor Current (Amps)/Left",    getLeftMotorCurrent());
-        logger.recordOutput(prefix + "Motor Current (Amps)/Right",   getRightMotorCurrent());
-        logger.recordOutput(prefix + "Motor Status/Left",            getLeftMotorStatus());
-        logger.recordOutput(prefix + "Motor Status/Right",           getRightMotorStatus());
-        logger.recordOutput(prefix + "Motor PID Error/Left",         getLeftMotorPIDError());
-        logger.recordOutput(prefix + "Motor PID Error/Right",        getRightMotorPIDError());
+        logger.recordOutput(prefix + "Control Mode",                    getTalonMode().name());
+        logger.recordOutput(prefix + "Neutral Mode",                    getNeutralMode().name());
+        logger.recordOutput(prefix + "Encoded Distance (In)/Left",      getLeftDistanceInches());
+        logger.recordOutput(prefix + "Encoded Distance (In)/Right",     getRightDistanceInches());
+        logger.recordOutput(prefix + "Encoded Speed (In|Sec)/Left",     getLeftSpeedInchesPerSec());
+        logger.recordOutput(prefix + "Encoded Speed (In|Sec)/Right",    getRightSpeedInchesPerSec());
+        logger.recordOutput(prefix + "Gyro/Heading (Deg)",              getHeadingDeg());
+        logger.recordOutput(prefix + "Gyro/Pitch (Deg)",                getPitchDeg());
+        logger.recordOutput(prefix + "Motor Current (Amps)/Left",       getLeftMotorCurrent());
+        logger.recordOutput(prefix + "Motor Current (Amps)/Right",      getRightMotorCurrent());
+        logger.recordOutput(prefix + "Motor Status/Left",               getLeftMotorStatus());
+        logger.recordOutput(prefix + "Motor Status/Right",              getRightMotorStatus());
+        logger.recordOutput(prefix + "Motor PID Error/Left",            getLeftMotorPIDError());
+        logger.recordOutput(prefix + "Motor PID Error/Right",           getRightMotorPIDError());
 
-        logger.recordOutput(prefix + "Command/Drive Mode",           getCommand().getDriveMode().name());
-        logger.recordOutput(prefix + "Command/Talon Control Mode",   getCommand().getTalonMode().name());
-        logger.recordOutput(prefix + "Command/Drive Setpoint/Left",  getCommand().getWheelSpeed().left);
-        logger.recordOutput(prefix + "Command/Drive Setpoint/Right", getCommand().getWheelSpeed().right);
+        getCommand().logCommand(logger, prefix + "Command");
     }
     
 }
