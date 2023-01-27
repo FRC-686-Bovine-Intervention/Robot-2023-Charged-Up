@@ -8,9 +8,8 @@ public class Drive extends SubsystemBase {
 
     @Override
     public void init() {
-        loop = DriveLoop.getInstance();
-        status = DriveStatus.getInstance();
-        HAL = DriveHAL.getInstance();
+        Loop = DriveLoop.getInstance();
+        Status = DriveStatus.getInstance();
     }
 
     private DriveCommand command = DriveCommand.COAST();

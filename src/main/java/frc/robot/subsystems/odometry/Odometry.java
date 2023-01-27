@@ -8,7 +8,7 @@ public class Odometry extends SubsystemBase {
 
     @Override
     public void init() {
-        loop = OdometryLoop.getInstance();
-        status = OdometryStatus.getInstance();
+        Loop = OdometryLoop.getInstance();
+        Status = OdometryStatus.getInstance();
     }
 }

@@ -11,8 +11,8 @@ public class DriverAssist extends SubsystemBase {
     @Override
     public void init()
     {
-        loop = DriverAssistLoop.getInstance();
-        status = DriverAssistStatus.getInstance();
+        Loop = DriverAssistLoop.getInstance();
+        Status = DriverAssistStatus.getInstance();
     }
 
     private DriverAssistCommand command = new DriverAssistCommand();

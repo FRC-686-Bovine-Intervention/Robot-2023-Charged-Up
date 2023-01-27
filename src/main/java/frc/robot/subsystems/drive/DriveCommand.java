@@ -1,5 +1,7 @@
 package frc.robot.subsystems.drive;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
@@ -68,7 +70,6 @@ public class DriveCommand {
     public DriveCommand setCommandTime()    {return setCommandTime(Timer.getFPGATimestamp());}
     public DriveCommand setCommandTime(double commandTime) {this.commandTime = commandTime; return this;}
 
-
     public DriveCommand(double left, double right)
         {this(new WheelSpeeds(left, right));}
     public DriveCommand(WheelSpeeds wheelSpeed)
@@ -89,4 +90,14 @@ public class DriveCommand {
 
     public static DriveCommand COAST() {return new DriveCommand(DriveControlMode.OPEN_LOOP, 0, 0, NeutralMode.Coast);}
     public static DriveCommand BRAKE() {return new DriveCommand(DriveControlMode.OPEN_LOOP, 0, 0, NeutralMode.Brake);}
+
+    public DriveCommand logCommand(Logger logger, String prefix)
+    {
+        logger.recordOutput(prefix + "/Drive Mode",              getDriveMode().name());
+        logger.recordOutput(prefix + "/Talon Control Mode",      getTalonMode().name());
+        logger.recordOutput(prefix + "/Talon Neutral Mode",      getNeutralMode().name());
+        logger.recordOutput(prefix + "/Drive Setpoint/Left",     getWheelSpeed().left);
+        logger.recordOutput(prefix + "/Drive Setpoint/Right",    getWheelSpeed().right);
+        return this;
+    }
 }
