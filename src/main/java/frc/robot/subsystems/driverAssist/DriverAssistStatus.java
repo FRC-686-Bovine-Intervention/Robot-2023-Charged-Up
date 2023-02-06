@@ -35,6 +35,18 @@ public class DriverAssistStatus extends StatusBase {
     public DriveCommand getDriveCommand()                           {return driveCommand;}
     public DriverAssistStatus setDriveCommand(DriveCommand command) {this.driveCommand = command; return this;}
 
+    private double pitchVelocity;
+    public double getPitchVelo()                                    {return pitchVelocity;}
+    public DriverAssistStatus setPitchVelo(double pitchVelocity)    {this.pitchVelocity = pitchVelocity; return this;}
+
+    private double estimatedPitch;
+    public double getEstimatedPitch()                                   {return estimatedPitch;}
+    public DriverAssistStatus setEstimatedPitch(double estimatedPitch)  {this.estimatedPitch = estimatedPitch; return this;}
+
+    private boolean usingProportional;
+    public boolean getUsingProportional()                                   {return usingProportional;}
+    public DriverAssistStatus setUsingProportional(boolean usingProportional)  {this.usingProportional = usingProportional; return this;}
+
     @Override
     protected void updateInputs() {
         setAssistCommand(DriverAssist.getInstance().getCommand());
@@ -45,6 +57,9 @@ public class DriverAssistStatus extends StatusBase {
         logger.recordOutput(prefix + "Command/Target Pose",     assistCommand.getTargetPose());
         logger.recordOutput(prefix + "Calculated Trajectory",   getTrajectory());
         logger.recordOutput(prefix + "Driver Assist State",     getDriverAssistState().name());
+        logger.recordOutput(prefix + "Pitch Velocity",          getPitchVelo());
+        logger.recordOutput(prefix + "Estimated Pitch",         getEstimatedPitch());
+        logger.recordOutput(prefix + "usingProportional",       getUsingProportional());
 
         if(getDriveCommand() != null)
             getDriveCommand().logCommand(logger, prefix + "Drive Command");

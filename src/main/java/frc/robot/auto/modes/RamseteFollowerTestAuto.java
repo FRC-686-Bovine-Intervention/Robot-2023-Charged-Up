@@ -22,6 +22,12 @@ public class RamseteFollowerTestAuto extends AutoMode {
         Pose2d point1 = new Pose2d(0.5,0.5,Rotation2d.fromDegrees(90));
         Pose2d point2 = new Pose2d(0,1,Rotation2d.fromDegrees(180));
         Pose2d point3 = new Pose2d(-0.5,0.5,Rotation2d.fromDegrees(270));
+        Pose2d point4 = origin;
+        // Pose2d origin = new Pose2d(0,0,Rotation2d.fromDegrees(0));
+        // Pose2d point1 = new Pose2d(0.5,0.0,Rotation2d.fromDegrees(0));
+        // Pose2d point2 = new Pose2d(1,0,Rotation2d.fromDegrees(0));
+        // Pose2d point3 = new Pose2d(1.5,0,Rotation2d.fromDegrees(0));
+        // Pose2d point4 = new Pose2d(2,0,Rotation2d.fromDegrees(0));
 
         ArrayList<Pose2d> path1 = new ArrayList<Pose2d>();
         ArrayList<Pose2d> path2 = new ArrayList<Pose2d>();
@@ -31,7 +37,7 @@ public class RamseteFollowerTestAuto extends AutoMode {
         path1.add(point2);
         path2.add(point2);
         path2.add(point3);
-        path2.add(origin);
+        path2.add(point4);
 
         Trajectory traj1 = TrajectoryGenerator.generateTrajectory(path1, config);
         Trajectory traj2 = TrajectoryGenerator.generateTrajectory(path2, config);
