@@ -24,15 +24,16 @@ public class OdometryStatus extends StatusBase {
     public Pose2d           getRobotPose()                  {return robotPose;}
     public OdometryStatus   setRobotPose(Pose2d robotPose)  {this.robotPose = robotPose; return this;}
 
+    //TODO:change to meters per sec
     private WheelSpeeds robotSpeed = new WheelSpeeds();
-    public WheelSpeeds      getRobotSpeed()                         {return robotSpeed;}
-    public OdometryStatus   setRobotSpeed(WheelSpeeds robotSpeed)   {this.robotSpeed = robotSpeed; return this;}
+    public WheelSpeeds      getRobotSpeedInPerSec()                         {return robotSpeed;}
+    public OdometryStatus   setRobotSpeedInPerSec(WheelSpeeds robotSpeed)   {this.robotSpeed = robotSpeed; return this;}
 
     @Override
     public void recordOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "Robot Pose (Meters, Rad)", AdvantageUtil.deconstruct(getRobotPose()));
-        logger.recordOutput(prefix + "Robot Speed (M|Sec)/Left", getRobotSpeed().left);
-        logger.recordOutput(prefix + "Robot Speed (M|Sec)/Right", getRobotSpeed().right);
+        logger.recordOutput(prefix + "Robot Speed (M|Sec)/Left", getRobotSpeedInPerSec().left);
+        logger.recordOutput(prefix + "Robot Speed (M|Sec)/Right", getRobotSpeedInPerSec().right);
 
         logger.recordOutput(prefix + "Robot Forward Pose (Meters, Rad)", robotPose.plus(new Transform2d(new Translation2d(3,0),new Rotation2d())));
     }

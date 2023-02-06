@@ -24,7 +24,8 @@ public class DriverInteractionStatus extends StatusBase {
     }
 
     public enum DriverControlButtons{
-        InvertControls  (Thrustmaster.kTriggerButton),
+        InvertControls  (Thrustmaster.kLeftThumbButton),
+        Intake          (Thrustmaster.kTriggerButton),
         AutoBalance     (Thrustmaster.kBottomThumbButton),
         DriverAssist    (Thrustmaster.kRightThumbButton);
 

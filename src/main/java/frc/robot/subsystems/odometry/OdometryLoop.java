@@ -38,7 +38,7 @@ public class OdometryLoop extends LoopBase {
         Pose2d poseEstimate = poseEstimator.update(driveStatus.getRotation(), Units.inchesToMeters(driveStatus.getLeftDistanceInches()), Units.inchesToMeters(driveStatus.getRightDistanceInches()));
 
         OdometryStatus.getInstance().setRobotPose(poseEstimate);
-        OdometryStatus.getInstance().setRobotSpeed(driveStatus.getWheelSpeeds());
+        OdometryStatus.getInstance().setRobotSpeedInPerSec(driveStatus.getWheelSpeeds());
     }
     
     @Override public void Enabled() {}

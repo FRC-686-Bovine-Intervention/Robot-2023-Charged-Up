@@ -6,10 +6,9 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
+import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
-import com.ctre.phoenix.sensors.BasePigeon;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -27,10 +26,8 @@ public class DriveHAL {
 
 	// Motor Controller Inversions
 	
-    // public static final TalonFXInvertType kLeftMotorInverted = TalonFXInvertType.CounterClockwise;
-    // public static final TalonFXInvertType kRightMotorInverted = TalonFXInvertType.Clockwise;
-    public static final boolean kLeftMotorInverted = false;
-    public static final boolean kRightMotorInverted = true;
+    public static final TalonFXInvertType kLeftMotorInverted    = TalonFXInvertType.Clockwise;
+    public static final TalonFXInvertType kRightMotorInverted   = TalonFXInvertType.CounterClockwise;
 
     public static final int kDriveTrainCurrentLimit = 25;
 
@@ -40,11 +37,16 @@ public class DriveHAL {
 
 	public enum GyroSelectionEnum { BNO055, NAVX, PIGEON; }
     public static final GyroSelectionEnum GyroSelection = GyroSelectionEnum.PIGEON;
-    private final BasePigeon gyro;
+    private final WPI_Pigeon2 gyro;
+
+    // Pigeon 2 Mount Pose (Gotten from Phoenix Tuner calibration)
+    private static final double kPigeonMountPoseYaw     = 91.7582;
+    private static final double kPigeonMountPosePitch   = 0.40388;
+    private static final double kPigeonMountPoseRoll    = -1.16195;
 
     //TODO: Update Drive Coefficients
 	// Wheels
-	public static final double kDriveWheelCircumInches    = 6*Math.PI;
+	public static final double kDriveWheelCircumInches    = 4*Math.PI;
 	public static final double kTrackWidthInches          = 24.500;
 	public static final double kTrackEffectiveDiameter    = 22.5; //Went 707in in 10 rotations       (kTrackWidthInches * kTrackWidthInches + kTrackLengthInches * kTrackLengthInches) / kTrackWidthInches;
 	public static final double kTrackScrubFactor          = 1.0;
@@ -120,10 +122,10 @@ public class DriveHAL {
     {
         if(RobotBase.isReal())
         {
-            lMotorMaster = new WPI_TalonSRX(Constants.kLeftMasterID);
-            rMotorMaster = new WPI_TalonSRX(Constants.kRightMasterID);
-            lMotorSlaves.add(new WPI_VictorSPX(Constants.kLeftSlaveID));
-            rMotorSlaves.add(new WPI_VictorSPX(Constants.kRightSlaveID));
+            lMotorMaster = new WPI_TalonFX(Constants.kLeftMasterID);
+            rMotorMaster = new WPI_TalonFX(Constants.kRightMasterID);
+            lMotorSlaves.add(new WPI_TalonFX(Constants.kLeftSlaveID));
+            rMotorSlaves.add(new WPI_TalonFX(Constants.kRightSlaveID));
     
             gyro = new WPI_Pigeon2(Constants.kPigeonID);
         }
@@ -228,6 +230,7 @@ public class DriveHAL {
         if(gyro != null)
         {
             gyro.configFactoryDefault();
+            gyro.configMountPose(kPigeonMountPoseYaw, kPigeonMountPosePitch, kPigeonMountPoseRoll);
         }
 
         for (BaseMotorController lMotorSlave : lMotorSlaves) 
@@ -265,15 +268,13 @@ public class DriveHAL {
         setEncoders();
     }
 
-    private final BaseMotorController lMotorMaster, rMotorMaster;
+    private final WPI_TalonFX lMotorMaster, rMotorMaster;
     private final ArrayList<BaseMotorController> lMotorSlaves = new ArrayList<BaseMotorController>(), rMotorSlaves = new ArrayList<BaseMotorController>();
     // private final MotorControllerGroup lControllerGroup, rControllerGroup;
     
-    // Talon SRX reports position in rotations while in closed-loop Position mode
 	public static double encoderUnitsToInches(double _encoderPosition)  {return _encoderPosition / kTalonFXEncoderUnitsPerRev / kDriveGearRatio * kDriveWheelCircumInches;}
 	public static double inchesToEncoderUnits(double _inches)           {return _inches / kDriveWheelCircumInches * kTalonFXEncoderUnitsPerRev * kDriveGearRatio;}
 
-	// Talon SRX reports speed in RPM while in closed-loop Speed mode
 	public static double encoderUnitsPerFrameToInchesPerSecond(double _encoderEdgesPerFrame)    {return encoderUnitsToInches(_encoderEdgesPerFrame) / kFalconEncoderStatusFramePeriod;}
 	public static double inchesPerSecondToEncoderUnitsPerFrame(double _inchesPerSecond)         {return inchesToEncoderUnits(_inchesPerSecond) * kFalconEncoderStatusFramePeriod;}
 
@@ -337,8 +338,8 @@ public class DriveHAL {
     public double getLeftSpeedInchesPerSec()    {return lMotorMaster != null ? encoderUnitsPerFrameToInchesPerSecond(lMotorMaster.getSelectedSensorVelocity(kTalonPidIdx)) : 0;}
     public double getRightSpeedInchesPerSec()   {return rMotorMaster != null ? encoderUnitsPerFrameToInchesPerSecond(rMotorMaster.getSelectedSensorVelocity(kTalonPidIdx)) : 0;}
 
-    // public double getLeftCurrent()  {return lMotorMaster != null ? lMotorMaster.getStatorCurrent() : 0;}
-    // public double getRightCurrent() {return rMotorMaster != null ? rMotorMaster.getStatorCurrent() : 0;}
+    public double getLeftCurrent()  {return lMotorMaster != null ? lMotorMaster.getStatorCurrent() : 0;}
+    public double getRightCurrent() {return rMotorMaster != null ? rMotorMaster.getStatorCurrent() : 0;}
 
     public double getLeftPIDError()     {return lMotorMaster != null ? lMotorMaster.getClosedLoopError(kTalonPidIdx) : 0;}
     public double getRightPIDError()    {return rMotorMaster != null ? rMotorMaster.getClosedLoopError(kTalonPidIdx) : 0;}

@@ -116,7 +116,7 @@ public class DriveStatus extends StatusBase {
         setDistanceInches(HAL.getLeftDistanceInches(), HAL.getRightDistanceInches());
         setWheelSpeeds(new WheelSpeeds(HAL.getLeftSpeedInchesPerSec(), HAL.getRightSpeedInchesPerSec()));
         setRotation(HAL.getRotation());
-        // setMotorCurrent(HAL.getLeftCurrent(), HAL.getRightCurrent());
+        setMotorCurrent(HAL.getLeftCurrent(), HAL.getRightCurrent());
         setMotorPIDError(HAL.getLeftPIDError(), HAL.getRightPIDError());
         setHeadingDeg(HAL.getHeadingDeg());
         setPitchDeg(HAL.getPitchDeg());

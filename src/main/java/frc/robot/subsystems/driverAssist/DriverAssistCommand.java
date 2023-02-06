@@ -1,23 +1,21 @@
 package frc.robot.subsystems.driverAssist;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import frc.robot.subsystems.driverInteraction.DriverInteractionStatus.DriverControlButtons;
+import frc.robot.subsystems.driverAssist.DriverAssistStatus.DriverAssistState;
 
 public class DriverAssistCommand {
-    public DriverAssistCommand() {this(new Pose2d());}
-    public DriverAssistCommand(Pose2d targetPose) {
+    public DriverAssistCommand() {this(DriverAssistState.Disabled);}
+    public DriverAssistCommand(DriverAssistState driverAssistState) {this(driverAssistState, new Pose2d());}
+    public DriverAssistCommand(DriverAssistState driverAssistState, Pose2d targetPose) {
+        setDriverAssistState(driverAssistState);
         setTargetPose(targetPose);
     }
+
+    private DriverAssistState driverAssistState = DriverAssistState.Disabled;
+    public DriverAssistState getDriverAssistState()                                     {return driverAssistState;}
+    public DriverAssistCommand setDriverAssistState(DriverAssistState driverAssistState) {this.driverAssistState = driverAssistState; return this;}
 
     private Pose2d targetPose = new Pose2d();
     public Pose2d getTargetPose()                               {return targetPose;}
     public DriverAssistCommand setTargetPose(Pose2d targetPose) {this.targetPose = targetPose; return this;}
-
-    private DriverControlButtons balanceButton = DriverControlButtons.AutoBalance;
-    public DriverControlButtons getBalanceButton()                                  {return balanceButton;}
-    public DriverAssistCommand setBalanceButton(DriverControlButtons balanceButton) {this.balanceButton = balanceButton; return this;}
-
-    private DriverControlButtons driveButton = DriverControlButtons.DriverAssist;
-    public DriverControlButtons getDriveButton()                                {return driveButton;}
-    public DriverAssistCommand setDriveButton(DriverControlButtons driveButton) {this.driveButton = driveButton; return this;}
 }

@@ -1,5 +1,8 @@
 package frc.robot;
 
+import org.littletonrobotics.conduit.schema.SystemData;
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.controller.DifferentialDriveFeedforward;
 import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
 import edu.wpi.first.math.controller.RamseteController;
@@ -8,6 +11,9 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.drive.DriveCommand;
 import frc.robot.subsystems.drive.DriveHAL;
@@ -15,11 +21,12 @@ import frc.robot.subsystems.odometry.OdometryStatus;
 
 public class RamseteFollower {
 
-    private static final double kSLinear = 1.6871;
-    private static final double kVLinear = 3.0149;
-    private static final double kALinear = 5.6755;
-    private static final double kVAngular = 0.05;
-    private static final double kAAngular = 0.05;
+    private static final double kSLinear = 1.9973;
+    private static final double kVLinear = 3.0358;
+    private static final double kALinear = 1.8643;
+    private static final double kSAngular = 3.1514;
+    private static final double kVAngular = 4.1154;
+    private static final double kAAngular = 3.6761;
 
     private final RamseteController controller;
     private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(DriveHAL.kTrackWidthInches));
@@ -54,10 +61,17 @@ public class RamseteFollower {
     {
         lastEvalTime += dt;
         ChassisSpeeds chassisSpeeds = controller.calculate(odometry.getRobotPose(), trajectory.sample(lastEvalTime - startTime));
+        Logger.getInstance().recordOutput("RamseteFollower/Sampled Robot Pose", trajectory.sample(lastEvalTime - startTime).poseMeters);
         DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(chassisSpeeds);
-        DifferentialDriveWheelVoltages motorVoltages = feedForward.calculate(odometry.getRobotSpeed().left, wheelSpeeds.leftMetersPerSecond, odometry.getRobotSpeed().right, wheelSpeeds.rightMetersPerSecond, dt);
+        Logger.getInstance().recordOutput("RamseteFollower/Wheel Speeds (M|Sec)/Left", wheelSpeeds.leftMetersPerSecond);
+        Logger.getInstance().recordOutput("RamseteFollower/Wheel Speeds (M|Sec)/Right", wheelSpeeds.rightMetersPerSecond);
+        DifferentialDriveWheelVoltages motorVoltages = feedForward.calculate(Units.inchesToMeters(odometry.getRobotSpeedInPerSec().left), wheelSpeeds.leftMetersPerSecond, Units.inchesToMeters(odometry.getRobotSpeedInPerSec().right), wheelSpeeds.rightMetersPerSecond, dt);
+        Logger.getInstance().recordOutput("RamseteFollower/Wheel Voltages (V)/Left", motorVoltages.left);
+        Logger.getInstance().recordOutput("RamseteFollower/Wheel Voltages (V)/Right", motorVoltages.right);
 
-        driveCommand = new DriveCommand(motorVoltages.left, motorVoltages.right);
+        double leftPower = motorVoltages.left/12;
+        double rightPower = motorVoltages.right/12;
+        driveCommand = new DriveCommand(leftPower, rightPower);
         return getDriveCommand();
     }
 
