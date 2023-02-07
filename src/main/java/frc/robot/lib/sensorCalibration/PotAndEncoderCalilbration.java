@@ -47,6 +47,51 @@ public class PotAndEncoderCalilbration {
     public boolean isCalibrated() {return calibrated;}
     public double getPosition() {return position;}
 
+    
+
+    public int getMovingBufferMaxSize() {
+        return movingBufferMaxSize;
+    }
+    public int getAveragingBufferMaxSize() {
+        return averagingBufferMaxSize;
+    }
+    public double getPotAngleDeg() {
+        return potAngleDeg;
+    }
+    public double getAbsAngleDeg() {
+        return absAngleDeg;
+    }
+    public double getRelAngleDeg() {
+        return relAngleDeg;
+    }
+    public double getAverageAbsRelDifference() {
+        return averageAbsRelDifference;
+    }
+    public double getAveragePotDifference() {
+        return averagePotDifference;
+    }
+    public double getAbsAngleDegEstimate() {
+        return absAngleDegEstimate;
+    }
+    public double getAbsAngleDegEstimateAtCalib() {
+        return absAngleDegEstimateAtCalib;
+    }
+    public double getAbsAngleNumRotationsSinceCalib() {
+        return absAngleNumRotationsSinceCalib;
+    }
+    public boolean isOffsetReady() {
+        return offsetReady;
+    }
+    public double getOffset() {
+        return offset;
+    }
+    public double getFirstOffset() {
+        return firstOffset;
+    }
+
+
+
+
 
     public PotAndEncoderCalilbration(PotAndEncoderConfig potAndEncoderConfig)
     {
@@ -67,6 +112,7 @@ public class PotAndEncoderCalilbration {
         error = false;
         calibrated = false;
     }
+
 
     public double update(PotAndEncoderReading reading)
     {
@@ -100,7 +146,7 @@ public class PotAndEncoderCalilbration {
         else 
         {
             absRelDifferenceBuffer.addFirst( absAngleDeg - relAngleDeg );
-            potDifferenceBuffer.addFirst( potAngleDeg - potAndEncoderConfig.potentiometerAngleDegAtCalib );
+            potDifferenceBuffer.addFirst( potAngleDeg - potAndEncoderConfig.potentiometerAngleDegAtCalib / potAndEncoderConfig.potentiometerGearRatio);
             averagingBufferSize = Math.min(averagingBufferSize+1, averagingBufferMaxSize);
 
             offsetReady = (averagingBufferSize == averagingBufferMaxSize);
@@ -119,12 +165,12 @@ public class PotAndEncoderCalilbration {
                 averageAbsRelDifference = averageAbsRelDifference / averagingBufferMaxSize;
                 averagePotDifference = averagePotDifference / averagingBufferMaxSize;
                 
-                absAngleDegEstimate = absAngleDeg + averageAbsRelDifference;
+                absAngleDegEstimate = relAngleDeg + averageAbsRelDifference;
                 absAngleDegEstimateAtCalib = absAngleDegEstimate - averagePotDifference;
-                absAngleNumRotationsSinceCalib = (absAngleDegEstimateAtCalib - potAndEncoderConfig.absoluteEncoderAngleDegAtCalib) / (360.0 / potAndEncoderConfig.encoderGearRatio);
+                absAngleNumRotationsSinceCalib = (absAngleDegEstimateAtCalib - potAndEncoderConfig.absoluteEncoderAngleDegAtCalib / potAndEncoderConfig.encoderGearRatio) / (360.0 / potAndEncoderConfig.encoderGearRatio);
 
-                offset = averageAbsRelDifference - (360.0 * absAngleNumRotationsSinceCalib)/potAndEncoderConfig.encoderGearRatio 
-                        - potAndEncoderConfig.absoluteEncoderAngleDegAtCalib + potAndEncoderConfig.outputAngleDegAtCalibration;
+                offset = averageAbsRelDifference - (360.0 * absAngleNumRotationsSinceCalib) / potAndEncoderConfig.encoderGearRatio 
+                        - potAndEncoderConfig.absoluteEncoderAngleDegAtCalib / potAndEncoderConfig.encoderGearRatio + potAndEncoderConfig.outputAngleDegAtCalibration;
 
                 if (!calibrated)
                 {
