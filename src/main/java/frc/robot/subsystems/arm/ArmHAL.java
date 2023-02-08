@@ -12,7 +12,7 @@ public class ArmHAL {
     public static ArmHAL getInstance(){if(instance == null) instance = new ArmHAL(); return instance;}
 
     private final NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-    private final TalonSRX turretMotor = new TalonSRX(Constants.kTurretMotorID); //TODO: Get Devicenumber
+    private final TalonSRX turretMotor = new TalonSRX(Constants.kTurretMotorID);
 
     private static final double kEncoderUnitsToDegrees = 360.0 / 4096.0;
 
