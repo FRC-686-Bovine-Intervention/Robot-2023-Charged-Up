@@ -2,7 +2,6 @@ package frc.robot.subsystems.arm;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import frc.robot.Constants;
 import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.intake.Intake;
@@ -38,7 +37,7 @@ public class ArmLoop extends LoopBase {
 
             case IdentifyCone:
                 // Swap limelight pipeline
-                HAL.setPipeline(Constants.kConePipeline);
+                HAL.setPipeline(ArmHAL.LimelightPipeline.cone);
                 // Check for cone in intake bounding box
                 // If false, jump to IdentifyCube
                 // If true, set turret target pos and jump to Grab
@@ -52,7 +51,7 @@ public class ArmLoop extends LoopBase {
             
             case IdentifyCube:
                 // Swap limelight pipeline
-                HAL.setPipeline(Constants.kCubePipeline);
+                HAL.setPipeline(ArmHAL.LimelightPipeline.cube);
                 // Check for cube in intake bounding box
                 // If false, jump to IdentifyCone
                 // If true, set turret target pos and jump to Grab
