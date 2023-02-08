@@ -27,6 +27,15 @@ public class ArmStatus extends StatusBase {
     public ArmState getArmState()                   {return armState;}
     public ArmStatus setArmState(ArmState armState) {this.armState = armState; return this;}
 
+    private double targetTurretAngle; //TODO: Units
+    public ArmStatus setTargetTurretAngle(double angle){
+        targetTurretAngle = angle;
+        return this;
+    }
+    public double getTargetTurretAngle(){
+        return targetTurretAngle;
+    }
+
     @Override
     protected void exportToTable(LogTable table) {
         

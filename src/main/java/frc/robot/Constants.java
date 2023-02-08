@@ -26,6 +26,13 @@ public class Constants {
     public final static double kLoopDt = 0.01;
     public final static int kTalonTimeoutMs = 5;
 
+    //Vision Pipelines
+    public final static int kConePipeline = 1;
+    public final static int kCubePipeline = 2;
+    
+
+
+
     // Robot Dimensions
     public final static double kCenterToSideBumper = 15.0;
     public final static double kCenterToFrontBumper = 19.5;

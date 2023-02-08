@@ -44,9 +44,9 @@ public class ArmLoop extends LoopBase {
                 // If true, set turret target pos and jump to Grab
                 if(HAL.getTargetInView()){
                     status.setTargetTurretAngle(status.getTargetTurretAngle() + HAL.getTargetXOffset());
+                    status.setArmState(ArmState.Grab);
                 } else {
                     status.setArmState(ArmState.IdentifyCube);
-                    status.setArmState(ArmState.Grab);
                 }
             break;
             
