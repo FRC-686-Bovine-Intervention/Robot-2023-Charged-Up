@@ -2,8 +2,8 @@ package frc.robot.lib.sensorCalibration;
 
 public class PotAndEncoderStatus {
 
-    private PotAndEncoderHAL hal;
-    private PotAndEncoderCalilbration potAndEncoderCalibration;
+    private final PotAndEncoderHAL hal;
+    private final PotAndEncoderCalilbration potAndEncoderCalibration;
 
     private PotAndEncoderReading reading;
     public PotAndEncoderReading getReading() {return reading;}
@@ -25,7 +25,7 @@ public class PotAndEncoderStatus {
         this.calibrated = false;
     }
 
-    public void update()
+    public PotAndEncoderStatus update()
     {
         reading = new PotAndEncoderReading(hal.getPotentiometerReadingDeg(),
                                            hal.getAbsoluteEncoderReadingDeg(),
@@ -34,6 +34,8 @@ public class PotAndEncoderStatus {
         positionDeg = potAndEncoderCalibration.update(reading);
         moving = potAndEncoderCalibration.isMoving();
         calibrated = potAndEncoderCalibration.isCalibrated();
+
+        return this;
     }
 
 }

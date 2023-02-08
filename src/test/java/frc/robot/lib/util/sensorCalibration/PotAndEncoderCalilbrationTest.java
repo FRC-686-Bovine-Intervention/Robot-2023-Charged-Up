@@ -1,13 +1,14 @@
 package frc.robot.lib.util.sensorCalibration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
 import frc.robot.lib.sensorCalibration.PotAndEncoderCalilbration;
 import frc.robot.lib.sensorCalibration.PotAndEncoderConfig;
+import frc.robot.lib.sensorCalibration.PotAndEncoderDebug;
 import frc.robot.lib.sensorCalibration.PotAndEncoderReading;
 
 public class PotAndEncoderCalilbrationTest {
@@ -61,7 +62,7 @@ public class PotAndEncoderCalilbrationTest {
 
         // should still be declared moving while moving buffer is filling
         outputAngleDeg += 1.0;
-        for (int k=0; k<calib.getMovingBufferMaxSize()-1; k++) {
+        for (int k=0; k<calib.getDebug().getMovingBufferMaxSize()-1; k++) {
             PotAndEncoderReading reading = simulatePotAndEncoderReadings(outputAngleDeg);
             calib.update(reading);
             assertTrue(calib.isMoving());
@@ -100,7 +101,7 @@ public class PotAndEncoderCalilbrationTest {
 
         // stopped moving, start filling averaging buffers
         outputAngleDeg += 1.0;
-        for (int k=0; k<calib.getMovingBufferMaxSize()-1+calib.getAveragingBufferMaxSize()-1; k++) {
+        for (int k=0; k<calib.getDebug().getMovingBufferMaxSize()-1+calib.getDebug().getAveragingBufferMaxSize()-1; k++) {
             PotAndEncoderReading reading = simulatePotAndEncoderReadings(outputAngleDeg);
             calib.update(reading);
             assertFalse(calib.isCalibrated());
@@ -131,7 +132,7 @@ public class PotAndEncoderCalilbrationTest {
         PotAndEncoderCalilbration calib = new PotAndEncoderCalilbration(config);
 
         final long movePeriod = 100;
-        final long dwellPeriod = Math.round(calib.getAveragingBufferMaxSize() * 1.25);
+        final long dwellPeriod = Math.round(calib.getDebug().getAveragingBufferMaxSize() * 1.25);
 
         double dwellList[] = { -134.2847, 
             148.8153,
@@ -174,16 +175,17 @@ public class PotAndEncoderCalilbrationTest {
             assertFalse(calib.isMoving());
             assertTrue(calib.isCalibrated());
 
-            // System.out.printf("outAngleDeg = %.3f\n", outputAngleDeg);
+            // PotAndEncoderDebug debug = calib.getDebug();
+            // System.out.printf("outAngleDeg = %.3f\n", calib.outputAngleDeg);
             // System.out.printf("potAngleDeg = %.3f\n", calib.getPotAngleDeg());
             // System.out.printf("absAngleDeg = %.3f\n", calib.getAbsAngleDeg());
             // System.out.printf("relAngleDeg = %.3f\n", calib.getRelAngleDeg());
-            // System.out.printf("averageAbsRelDifference = %.3f\n", calib.getAverageAbsRelDifference());
-            // System.out.printf("averagePotDifference = %.3f\n", calib.getAveragePotDifference());
-            // System.out.printf("absAngleDegEstimate = %.3f\n", calib.getAbsAngleDegEstimate());
-            // System.out.printf("absAngleDegEstimateAtCalib = %.3f\n", calib.getAbsAngleDegEstimateAtCalib());
-            // System.out.printf("absAngleNumRotationsSinceCalib = %.3f\n", calib.getAbsAngleNumRotationsSinceCalib());
-            // System.out.printf("offset = %.3f\n", calib.getOffset());
+            // System.out.printf("averageAbsRelDifference = %.3f\n", debug.getAverageAbsRelDifference());
+            // System.out.printf("averagePotDifference = %.3f\n", debug.getAveragePotDifference());
+            // System.out.printf("absAngleDegEstimate = %.3f\n", debug.getAbsAngleDegEstimate());
+            // System.out.printf("absAngleDegEstimateAtCalib = %.3f\n", debug.getAbsAngleDegEstimateAtCalib());
+            // System.out.printf("absAngleNumRotationsSinceCalib = %.3f\n", debug.getAbsAngleNumRotationsSinceCalib());
+            // System.out.printf("offset = %.3f\n", debug.getOffset());
             // System.out.printf("dwell=%2d, actual=%.3f, calc=%.3f\n", dwellCnt, dwellList[dwellCnt], calib.getPosition());
         
             assertEquals(outputAngleDeg, calib.getPosition(), kEps);

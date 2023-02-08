@@ -7,8 +7,8 @@ public class PotAndEncoderCalilbration {
 
     private PotAndEncoderConfig potAndEncoderConfig;
 
-    private Unwrapper absUnwrapper = new Unwrapper(0.0, 360.0);
-    private Unwrapper relUnwrapper = new Unwrapper(0.0, 360.0);
+    private final Unwrapper absUnwrapper = new Unwrapper(0.0, 360.0);
+    private final Unwrapper relUnwrapper = new Unwrapper(0.0, 360.0);
 
     private double potAngleDeg; // unwrapped, scaled to output shaft angle
     private double absAngleDeg; // unwrapped, scaled to output shaft angle
@@ -47,51 +47,7 @@ public class PotAndEncoderCalilbration {
     public boolean isCalibrated() {return calibrated;}
     public double getPosition() {return position;}
 
-    
-
-    public int getMovingBufferMaxSize() {
-        return movingBufferMaxSize;
-    }
-    public int getAveragingBufferMaxSize() {
-        return averagingBufferMaxSize;
-    }
-    public double getPotAngleDeg() {
-        return potAngleDeg;
-    }
-    public double getAbsAngleDeg() {
-        return absAngleDeg;
-    }
-    public double getRelAngleDeg() {
-        return relAngleDeg;
-    }
-    public double getAverageAbsRelDifference() {
-        return averageAbsRelDifference;
-    }
-    public double getAveragePotDifference() {
-        return averagePotDifference;
-    }
-    public double getAbsAngleDegEstimate() {
-        return absAngleDegEstimate;
-    }
-    public double getAbsAngleDegEstimateAtCalib() {
-        return absAngleDegEstimateAtCalib;
-    }
-    public double getAbsAngleNumRotationsSinceCalib() {
-        return absAngleNumRotationsSinceCalib;
-    }
-    public boolean isOffsetReady() {
-        return offsetReady;
-    }
-    public double getOffset() {
-        return offset;
-    }
-    public double getFirstOffset() {
-        return firstOffset;
-    }
-
-
-
-
+    public PotAndEncoderDebug getDebug() {return new PotAndEncoderDebug(movingBufferMaxSize, averagingBufferMaxSize, averageAbsRelDifference, averagePotDifference, absAngleDegEstimate, absAngleDegEstimateAtCalib, absAngleNumRotationsSinceCalib, offsetReady, offset, firstOffset);}
 
     public PotAndEncoderCalilbration(PotAndEncoderConfig potAndEncoderConfig)
     {
@@ -112,7 +68,6 @@ public class PotAndEncoderCalilbration {
         error = false;
         calibrated = false;
     }
-
 
     public double update(PotAndEncoderReading reading)
     {

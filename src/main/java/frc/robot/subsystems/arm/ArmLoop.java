@@ -41,8 +41,6 @@ public class ArmLoop extends LoopBase {
 
     @Override
     public void Update() {
-        double shoulderAngleDeg = status.getShoulderAngleDeg();
-        double elbowAngleDeg = status.getElbowAngleDeg();
         
     }
 
