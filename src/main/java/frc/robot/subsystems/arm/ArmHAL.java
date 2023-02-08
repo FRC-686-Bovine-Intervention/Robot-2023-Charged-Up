@@ -1,4 +1,5 @@
 package frc.robot.subsystems.arm;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
@@ -31,12 +32,30 @@ public class ArmHAL {
         return table.getEntry("tv").getInteger(0) == 1;
     }
 
-    public int getPipeline(){
-        return (int) table.getEntry("getpipe").getInteger(0);
+
+    public enum LimelightPipeline {
+        tape(0),
+        cone(1),
+        cube(2);
+
+        public final int id;
+        LimelightPipeline(int id){
+            this.id = id;
+        }
     }
 
-    public void setPipeline(int n){
-        table.getEntry("pipeline").setNumber(n);
+    public LimelightPipeline getPipeline(){
+        LimelightPipeline result = null;
+        for (LimelightPipeline pipeline : LimelightPipeline.values()) {
+            if(pipeline.id == table.getEntry("getpipe").getInteger(-1)){
+                result = pipeline;
+            }
+        }
+        return result;
+    }
+
+    public void setPipeline(LimelightPipeline p){
+        table.getEntry("pipeline").setNumber(p.id);
     }
 
     public void setTurretPower(double power){
