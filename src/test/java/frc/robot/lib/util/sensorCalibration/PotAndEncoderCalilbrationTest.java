@@ -6,12 +6,29 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import frc.robot.lib.sensorCalibration.PotAndEncoderCalilbration;
+import frc.robot.lib.sensorCalibration.PotAndEncoder;
 import frc.robot.lib.sensorCalibration.PotAndEncoderConfig;
-import frc.robot.lib.sensorCalibration.PotAndEncoderDebug;
+import frc.robot.lib.sensorCalibration.PotAndEncoderHAL;
 import frc.robot.lib.sensorCalibration.PotAndEncoderReading;
 
 public class PotAndEncoderCalilbrationTest {
+
+    // public class HackedHAL extends PotAndEncoderHAL{
+    //     public double potReading;
+    //     public double absReading;
+    //     public double encReading;
+
+    //     public HackedHAL(){
+    //         super(0, 0, new PotAndEncoderConfig(0,0,0,0,0,0));
+    //     }
+
+    //     @Override
+    //     public double getPotentiometerReadingDeg()     {return potReading;}
+    //     @Override
+    //     public double getAbsoluteEncoderReadingDeg()   {return absReading;}
+    //     @Override
+    //     public double getRelativeEncoderReadingDeg()   {return encReading;}
+    // }
     
     static final double kEps = 1e-9;
 
@@ -49,7 +66,7 @@ public class PotAndEncoderCalilbrationTest {
     @Test
     public void TestIsMoving() 
     {
-        PotAndEncoderCalilbration calib = new PotAndEncoderCalilbration(config);
+        PotAndEncoder calib = new PotAndEncoder(config);
 
         // start out changing the angle every clock
         double outputAngleDeg = 0.0;
@@ -88,7 +105,7 @@ public class PotAndEncoderCalilbrationTest {
     @Test
     public void TestIsCalibrated() 
     {
-        PotAndEncoderCalilbration calib = new PotAndEncoderCalilbration(config);
+        PotAndEncoder calib = new PotAndEncoder(config);
 
         // initial movement
         double outputAngleDeg = 0.0;
@@ -129,7 +146,7 @@ public class PotAndEncoderCalilbrationTest {
         // run a series of dwells, where we move for a while then sit still for long enought to (re-)calculate the offset
         // check the final results for accuracy
         
-        PotAndEncoderCalilbration calib = new PotAndEncoderCalilbration(config);
+        PotAndEncoder calib = new PotAndEncoder(config);
 
         final long movePeriod = 100;
         final long dwellPeriod = Math.round(calib.getDebug().getAveragingBufferMaxSize() * 1.25);

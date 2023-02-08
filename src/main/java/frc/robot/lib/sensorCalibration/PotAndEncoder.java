@@ -1,11 +1,13 @@
 package frc.robot.lib.sensorCalibration;
 
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.util.CircularBuffer;
 import frc.robot.lib.util.Unwrapper;
 
-public class PotAndEncoderCalilbration {
+public class PotAndEncoder {
 
-    private PotAndEncoderConfig potAndEncoderConfig;
+    private final PotAndEncoderConfig config;
+    private final PotAndEncoderHAL HAL;
 
     private final Unwrapper absUnwrapper = new Unwrapper(0.0, 360.0);
     private final Unwrapper relUnwrapper = new Unwrapper(0.0, 360.0);
@@ -49,10 +51,12 @@ public class PotAndEncoderCalilbration {
 
     public PotAndEncoderDebug getDebug() {return new PotAndEncoderDebug(movingBufferMaxSize, averagingBufferMaxSize, averageAbsRelDifference, averagePotDifference, absAngleDegEstimate, absAngleDegEstimateAtCalib, absAngleNumRotationsSinceCalib, offsetReady, offset, firstOffset);}
 
-    public PotAndEncoderCalilbration(PotAndEncoderConfig potAndEncoderConfig)
+    public PotAndEncoder(PotAndEncoderConfig config)    {this(null, config);}
+    public PotAndEncoder(PotAndEncoderHAL HAL, PotAndEncoderConfig config)
     {
-        this.potAndEncoderConfig = potAndEncoderConfig;
-        this.allowableErrorInOutputAngleDeg = 0.9 * 360.0 / potAndEncoderConfig.encoderGearRatio;
+        this.HAL = HAL;
+        this.config = config;
+        this.allowableErrorInOutputAngleDeg = 0.9 * 360.0 / config.encoderGearRatio;
     }
 
     public void reset()
@@ -69,13 +73,18 @@ public class PotAndEncoderCalilbration {
         calibrated = false;
     }
 
+    public PotAndEncoderStatus update()
+    {
+        
+    }
+
     public double update(PotAndEncoderReading reading)
     {
         offsetReady = false;
 
-        potAngleDeg = reading.potAngleDeg / potAndEncoderConfig.potentiometerGearRatio;
-        absAngleDeg = absUnwrapper.unwrap(reading.absAngleDeg) / potAndEncoderConfig.encoderGearRatio;      
-        relAngleDeg = relUnwrapper.unwrap(reading.relAngleDeg) / potAndEncoderConfig.encoderGearRatio;
+        potAngleDeg = reading.potAngleDeg / config.potentiometerGearRatio;
+        absAngleDeg = absUnwrapper.unwrap(reading.absAngleDeg) / config.encoderGearRatio;      
+        relAngleDeg = relUnwrapper.unwrap(reading.relAngleDeg) / config.encoderGearRatio;
 
         // check to see if we are moving
         moving = true;
@@ -101,7 +110,7 @@ public class PotAndEncoderCalilbration {
         else 
         {
             absRelDifferenceBuffer.addFirst( absAngleDeg - relAngleDeg );
-            potDifferenceBuffer.addFirst( potAngleDeg - potAndEncoderConfig.potentiometerAngleDegAtCalib / potAndEncoderConfig.potentiometerGearRatio);
+            potDifferenceBuffer.addFirst( potAngleDeg - config.potentiometerAngleDegAtCalib / config.potentiometerGearRatio);
             averagingBufferSize = Math.min(averagingBufferSize+1, averagingBufferMaxSize);
 
             offsetReady = (averagingBufferSize == averagingBufferMaxSize);
@@ -122,10 +131,10 @@ public class PotAndEncoderCalilbration {
                 
                 absAngleDegEstimate = relAngleDeg + averageAbsRelDifference;
                 absAngleDegEstimateAtCalib = absAngleDegEstimate - averagePotDifference;
-                absAngleNumRotationsSinceCalib = (absAngleDegEstimateAtCalib - potAndEncoderConfig.absoluteEncoderAngleDegAtCalib / potAndEncoderConfig.encoderGearRatio) / (360.0 / potAndEncoderConfig.encoderGearRatio);
+                absAngleNumRotationsSinceCalib = (absAngleDegEstimateAtCalib - config.absoluteEncoderAngleDegAtCalib / config.encoderGearRatio) / (360.0 / config.encoderGearRatio);
 
-                offset = averageAbsRelDifference - (360.0 * absAngleNumRotationsSinceCalib) / potAndEncoderConfig.encoderGearRatio 
-                        - potAndEncoderConfig.absoluteEncoderAngleDegAtCalib / potAndEncoderConfig.encoderGearRatio + potAndEncoderConfig.outputAngleDegAtCalibration;
+                offset = averageAbsRelDifference - (360.0 * absAngleNumRotationsSinceCalib) / config.encoderGearRatio 
+                        - config.absoluteEncoderAngleDegAtCalib / config.encoderGearRatio + config.outputAngleDegAtCalibration;
 
                 if (!calibrated)
                 {

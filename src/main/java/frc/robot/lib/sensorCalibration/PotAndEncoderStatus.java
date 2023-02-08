@@ -3,7 +3,7 @@ package frc.robot.lib.sensorCalibration;
 public class PotAndEncoderStatus {
 
     private final PotAndEncoderHAL hal;
-    private final PotAndEncoderCalilbration potAndEncoderCalibration;
+    private final PotAndEncoder potAndEncoderCalibration;
 
     private PotAndEncoderReading reading;
     public PotAndEncoderReading getReading() {return reading;}
@@ -20,7 +20,7 @@ public class PotAndEncoderStatus {
     public PotAndEncoderStatus(PotAndEncoderHAL hal, PotAndEncoderConfig potAndEncoderConfig)
     {
         this.hal = hal;
-        this.potAndEncoderCalibration = new PotAndEncoderCalilbration(potAndEncoderConfig);
+        this.potAndEncoderCalibration = new PotAndEncoder(potAndEncoderConfig);
         this.moving = true;
         this.calibrated = false;
     }
