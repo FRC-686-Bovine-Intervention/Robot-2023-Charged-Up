@@ -23,7 +23,7 @@ public class ArmStatus extends StatusBase {
         Release         // Driver has decided the piece will score on the node and tells the arm to release the piece
     }
 
-    private ArmState armState = ArmState.Defense;
+    private ArmState armState = ArmState.IdentifyCube;
     public ArmState getArmState()                   {return armState;}
     public ArmStatus setArmState(ArmState armState) {this.armState = armState; return this;}
 
@@ -53,6 +53,6 @@ public class ArmStatus extends StatusBase {
 
     @Override
     protected void recordOutputs(Logger logger, String prefix) {
-        
+        logger.recordOutput(prefix + "Turret Target Angle", getTargetTurretAngle());
     }
 }

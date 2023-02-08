@@ -19,7 +19,6 @@ public class ArmLoop extends LoopBase {
 
     private static final double kTurretMaxAngularVelocity = 30;
     private static final double kTurretMaxAngularAcceleration = 10;
-
     private final TrapezoidProfile.Constraints turretPIDConstraints = new TrapezoidProfile.Constraints(kTurretMaxAngularVelocity, kTurretMaxAngularAcceleration);
     private final ProfiledPIDController turretPID = new ProfiledPIDController(0, 0, 0, turretPIDConstraints);
 
@@ -59,7 +58,7 @@ public class ArmLoop extends LoopBase {
                     status.setTargetTurretAngle(status.getTargetTurretAngle() + HAL.getTargetXOffset());
                     status.setArmState(ArmState.Grab);
                 } else {
-                    status.setArmState(ArmState.IdentifyCube);
+                    //status.setArmState(ArmState.IdentifyCone);
                 }
             break;
 
