@@ -1,5 +1,8 @@
 package frc.robot.subsystems.arm;
 
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import frc.robot.Constants;
 import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.intake.Intake;
@@ -15,6 +18,12 @@ public class ArmLoop extends LoopBase {
     private final Intake intake = Intake.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
 
+    private static final double kTurretMaxAngularVelocity = 30;
+    private static final double kTurretMaxAngularAcceleration = 10;
+
+    private final TrapezoidProfile.Constraints turretPIDConstraints = new TrapezoidProfile.Constraints(kTurretMaxAngularVelocity, kTurretMaxAngularAcceleration);
+    private final ProfiledPIDController turretPID = new ProfiledPIDController(0, 0, 0, turretPIDConstraints);
+
     private ArmLoop() {Subsystem = Arm.getInstance();}
 
     @Override
@@ -29,20 +38,36 @@ public class ArmLoop extends LoopBase {
 
             case IdentifyCone:
                 // Swap limelight pipeline
+                HAL.setPipeline(Constants.kConePipeline);
                 // Check for cone in intake bounding box
                 // If false, jump to IdentifyCube
                 // If true, set turret target pos and jump to Grab
+                if(HAL.getTargetInView()){
+                    status.setTargetTurretAngle(status.getTargetTurretAngle() + HAL.getTargetXOffset());
+                } else {
+                    status.setArmState(ArmState.IdentifyCube);
+                    status.setArmState(ArmState.Grab);
+                }
             break;
             
             case IdentifyCube:
                 // Swap limelight pipeline
+                HAL.setPipeline(Constants.kCubePipeline);
                 // Check for cube in intake bounding box
                 // If false, jump to IdentifyCone
                 // If true, set turret target pos and jump to Grab
+                if(HAL.getTargetInView()){
+                    status.setTargetTurretAngle(status.getTargetTurretAngle() + HAL.getTargetXOffset());
+                    status.setArmState(ArmState.Grab);
+                } else {
+                    status.setArmState(ArmState.IdentifyCube);
+                }
             break;
 
             case Grab:
                 // Move turret to target pos
+                turretPID.setGoal(status.getTargetTurretAngle());
+                HAL.setTurretPower(turretPID.calculate(HAL.getTurretPosition()));
                 // Extend arm to grab piece
                 // Grab piece
                 // Set intake to release
