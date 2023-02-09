@@ -9,6 +9,8 @@ public class ArmStatus extends StatusBase {
     private static ArmStatus instance;
     public static ArmStatus getInstance(){if(instance == null) instance = new ArmStatus(); return instance;}
 
+    public final ArmHAL armHAL = ArmHAL.getInstance();
+
     private ArmStatus() {Subsystem = Arm.getInstance();}
 
     public enum ArmState {
@@ -54,5 +56,8 @@ public class ArmStatus extends StatusBase {
     @Override
     protected void recordOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "Turret Target Angle", getTargetTurretAngle());
+        logger.recordOutput(prefix + "LimeLight Target x Offset", armHAL.getTargetXOffset());
+        logger.recordOutput(prefix + "Current Arm State", armState.name());
+        logger.recordOutput(prefix + "Valid Target", armHAL.getTargetInView());
     }
 }

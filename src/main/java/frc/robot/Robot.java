@@ -19,7 +19,6 @@ import frc.robot.subsystems.driverInteraction.DriverInteraction;
 import frc.robot.subsystems.framework.SubsystemController;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.odometry.Odometry;
-import io.github.oblarg.oblog.annotations.Log;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -27,7 +26,6 @@ import io.github.oblarg.oblog.annotations.Log;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-@Log.Exclude
 public class Robot extends LoggedRobot {
   private SubsystemController subsystemController;
 

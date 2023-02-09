@@ -17,19 +17,19 @@ public class ArmHAL {
     private static final double kEncoderUnitsToDegrees = 360.0 / 4096.0;
 
     public double getTargetXOffset(){
-        return table.getEntry("tx").getDouble(0.0);
+        return table.getEntry("tx").getDouble(-686);
     }    
     
     public double getTargetYOffset(){
-        return table.getEntry("ty").getDouble(0.0);
+        return table.getEntry("ty").getDouble(-686);
     }    
     
     public double getTargetArea(){
-        return table.getEntry("ta").getDouble(0.0);
+        return table.getEntry("ta").getDouble(-686);
     }
 
     public boolean getTargetInView(){
-        return table.getEntry("tv").getInteger(0) == 1;
+        return table.getEntry("tv").getInteger(-686) == 1;
     }
 
 

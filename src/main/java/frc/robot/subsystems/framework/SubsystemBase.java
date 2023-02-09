@@ -1,8 +1,6 @@
 package frc.robot.subsystems.framework;
 
-import io.github.oblarg.oblog.Loggable;
-
-public abstract class SubsystemBase implements Loggable{
+public abstract class SubsystemBase {
     public LoopBase Loop;
     public StatusBase Status;
 
