@@ -14,8 +14,8 @@ public class ArmLoop extends LoopBase {
 
     private final ArmStatus status = ArmStatus.getInstance();
     private final ArmHAL HAL = ArmHAL.getInstance();
-    private final Intake intake = Intake.getInstance();
-    private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
+    // private final Intake intake = Intake.getInstance();
+    // private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
 
     private static final double kTurretMaxAngularVelocity = 30;
     private static final double kTurretMaxAngularAcceleration = 10;
@@ -30,8 +30,8 @@ public class ArmLoop extends LoopBase {
         {
             case Defense:
                 // Set arm pos to defense
-                if(intakeStatus.getIntakeState() == IntakeState.Hold)
-                    status.setArmState(ArmState.IdentifyCone);
+                // if(intakeStatus.getIntakeState() == IntakeState.Hold)
+                //     status.setArmState(ArmState.IdentifyCone);
             break;
 
             case IdentifyCone:
@@ -53,6 +53,7 @@ public class ArmLoop extends LoopBase {
                 HAL.setPipeline(ArmHAL.LimelightPipeline.cube);
                 // Check for cube in intake bounding box
                 // If false, jump to IdentifyCone
+                // System.out.print("I AM A CUBE");
                 // If true, set turret target pos and jump to Grab
                 if(HAL.getTargetInView()){
                     status.setTargetTurretAngle(status.getTargetTurretAngle() + HAL.getTargetXOffset());
