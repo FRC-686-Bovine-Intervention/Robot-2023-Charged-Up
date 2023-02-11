@@ -1,10 +1,12 @@
 package frc.robot.subsystems.arm;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Constants;
 
 public class ArmHAL {
@@ -12,9 +14,23 @@ public class ArmHAL {
     public static ArmHAL getInstance(){if(instance == null) instance = new ArmHAL(); return instance;}
 
     private final NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-    private final TalonSRX turretMotor = new TalonSRX(Constants.kTurretMotorID);
+    private final TalonSRX turretMotor;
 
     private static final double kEncoderUnitsToDegrees = 360.0 / 4096.0;
+    private static final boolean kTurretMotorInverted = true;
+
+    public ArmHAL() {
+        if (RobotBase.isReal()) {
+            turretMotor = new TalonSRX(Constants.kTurretMotorID);
+        } else {
+            turretMotor = null;
+        }
+
+        if (turretMotor != null) {
+            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.Analog);
+            turretMotor.setInverted(kTurretMotorInverted);
+        }
+    }
 
     public double getTargetXOffset(){
         return table.getEntry("tx").getDouble(-686);
@@ -42,6 +58,19 @@ public class ArmHAL {
         LimelightPipeline(int id){
             this.id = id;
         }
+        public static LimelightPipeline getFromName(String name)
+        {
+            LimelightPipeline r = null;
+            for(LimelightPipeline pipeline : LimelightPipeline.values())
+            {
+                if(pipeline.name().equals(name))
+                {
+                    r = pipeline;
+                    break;
+                }
+            }
+            return r;
+        }
     }
 
     public LimelightPipeline getPipeline(){
@@ -59,11 +88,13 @@ public class ArmHAL {
     }
 
     public void setTurretPower(double power){
-        turretMotor.set(ControlMode.PercentOutput, power);
+        if (turretMotor != null) {
+            turretMotor.set(ControlMode.PercentOutput, power);
+        }
     }
 
     public double getTurretPosition(){
-        return turretMotor.getSelectedSensorPosition() * 1.0 * kEncoderUnitsToDegrees; // Gear ratio is 1:1 because of worm gear
+        return turretMotor != null ? turretMotor.getSelectedSensorPosition() * 1.0 * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
     }
     
     

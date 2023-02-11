@@ -3,13 +3,14 @@ package frc.robot.subsystems.arm;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
+import frc.robot.subsystems.arm.ArmHAL.LimelightPipeline;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class ArmStatus extends StatusBase {
     private static ArmStatus instance;
     public static ArmStatus getInstance(){if(instance == null) instance = new ArmStatus(); return instance;}
 
-    public final ArmHAL armHAL = ArmHAL.getInstance();
+    public final ArmHAL HAL = ArmHAL.getInstance();
 
     private ArmStatus() {Subsystem = Arm.getInstance();}
 
@@ -38,26 +39,90 @@ public class ArmStatus extends StatusBase {
         return targetTurretAngle;
     }
 
+    private LimelightPipeline targetPipeline;
+    private LimelightPipeline currentPipeline;
+    public LimelightPipeline getPipeline() {
+        return currentPipeline;
+    }
+    public ArmStatus setPipeline(LimelightPipeline pipeline) {
+        this.targetPipeline = pipeline;
+        return this;
+    }
+
+    private boolean targetInView;
+    public ArmStatus setTargetInView(boolean targetInView) {
+        this.targetInView = targetInView;
+        return this;
+    }
+    public boolean getTargetInView() {
+        return targetInView;
+    }
+
+    private double turretPower;
+    public double getTurretPower() {
+        return turretPower;
+    }
+    public ArmStatus setTurretPower(double turretPower) {
+        this.turretPower = turretPower;
+        return this;
+    }
+
+    private double turretPosition; 
+    public ArmStatus setTurretPosition(double turretPosition) {
+        this.turretPosition = turretPosition;
+        return this;
+    }
+    public double getTurretPosition() {
+        return turretPosition;
+    }
+
+    private double targetXOffset = 0.0;
+    private ArmStatus setTargetXOffset(double offset) {
+        targetXOffset = offset;
+        return this;
+    }
+    public double getTargetXOffset() {
+        return targetXOffset;
+    }
+
     @Override
     protected void exportToTable(LogTable table) {
-        
+        table.put("Turret Position", getTurretPosition());
+        table.put("Target X Offset", getTargetXOffset());
+        table.put("Target In View?", getTargetInView());
+        table.put("Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null");
     }
 
     @Override
     protected void importFromTable(LogTable table) {
-        
+        setTurretPosition(table.getDouble("Turret Position", turretPosition));
+        setTargetXOffset(table.getDouble("Target X Offset", targetXOffset));
+        setTargetInView(table.getBoolean("Target In View?", targetInView));
+        currentPipeline = LimelightPipeline.getFromName(table.getString("Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null"));
     }
 
     @Override
     protected void updateInputs() {
-        
+        setTurretPosition(HAL.getTurretPosition());
+        setTargetXOffset(HAL.getTargetXOffset());
+        setTargetInView(HAL.getTargetInView());
+        currentPipeline = HAL.getPipeline();
     }
 
     @Override
     protected void recordOutputs(Logger logger, String prefix) {
-        logger.recordOutput(prefix + "Turret Target Angle", getTargetTurretAngle());
-        logger.recordOutput(prefix + "LimeLight Target x Offset", armHAL.getTargetXOffset());
-        logger.recordOutput(prefix + "Current Arm State", armState.name());
-        logger.recordOutput(prefix + "Valid Target", armHAL.getTargetInView());
+        HAL.setTurretPower(turretPower);
+        HAL.setPipeline(targetPipeline);
+
+        logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
+
+        logger.recordOutput(prefix + "Limelight/Target X Offset", getTargetXOffset());
+        logger.recordOutput(prefix + "Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null");
+        logger.recordOutput(prefix + "Limelight/Target Pipeline", targetPipeline != null ? targetPipeline.name() : "null");
+        logger.recordOutput(prefix + "Limelight/Valid Target", getTargetInView());
+
+        logger.recordOutput(prefix + "Turret/Power", getTurretPower());
+        logger.recordOutput(prefix + "Turret/Current Position", getTurretPosition());
+        logger.recordOutput(prefix + "Turret/Target Angle", getTargetTurretAngle());
     }
 }
