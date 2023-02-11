@@ -4,17 +4,17 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Constants;
+import frc.robot.lib.util.LimelightHelpers;
 
 public class ArmHAL {
     private static ArmHAL instance;
     public static ArmHAL getInstance(){if(instance == null) instance = new ArmHAL(); return instance;}
 
-    private final NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
     private final TalonSRX turretMotor;
+
+    private final String kLimelightName = "limelight";
 
     private static final double kEncoderUnitsToDegrees = 360.0 / 4096.0;
     private static final boolean kTurretMotorInverted = true;
@@ -33,19 +33,19 @@ public class ArmHAL {
     }
 
     public double getTargetXOffset(){
-        return table.getEntry("tx").getDouble(-686);
+        return LimelightHelpers.getTX(kLimelightName);
     }    
     
     public double getTargetYOffset(){
-        return table.getEntry("ty").getDouble(-686);
+        return LimelightHelpers.getTY(kLimelightName);
     }    
     
     public double getTargetArea(){
-        return table.getEntry("ta").getDouble(-686);
+        return LimelightHelpers.getTA(kLimelightName);
     }
 
     public boolean getTargetInView(){
-        return table.getEntry("tv").getInteger(-686) == 1;
+        return LimelightHelpers.getTV(kLimelightName);
     }
 
 
@@ -76,21 +76,23 @@ public class ArmHAL {
     public LimelightPipeline getPipeline(){
         LimelightPipeline result = null;
         for (LimelightPipeline pipeline : LimelightPipeline.values()) {
-            if(pipeline.id == table.getEntry("getpipe").getInteger(-1)){
+            if(pipeline.id == LimelightHelpers.getCurrentPipelineIndex(kLimelightName)){
                 result = pipeline;
             }
         }
         return result;
     }
 
-    public void setPipeline(LimelightPipeline p){
-        table.getEntry("pipeline").setNumber(p.id);
+    public ArmHAL setPipeline(LimelightPipeline p){
+        LimelightHelpers.setPipelineIndex(kLimelightName, p.id);
+        return this;
     }
 
-    public void setTurretPower(double power){
+    public ArmHAL setTurretPower(double power){
         if (turretMotor != null) {
             turretMotor.set(ControlMode.PercentOutput, power);
         }
+        return this;
     }
 
     public double getTurretPosition(){
