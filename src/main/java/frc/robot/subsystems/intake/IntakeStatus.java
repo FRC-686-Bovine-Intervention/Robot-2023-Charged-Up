@@ -18,7 +18,7 @@ public class IntakeStatus extends StatusBase {
 
     public enum IntakeState {
         Defense (0,     false,  IdleMode.kCoast),
-        Grab    (0.7,   true,   IdleMode.kCoast),
+        Grab    (1,   true,   IdleMode.kCoast),
         Hold    (0.2,   false,  IdleMode.kBrake),
         Release (-0.7,  false,  IdleMode.kCoast);
         public final double intakePower;
@@ -36,7 +36,7 @@ public class IntakeStatus extends StatusBase {
     public IntakeCommand getIntakeCommand()                             {return intakeCommand;}
     public IntakeStatus setIntakeCommand(IntakeCommand intakeCommand)   {this.intakeCommand = intakeCommand; return this;}
 
-    private IntakeState intakeState = IntakeState.Release;
+    private IntakeState intakeState = IntakeState.Defense;
     public IntakeState getIntakeState()                         {return intakeState;}
     public IntakeStatus setIntakeState(IntakeState intakeState) {this.intakeState = intakeState; return this;}
 
