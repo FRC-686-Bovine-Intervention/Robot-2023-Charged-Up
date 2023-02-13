@@ -182,6 +182,7 @@ public class PotAndEncoder {
             logger.recordOutput(prefix + "/Position (Deg)", positionDeg);
             logger.recordOutput(prefix + "/Calibrated", calibrated);
             logger.recordOutput(prefix + "/Moving", moving);
+            reading.recordOutputs(logger, prefix + "/Reading");
         }
     }
 
@@ -252,23 +253,29 @@ public class PotAndEncoder {
             this.relAngleDeg = relAngleDeg;        
         }
 
+        public void recordOutputs(Logger logger, String prefix)
+        {
+            logger.recordOutput(prefix + "/Potentiometer Angle (Deg)", potAngleDeg);
+            logger.recordOutput(prefix + "/Absolute Encoder Angle (Deg)", absAngleDeg);
+            logger.recordOutput(prefix + "/Relative Angle (Deg)", relAngleDeg);
+        }
         public void exportToTable(LogTable table, String name)
         {
-            table.put(name + "/Potentiometer Degrees", potAngleDeg);
-            table.put(name + "/Absolute Encoder Degrees", absAngleDeg);
-            table.put(name + "/Relative Degrees", relAngleDeg);
+            table.put(name + "/Potentiometer Angle (Deg)", potAngleDeg);
+            table.put(name + "/Absolute Encoder Angle (Deg)", absAngleDeg);
+            table.put(name + "/Relative Angle (Deg)", relAngleDeg);
         }
         public Reading importFromTable(LogTable table, String name)
         {
-            return new Reading(table.getDouble(name + "/Potentiometer Degrees", potAngleDeg),
-                               table.getDouble(name + "/Absolute Encoder Degrees", absAngleDeg),
-                               table.getDouble(name + "/Relative Degrees", relAngleDeg));
+            return new Reading(table.getDouble(name + "/Potentiometer Angle (Deg)", potAngleDeg),
+                               table.getDouble(name + "/Absolute Encoder Angle (Deg)", absAngleDeg),
+                               table.getDouble(name + "/Relative Angle (Deg)", relAngleDeg));
         }
         public static Reading importFromTable(LogTable table, String name, Reading defaultReading)
         {
-            return new Reading(table.getDouble(name + "/Potentiometer Degrees", defaultReading.potAngleDeg),
-                               table.getDouble(name + "/Absolute Encoder Degrees", defaultReading.absAngleDeg),
-                               table.getDouble(name + "/Relative Degrees", defaultReading.relAngleDeg));
+            return new Reading(table.getDouble(name + "/Potentiometer Angle (Deg)", defaultReading.potAngleDeg),
+                               table.getDouble(name + "/Absolute Encoder Angle (Deg)", defaultReading.absAngleDeg),
+                               table.getDouble(name + "/Relative Angle (Deg)", defaultReading.relAngleDeg));
         }
     }
 
