@@ -42,7 +42,7 @@ public class IntakeLoop extends LoopBase {
             case Grab:
                 if(status.getIntakeCurrent() < kSpikeCurrentThreshold)
                     spikeStartTime = currentTime;
-                if(currentTime - spikeStartTime >= kSpikeTimeThreshold)
+                if(currentTime - spikeStartTime > kSpikeTimeThreshold)
                     status.setIntakeState(IntakeState.Hold);
             break;
 
