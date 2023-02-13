@@ -14,26 +14,37 @@ public class IntakeLoop extends LoopBase {
     private final IntakeHAL HAL = IntakeHAL.getInstance();
 
     private static final double kDisabledNeutralModeThreshold = 5;
-    private static final double kCurrentThreshold = 20;
+    private static final double kSpikeCurrentThreshold = 15;
+    private static final double kSpikeTimeThreshold = 1;
 
     private IntakeLoop() {Subsystem = Intake.getInstance();}
+
+    private double spikeStartTime;
 
     @Override
     protected void Enabled() {
         IntakeCommand newCommand = status.getIntakeCommand();
+        double currentTime = Timer.getFPGATimestamp();
 
         // Determine new state
         switch (status.getIntakeState())
         {
-            case Release:
+            case Defense:
                 if(newCommand.getIntakeState() == IntakeState.Grab)
                     status.setIntakeState(IntakeState.Grab);
             break;
 
+            case Release:
+                if(newCommand.getIntakeState() == IntakeState.Defense)
+                    status.setIntakeState(IntakeState.Defense);
+            break;
+
             case Grab:
-                if(newCommand.getIntakeState() == IntakeState.Release)
-                    status.setIntakeState(IntakeState.Release);
-                if(status.getIntakeCurrent() > kCurrentThreshold)
+                if(newCommand.getIntakeState() == IntakeState.Defense)
+                    status.setIntakeState(IntakeState.Defense);
+                if(status.getIntakeCurrent() < kSpikeCurrentThreshold)
+                    spikeStartTime = currentTime;
+                if(currentTime - spikeStartTime >= kSpikeTimeThreshold)
                     status.setIntakeState(IntakeState.Hold);
             break;
 

@@ -17,9 +17,10 @@ public class IntakeStatus extends StatusBase {
     private IntakeStatus() {Subsystem = Intake.getInstance();}
 
     public enum IntakeState {
+        Defense (0,     false,  IdleMode.kCoast),
         Grab    (0.7,   true,   IdleMode.kCoast),
         Hold    (0.2,   false,  IdleMode.kBrake),
-        Release (-0.1,  false,  IdleMode.kCoast);
+        Release (-0.7,  false,  IdleMode.kCoast);
         public final double intakePower;
         public final boolean intakeDeployed;
         public final IdleMode intakeNeutralMode;

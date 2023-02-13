@@ -63,10 +63,14 @@ public class DriverInteractionLoop extends LoopBase {
         IntakeCommand intakeCommand = new IntakeCommand();
         switch(IntakeStatus.getInstance().getIntakeState())
         {
-            // case Hold:
-            case Release:
+            case Defense:
                 if(DriverControlButtons.Intake.getRisingEdge())
                     intakeCommand.setIntakeState(IntakeState.Grab);
+            break;
+
+            case Release:
+                if(DriverControlButtons.Intake.getRisingEdge())
+                    intakeCommand.setIntakeState(IntakeState.Defense);
             break;
 
             case Hold:
