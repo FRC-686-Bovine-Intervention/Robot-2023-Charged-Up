@@ -1,0 +1,276 @@
+package frc.robot.lib.sensorCalibration;
+
+import com.ctre.phoenix.sensors.CANCoder;
+import com.ctre.phoenix.sensors.CANCoderConfiguration;
+
+import edu.wpi.first.util.CircularBuffer;
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
+import frc.robot.lib.util.Unwrapper;
+
+public class PotAndEncoder {
+
+    private final Config config;
+
+    private final Unwrapper absUnwrapper = new Unwrapper(0.0, 360.0);
+    private final Unwrapper relUnwrapper = new Unwrapper(0.0, 360.0);
+
+    private final int movingBufferMaxSize = 20;
+    private final CircularBuffer movingBuffer = new CircularBuffer(movingBufferMaxSize);
+    private final double movingThreshold = 2.0 / 4096.0;
+    private boolean moving;
+
+    private final int averagingBufferMaxSize = 200;
+    private final CircularBuffer absRelDifferenceBuffer = new CircularBuffer(averagingBufferMaxSize);
+    private final CircularBuffer potDifferenceBuffer = new CircularBuffer(averagingBufferMaxSize);
+
+    private final double kAllowableErrorInOutputAngleDeg;
+
+    private boolean calibrated = false;
+    private double firstOffset;
+    private double offset;
+
+    public PotAndEncoder(Config potAndEncoderConfig)
+    {
+        this.config = potAndEncoderConfig;
+        this.kAllowableErrorInOutputAngleDeg = 0.9 * 360.0 / potAndEncoderConfig.encoderGearRatio;
+    }
+
+    public void reset()
+    {
+        absUnwrapper.reset();
+        relUnwrapper.reset();
+
+        movingBuffer.clear();
+        absRelDifferenceBuffer.clear();
+        potDifferenceBuffer.clear();
+
+        calibrated = false;
+    }
+
+    public Status update() {
+        if(config.HAL != null)
+            return update(config.HAL.getReading());
+        throw new NullPointerException("Called a PotAndEncoder auto update without setting a HAL");
+    }
+    public Status update(Reading reading)
+    {
+        double averageAbsRelDifference = 0;
+        double averagePotDifference = 0;
+
+        double absAngleDegEstimate = 0;
+        double absAngleDegEstimateAtCalib = 0;
+        double absAngleNumRotationsSinceCalib = 0;
+
+        boolean error = false;
+
+        boolean offsetReady = false;
+
+        // unwrapped, scaled to output shaft angle
+        double potAngleDeg = reading.potAngleDeg / config.potentiometerGearRatio;
+        double absAngleDeg = absUnwrapper.unwrap(reading.absAngleDeg) / config.encoderGearRatio;      
+        double relAngleDeg = relUnwrapper.unwrap(reading.relAngleDeg) / config.encoderGearRatio;
+
+        // check to see if we are moving
+        moving = true;
+        movingBuffer.addFirst( relAngleDeg );
+        if (movingBuffer.size() == movingBufferMaxSize)
+        {
+            double maxVal = Double.NEGATIVE_INFINITY;
+            double minVal = Double.POSITIVE_INFINITY;
+            for (int k=0; k<movingBufferMaxSize; k++)
+            {
+                double val = movingBuffer.get(k);
+                maxVal = Math.max(val, maxVal);
+                minVal = Math.min(val, minVal);
+            }
+            moving = ((maxVal - minVal) > movingThreshold);
+        }
+        
+        if (moving)
+        {
+            // start averaging over again
+            absRelDifferenceBuffer.clear();
+            potDifferenceBuffer.clear();
+        }
+        else 
+        {
+            absRelDifferenceBuffer.addFirst( absAngleDeg - relAngleDeg );
+            potDifferenceBuffer.addFirst( potAngleDeg - config.potentiometerAngleDegAtCalib / config.potentiometerGearRatio);
+
+            offsetReady = (potDifferenceBuffer.size() == averagingBufferMaxSize);
+
+            if (offsetReady)
+            {
+                // calculate the average difference between the absolute and relative encoder values
+                // and the average difference between the current potentiometer and that at calibration
+                averageAbsRelDifference = 0;
+                averagePotDifference = 0;
+                for (int k=0; k<averagingBufferMaxSize; k++)
+                {
+                    averageAbsRelDifference += absRelDifferenceBuffer.get(k);
+                    averagePotDifference += potDifferenceBuffer.get(k);
+                } 
+                averageAbsRelDifference = averageAbsRelDifference / averagingBufferMaxSize;
+                averagePotDifference = averagePotDifference / averagingBufferMaxSize;
+                
+                absAngleDegEstimate = relAngleDeg + averageAbsRelDifference;
+                absAngleDegEstimateAtCalib = absAngleDegEstimate - averagePotDifference;
+                absAngleNumRotationsSinceCalib = (absAngleDegEstimateAtCalib - config.absoluteEncoderAngleDegAtCalib / config.encoderGearRatio) / (360.0 / config.encoderGearRatio);
+
+                offset = averageAbsRelDifference - (360.0 * absAngleNumRotationsSinceCalib) / config.encoderGearRatio 
+                        - config.absoluteEncoderAngleDegAtCalib / config.encoderGearRatio + config.outputAngleDegAtCalibration;
+
+                if (!calibrated)
+                {
+                    calibrated = true;
+                    firstOffset = offset;
+                }
+
+                error = (Math.abs(offset - firstOffset) > kAllowableErrorInOutputAngleDeg);
+            }
+        }
+
+        double position = relAngleDeg + offset;
+
+        return new Status(position, calibrated, moving, reading, config,
+                new Debug(
+                    movingBufferMaxSize, 
+                    averagingBufferMaxSize, 
+                    averageAbsRelDifference, 
+                    averagePotDifference, 
+                    absAngleDegEstimate, 
+                    absAngleDegEstimateAtCalib, 
+                    absAngleNumRotationsSinceCalib, 
+                    error, 
+                    offsetReady, 
+                    offset, 
+                    firstOffset));
+    }
+    public static class Status {
+
+        public final Config config;
+        public final Debug debug;
+        public final Reading reading;
+        public final boolean moving;
+        public final boolean calibrated;
+        public final double positionDeg;
+    
+        protected Status(double positionDeg, boolean calibrated, boolean moving, Reading reading, Config config, Debug debug)
+        {
+            this.positionDeg = positionDeg;
+            this.calibrated = calibrated;
+            this.moving = moving;
+            this.reading = reading;
+            this.config = config;
+            this.debug = debug;
+        }
+    }
+
+    public static class Debug {
+        public final int movingBufferMaxSize;
+        public final int averagingBufferMaxSize;
+        public final double averageAbsRelDifference;
+        public final double averagePotDifference;
+    
+        public final double absAngleDegEstimate;
+        public final double absAngleDegEstimateAtCalib;
+        public final double absAngleNumRotationsSinceCalib;
+    
+        public final boolean error;
+        
+        public final boolean offsetReady;
+        public final double offset;
+        public final double firstOffset;
+    
+        protected Debug(int movingBufferMaxSize,
+                                     int averagingBufferMaxSize,
+                                     double averageAbsRelDifference,
+                                     double averagePotDifference,
+                                     double absAngleDegEstimate,
+                                     double absAngleDegEstimateAtCalib,
+                                     double absAngleNumRotationsSinceCalib,
+                                     boolean error,
+                                     boolean offsetReady,
+                                     double offset,
+                                     double firstOffset)
+        {
+            this.movingBufferMaxSize = movingBufferMaxSize;
+            this.averagingBufferMaxSize = averagingBufferMaxSize;
+            this.averageAbsRelDifference = averageAbsRelDifference;
+            this.averagePotDifference = averagePotDifference;
+            this.absAngleDegEstimate = absAngleDegEstimate;
+            this.absAngleDegEstimateAtCalib = absAngleDegEstimateAtCalib;
+            this.absAngleNumRotationsSinceCalib = absAngleNumRotationsSinceCalib;
+            this.error = error;
+            this.offsetReady = offsetReady;
+            this.offset = offset;
+            this.firstOffset = firstOffset;
+        }
+    }
+
+    public static class HAL {
+
+        AnalogPotentiometer pot;
+        CANCoder enc;
+    
+        public HAL(int potAnalogInputPort, int encPort, Config potAndEncoderConfig)
+        {
+            pot = new AnalogPotentiometer(new AnalogInput(potAnalogInputPort), potAndEncoderConfig.potentiometerNTurns*360.0, 
+                    potAndEncoderConfig.potentiometerAngleDegAtCalib - potAndEncoderConfig.outputAngleDegAtCalibration);
+    
+            enc = new CANCoder(encPort);
+            CANCoderConfiguration canConfig = new CANCoderConfiguration();
+            enc.configAllSettings(canConfig);  // configure to default settings
+        }
+    
+        public double getPotentiometerReadingDeg()      {return pot.get();}
+        public double getAbsoluteEncoderReadingDeg()    {return enc.getAbsolutePosition();}
+        public double getRelativeEncoderReadingDeg()    {return enc.getPosition();}
+        public Reading getReading()        {return new Reading(getPotentiometerReadingDeg(), getAbsoluteEncoderReadingDeg(), getRelativeEncoderReadingDeg());}
+    }
+
+    public static class Reading {
+        public final double potAngleDeg;
+        public final double absAngleDeg;
+        public final double relAngleDeg;
+    
+        public Reading(double potAngleDeg, double absAngleDeg, double relAngleDeg)
+        {
+            this.potAngleDeg = potAngleDeg;
+            this.absAngleDeg = absAngleDeg;
+            this.relAngleDeg = relAngleDeg;        
+        }
+    }
+
+    public static class Config {
+        public final double potentiometerGearRatio;             // gear ratio: potentiometer rotations / output rotations
+        public final double encoderGearRatio;                   // gear ratio: encoder rotations / output rotations
+        public final double potentiometerNTurns;                // number of turns in potentiometers full range of motion
+        public final double outputAngleDegAtCalibration;        // angle of output at calibration position, in degrees
+        public final double potentiometerAngleDegAtCalib;       // potentiometer reading at calibration position, in degrees  
+        public final double absoluteEncoderAngleDegAtCalib;     // absolute endoder reading at calibration position, in degrees
+        public final HAL HAL;                      // hardware abstraction layer
+        public final int movingBufferMaxSize;
+        public final int averagingBufferMaxSize;
+         
+        public Config(double potentiometerGearRatio, double encoderGearRatio, double potentiometerNTurns, 
+                double outputAngleDegAtCalibration, double potentiometerAngleDegAtCalib, double absoluteEncoderAngleDegAtCalib, HAL HAL) {
+            this(potentiometerGearRatio, encoderGearRatio, potentiometerNTurns, outputAngleDegAtCalibration, potentiometerAngleDegAtCalib, absoluteEncoderAngleDegAtCalib, HAL,
+            20, 200);
+        }
+        public Config(double potentiometerGearRatio, double encoderGearRatio, double potentiometerNTurns, 
+                double outputAngleDegAtCalibration, double potentiometerAngleDegAtCalib, double absoluteEncoderAngleDegAtCalib,
+                HAL HAL, int movingBufferMaxSize, int averagingBufferMaxSize) {
+            this.potentiometerGearRatio = potentiometerGearRatio;
+            this.encoderGearRatio = encoderGearRatio;
+            this.potentiometerNTurns = potentiometerNTurns;
+            this.outputAngleDegAtCalibration = outputAngleDegAtCalibration;
+            this.potentiometerAngleDegAtCalib = potentiometerAngleDegAtCalib;
+            this.absoluteEncoderAngleDegAtCalib = absoluteEncoderAngleDegAtCalib;
+            this.HAL = HAL;
+            this.movingBufferMaxSize = movingBufferMaxSize;
+            this.averagingBufferMaxSize = averagingBufferMaxSize;
+        }
+    }
+}

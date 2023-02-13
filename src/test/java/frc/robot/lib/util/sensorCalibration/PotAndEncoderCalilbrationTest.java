@@ -6,10 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import frc.robot.lib.sensorCalibration.PotAndEncoderCalilbration;
-import frc.robot.lib.sensorCalibration.PotAndEncoderConfig;
-import frc.robot.lib.sensorCalibration.PotAndEncoderDebug;
-import frc.robot.lib.sensorCalibration.PotAndEncoderReading;
+import frc.robot.lib.sensorCalibration.PotAndEncoder;
 
 public class PotAndEncoderCalilbrationTest {
     
@@ -22,11 +19,11 @@ public class PotAndEncoderCalilbrationTest {
     double potentiometerAngleDegAtCalib     = 421.0840;     
     double absoluteEncoderAngleDegAtCalib   = 288.0176;     
     
-    PotAndEncoderConfig config = new PotAndEncoderConfig(potentiometerGearRatio, encoderGearRatio, 
-                potentiometerNTurns, outputAngleAtCalibration, potentiometerAngleDegAtCalib, absoluteEncoderAngleDegAtCalib);
+    final PotAndEncoder.Config config = new PotAndEncoder.Config(potentiometerGearRatio, encoderGearRatio, 
+                potentiometerNTurns, outputAngleAtCalibration, potentiometerAngleDegAtCalib, absoluteEncoderAngleDegAtCalib, null);
     
     // simulate hardware inputs
-    PotAndEncoderReading simulatePotAndEncoderReadings(double outputAngleDeg)
+    PotAndEncoder.Reading simulatePotAndEncoderReadings(double outputAngleDeg)
     {
         double potAngleDeg = potentiometerGearRatio * outputAngleDeg;
         double encAngleDeg = encoderGearRatio * outputAngleDeg;
@@ -43,44 +40,45 @@ public class PotAndEncoderCalilbrationTest {
         relReadingDeg = encAngleDeg;
         relReadingDeg = relReadingDeg - 360.0 * Math.floor(relReadingDeg / 360.0);    // modulo 360        
 
-        return new PotAndEncoderReading(potReadingDeg, absReadingDeg, relReadingDeg);
+        return new PotAndEncoder.Reading(potReadingDeg, absReadingDeg, relReadingDeg);
     }
 
     @Test
     public void TestIsMoving() 
     {
-        PotAndEncoderCalilbration calib = new PotAndEncoderCalilbration(config);
+        PotAndEncoder potEncoder = new PotAndEncoder(config);
+        PotAndEncoder.Status status = null;
 
         // start out changing the angle every clock
         double outputAngleDeg = 0.0;
         for (int k=0; k<100; k++) {
             outputAngleDeg += 1.0;
-            PotAndEncoderReading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            calib.update(reading);
-            assertTrue(calib.isMoving());
+            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
+            status = potEncoder.update(reading);
+            assertTrue(status.moving);
         }
 
         // should still be declared moving while moving buffer is filling
         outputAngleDeg += 1.0;
-        for (int k=0; k<calib.getDebug().getMovingBufferMaxSize()-1; k++) {
-            PotAndEncoderReading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            calib.update(reading);
-            assertTrue(calib.isMoving());
+        for (int k=0; k<config.movingBufferMaxSize-1; k++) {
+            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
+            status = potEncoder.update(reading);
+            assertTrue(status.moving);
         }        
 
         // shortly thereafter it should detect movement stops
         for (int k=0; k<10; k++) {
-            PotAndEncoderReading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            calib.update(reading);
+            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
+            status = potEncoder.update(reading);
         }               
-        assertFalse(calib.isMoving());
+        assertFalse(status.moving);
 
         // and immediately notice moving once the angle changes again
         for (int k=0; k<10; k++) {
             outputAngleDeg += 1.0;
-            PotAndEncoderReading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            calib.update(reading);
-            assertTrue(calib.isMoving());
+            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
+            status = potEncoder.update(reading);
+            assertTrue(status.moving);
         }
     
     }
@@ -88,38 +86,39 @@ public class PotAndEncoderCalilbrationTest {
     @Test
     public void TestIsCalibrated() 
     {
-        PotAndEncoderCalilbration calib = new PotAndEncoderCalilbration(config);
+        PotAndEncoder potEncoder = new PotAndEncoder(config);
+        PotAndEncoder.Status status = null;
 
         // initial movement
         double outputAngleDeg = 0.0;
         for (int k=0; k<100; k++) {
             outputAngleDeg += 1.0;
-            PotAndEncoderReading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            calib.update(reading);
-            assertFalse(calib.isCalibrated());
+            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
+            status = potEncoder.update(reading);
+            assertFalse(status.calibrated);
         }
 
         // stopped moving, start filling averaging buffers
         outputAngleDeg += 1.0;
-        for (int k=0; k<calib.getDebug().getMovingBufferMaxSize()-1+calib.getDebug().getAveragingBufferMaxSize()-1; k++) {
-            PotAndEncoderReading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            calib.update(reading);
-            assertFalse(calib.isCalibrated());
+        for (int k=0; k<config.movingBufferMaxSize-1+config.averagingBufferMaxSize-1; k++) {
+            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
+            status = potEncoder.update(reading);
+            assertFalse(status.calibrated);
         }        
 
         // should be calibrated shortly thereafter
         for (int k=0; k<10; k++) {
-            PotAndEncoderReading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            calib.update(reading);
+            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
+            status = potEncoder.update(reading);
         }
-        assertTrue(calib.isCalibrated());
+        assertTrue(status.calibrated);
 
         // remains calibrated even after movement restarts
         for (int k=0; k<100; k++) {
             outputAngleDeg += 1.0;
-            PotAndEncoderReading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            calib.update(reading);
-            assertTrue(calib.isCalibrated());
+            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
+            status = potEncoder.update(reading);
+            assertTrue(status.calibrated);
         }
     } 
 
@@ -129,10 +128,11 @@ public class PotAndEncoderCalilbrationTest {
         // run a series of dwells, where we move for a while then sit still for long enought to (re-)calculate the offset
         // check the final results for accuracy
         
-        PotAndEncoderCalilbration calib = new PotAndEncoderCalilbration(config);
+        PotAndEncoder potEncoder = new PotAndEncoder(config);
+        PotAndEncoder.Status status = null;
 
         final long movePeriod = 100;
-        final long dwellPeriod = Math.round(calib.getDebug().getAveragingBufferMaxSize() * 1.25);
+        final long dwellPeriod = Math.round(config.averagingBufferMaxSize * 1.25);
 
         double dwellList[] = { -134.2847, 
             148.8153,
@@ -155,25 +155,25 @@ public class PotAndEncoderCalilbrationTest {
             for (int k=0; k<movePeriod; k++)
             {
                 outputAngleDeg += deltaAngle;
-                PotAndEncoderReading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-                calib.update(reading);
-                assertTrue(calib.isMoving());
+                PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
+                status = potEncoder.update(reading);
+                assertTrue(status.moving);
             }
 
             if (dwellCnt == 1) {
-                assertFalse(calib.isCalibrated());            
+                assertFalse(status.calibrated);            
             } else {
-                assertTrue(calib.isCalibrated());            
+                assertTrue(status.calibrated);            
             }
 
             outputAngleDeg = dwellList[dwellCnt];
             for (int k=0; k<dwellPeriod; k++)
             {
-                PotAndEncoderReading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-                calib.update(reading);
+                PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
+                status = potEncoder.update(reading);
             }
-            assertFalse(calib.isMoving());
-            assertTrue(calib.isCalibrated());
+            assertFalse(status.moving);
+            assertTrue(status.calibrated);
 
             // PotAndEncoderDebug debug = calib.getDebug();
             // System.out.printf("outAngleDeg = %.3f\n", calib.outputAngleDeg);
@@ -188,7 +188,7 @@ public class PotAndEncoderCalilbrationTest {
             // System.out.printf("offset = %.3f\n", debug.getOffset());
             // System.out.printf("dwell=%2d, actual=%.3f, calc=%.3f\n", dwellCnt, dwellList[dwellCnt], calib.getPosition());
         
-            assertEquals(outputAngleDeg, calib.getPosition(), kEps);
+            assertEquals(outputAngleDeg, status.positionDeg, kEps);
         }
 
         // final output angle is at the calibration angle

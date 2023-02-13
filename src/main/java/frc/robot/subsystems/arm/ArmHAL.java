@@ -25,16 +25,16 @@ public class ArmHAL {
     private final static double kElbowPotentiometerAngleDegAtCalib        = 30.0;     // TODO: update at calibration
     private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 30.0;     // TODO: update at calibration
 
-    private final PotAndEncoderConfig shoulderPotAndEncoderConfig = new PotAndEncoderConfig(kShoulderPotentiometerGearRatio, kShoulderEncoderGearRatio, 
+    private final Config shoulderPotAndEncoderConfig = new Config(kShoulderPotentiometerGearRatio, kShoulderEncoderGearRatio, 
             kShoulderPotentiometerNTurns, kShoulderAngleAtCalibration, kShoulderPotentiometerAngleDegAtCalib, kShoulderAbsoluteEncoderAngleDegAtCalib);
             
-    private final PotAndEncoderConfig elbowPotAndEncoderConfig = new PotAndEncoderConfig(kElbowPotentiometerGearRatio, kElbowEncoderGearRatio, 
+    private final Config elbowPotAndEncoderConfig = new Config(kElbowPotentiometerGearRatio, kElbowEncoderGearRatio, 
             kElbowPotentiometerNTurns, kElbowAngleAtCalibration, kElbowPotentiometerAngleDegAtCalib, kElbowAbsoluteEncoderAngleDegAtCalib);
     
-    private final PotAndEncoderHAL shoulderPotAndEncoderHAL;
-    private final PotAndEncoderHAL elbowPotAndEncoderHAL;
+    private final HAL shoulderPotAndEncoderHAL;
+    private final HAL elbowPotAndEncoderHAL;
 
-    public PotAndEncoderStatus getShoulderStatus()
+    public Status getShoulderStatus()
     {
         return shoulder.update();
     }
@@ -43,8 +43,8 @@ public class ArmHAL {
     {
         if(RobotBase.isReal())
         {
-            shoulderPotAndEncoderHAL = new PotAndEncoderHAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, shoulderPotAndEncoderConfig);            
-            elbowPotAndEncoderHAL    = new PotAndEncoderHAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, elbowPotAndEncoderConfig); 
+            shoulderPotAndEncoderHAL = new HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, shoulderPotAndEncoderConfig);            
+            elbowPotAndEncoderHAL    = new HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, elbowPotAndEncoderConfig); 
         }
         else
         {

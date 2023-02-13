@@ -12,8 +12,8 @@ public class ArmStatus extends StatusBase {
 
     private final ArmHAL HAL = ArmHAL.getInstance();
 
-    private final PotAndEncoderStatus shoulderPotAndEncoderStatus = new PotAndEncoderStatus(HAL.getShoulderPotAndEncoderHAL(), HAL.getShoulderPotAndEncoderConfig());
-    private final PotAndEncoderStatus elbowPotAndEncoderStatus    = new PotAndEncoderStatus(HAL.getElbowPotAndEncoderHAL(), HAL.getElbowPotAndEncoderConfig());
+    private final Status shoulderPotAndEncoderStatus = new Status(HAL.getShoulderPotAndEncoderHAL(), HAL.getShoulderPotAndEncoderConfig());
+    private final Status elbowPotAndEncoderStatus    = new Status(HAL.getElbowPotAndEncoderHAL(), HAL.getElbowPotAndEncoderConfig());
 
     private double shoulderAngleDeg;
     public double getShoulderAngleDeg()                             {return shoulderAngleDeg;}
