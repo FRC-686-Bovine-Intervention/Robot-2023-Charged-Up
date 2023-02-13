@@ -1,5 +1,8 @@
 package frc.robot.lib.sensorCalibration;
 
+import org.littletonrobotics.junction.LogTable;
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.CANCoderConfiguration;
 
@@ -44,6 +47,18 @@ public class PotAndEncoder {
         potDifferenceBuffer.clear();
 
         calibrated = false;
+    }
+
+    public Status exportToTable(LogTable table, String name)
+    {
+        Reading reading = config.HAL.getReading();
+        reading.exportToTable(table, name);
+        return update(reading);
+    }
+
+    public Status importFromTable(LogTable table, String name, Reading defaultReading)
+    {
+        return update(defaultReading.importFromTable(table, name));
     }
 
     public Status update() {
@@ -161,6 +176,13 @@ public class PotAndEncoder {
             this.config = config;
             this.debug = debug;
         }
+
+        public void recordOutputs(Logger logger, String prefix)
+        {
+            logger.recordOutput(prefix + "/Position (Deg)", positionDeg);
+            logger.recordOutput(prefix + "/Calibrated", calibrated);
+            logger.recordOutput(prefix + "/Moving", moving);
+        }
     }
 
     public static class Debug {
@@ -204,11 +226,9 @@ public class PotAndEncoder {
         AnalogPotentiometer pot;
         CANCoder enc;
     
-        public HAL(int potAnalogInputPort, int encPort, Config potAndEncoderConfig)
+        public HAL(int potAnalogInputPort, int encPort, double potentiometerNTurns, double potentiometerAngleDegAtCalib, double outputAngleDegAtCalibration)
         {
-            pot = new AnalogPotentiometer(new AnalogInput(potAnalogInputPort), potAndEncoderConfig.potentiometerNTurns*360.0, 
-                    potAndEncoderConfig.potentiometerAngleDegAtCalib - potAndEncoderConfig.outputAngleDegAtCalibration);
-    
+            pot = new AnalogPotentiometer(new AnalogInput(potAnalogInputPort), potentiometerNTurns*360.0, potentiometerAngleDegAtCalib - outputAngleDegAtCalibration);
             enc = new CANCoder(encPort);
             CANCoderConfiguration canConfig = new CANCoderConfiguration();
             enc.configAllSettings(canConfig);  // configure to default settings
@@ -230,6 +250,25 @@ public class PotAndEncoder {
             this.potAngleDeg = potAngleDeg;
             this.absAngleDeg = absAngleDeg;
             this.relAngleDeg = relAngleDeg;        
+        }
+
+        public void exportToTable(LogTable table, String name)
+        {
+            table.put(name + "/Potentiometer Degrees", potAngleDeg);
+            table.put(name + "/Absolute Encoder Degrees", absAngleDeg);
+            table.put(name + "/Relative Degrees", relAngleDeg);
+        }
+        public Reading importFromTable(LogTable table, String name)
+        {
+            return new Reading(table.getDouble(name + "/Potentiometer Degrees", potAngleDeg),
+                               table.getDouble(name + "/Absolute Encoder Degrees", absAngleDeg),
+                               table.getDouble(name + "/Relative Degrees", relAngleDeg));
+        }
+        public static Reading importFromTable(LogTable table, String name, Reading defaultReading)
+        {
+            return new Reading(table.getDouble(name + "/Potentiometer Degrees", defaultReading.potAngleDeg),
+                               table.getDouble(name + "/Absolute Encoder Degrees", defaultReading.absAngleDeg),
+                               table.getDouble(name + "/Relative Degrees", defaultReading.relAngleDeg));
         }
     }
 
