@@ -9,24 +9,17 @@ import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import frc.robot.lib.util.Unwrapper;
 
 public class PotAndEncoder {
-
     private final Config config;
 
-    private final Unwrapper absUnwrapper = new Unwrapper(0.0, 360.0);
-    private final Unwrapper relUnwrapper = new Unwrapper(0.0, 360.0);
+    private static final Unwrapper absUnwrapper = new Unwrapper(0.0, 360.0);
+    private static final Unwrapper relUnwrapper = new Unwrapper(0.0, 360.0);
 
+    private static final double movingThreshold = 2.0 / 4096.0;
     private final CircularBuffer movingBuffer;
-    private final double movingThreshold = 2.0 / 4096.0;
-    private boolean moving;
-
     private final CircularBuffer absRelDifferenceBuffer;
     private final CircularBuffer potDifferenceBuffer;
 
     private final double kAllowableErrorInOutputAngleDeg;
-
-    private boolean calibrated = false;
-    private double firstOffset;
-    private double offset;
 
     public PotAndEncoder(Config potAndEncoderConfig)
     {
@@ -36,6 +29,10 @@ public class PotAndEncoder {
         this.absRelDifferenceBuffer = new CircularBuffer(potAndEncoderConfig.averagingBufferMaxSize);
         this.potDifferenceBuffer = new CircularBuffer(potAndEncoderConfig.averagingBufferMaxSize);
     }
+
+    private boolean calibrated = false;
+    private double firstOffset;
+    private double offset;
 
     public void reset()
     {
@@ -64,6 +61,7 @@ public class PotAndEncoder {
         double absAngleNumRotationsSinceCalib = 0;
 
         boolean error = false;
+        boolean moving = true;
 
         boolean offsetReady = false;
 
@@ -73,7 +71,6 @@ public class PotAndEncoder {
         double relAngleDeg = relUnwrapper.unwrap(reading.relAngleDeg) / config.encoderGearRatio;
 
         // check to see if we are moving
-        moving = true;
         movingBuffer.addFirst( relAngleDeg );
         if (movingBuffer.size() == config.movingBufferMaxSize)
         {
