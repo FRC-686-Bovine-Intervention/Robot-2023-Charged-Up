@@ -15,14 +15,12 @@ public class PotAndEncoder {
     private final Unwrapper absUnwrapper = new Unwrapper(0.0, 360.0);
     private final Unwrapper relUnwrapper = new Unwrapper(0.0, 360.0);
 
-    private final int movingBufferMaxSize = 20;
-    private final CircularBuffer movingBuffer = new CircularBuffer(movingBufferMaxSize);
+    private final CircularBuffer movingBuffer;
     private final double movingThreshold = 2.0 / 4096.0;
     private boolean moving;
 
-    private final int averagingBufferMaxSize = 200;
-    private final CircularBuffer absRelDifferenceBuffer = new CircularBuffer(averagingBufferMaxSize);
-    private final CircularBuffer potDifferenceBuffer = new CircularBuffer(averagingBufferMaxSize);
+    private final CircularBuffer absRelDifferenceBuffer;
+    private final CircularBuffer potDifferenceBuffer;
 
     private final double kAllowableErrorInOutputAngleDeg;
 
@@ -34,6 +32,9 @@ public class PotAndEncoder {
     {
         this.config = potAndEncoderConfig;
         this.kAllowableErrorInOutputAngleDeg = 0.9 * 360.0 / potAndEncoderConfig.encoderGearRatio;
+        this.movingBuffer = new CircularBuffer(potAndEncoderConfig.movingBufferMaxSize);
+        this.absRelDifferenceBuffer = new CircularBuffer(potAndEncoderConfig.averagingBufferMaxSize);
+        this.potDifferenceBuffer = new CircularBuffer(potAndEncoderConfig.averagingBufferMaxSize);
     }
 
     public void reset()
@@ -74,11 +75,11 @@ public class PotAndEncoder {
         // check to see if we are moving
         moving = true;
         movingBuffer.addFirst( relAngleDeg );
-        if (movingBuffer.size() == movingBufferMaxSize)
+        if (movingBuffer.size() == config.movingBufferMaxSize)
         {
             double maxVal = Double.NEGATIVE_INFINITY;
             double minVal = Double.POSITIVE_INFINITY;
-            for (int k=0; k<movingBufferMaxSize; k++)
+            for (int k=0; k<config.movingBufferMaxSize; k++)
             {
                 double val = movingBuffer.get(k);
                 maxVal = Math.max(val, maxVal);
@@ -98,7 +99,7 @@ public class PotAndEncoder {
             absRelDifferenceBuffer.addFirst( absAngleDeg - relAngleDeg );
             potDifferenceBuffer.addFirst( potAngleDeg - config.potentiometerAngleDegAtCalib / config.potentiometerGearRatio);
 
-            offsetReady = (potDifferenceBuffer.size() == averagingBufferMaxSize);
+            offsetReady = (potDifferenceBuffer.size() == config.averagingBufferMaxSize);
 
             if (offsetReady)
             {
@@ -106,13 +107,13 @@ public class PotAndEncoder {
                 // and the average difference between the current potentiometer and that at calibration
                 averageAbsRelDifference = 0;
                 averagePotDifference = 0;
-                for (int k=0; k<averagingBufferMaxSize; k++)
+                for (int k=0; k<config.averagingBufferMaxSize; k++)
                 {
                     averageAbsRelDifference += absRelDifferenceBuffer.get(k);
                     averagePotDifference += potDifferenceBuffer.get(k);
                 } 
-                averageAbsRelDifference = averageAbsRelDifference / averagingBufferMaxSize;
-                averagePotDifference = averagePotDifference / averagingBufferMaxSize;
+                averageAbsRelDifference = averageAbsRelDifference / config.averagingBufferMaxSize;
+                averagePotDifference = averagePotDifference / config.averagingBufferMaxSize;
                 
                 absAngleDegEstimate = relAngleDeg + averageAbsRelDifference;
                 absAngleDegEstimateAtCalib = absAngleDegEstimate - averagePotDifference;
@@ -135,8 +136,6 @@ public class PotAndEncoder {
 
         return new Status(position, calibrated, moving, reading, config,
                 new Debug(
-                    movingBufferMaxSize, 
-                    averagingBufferMaxSize, 
                     averageAbsRelDifference, 
                     averagePotDifference, 
                     absAngleDegEstimate, 
@@ -168,8 +167,6 @@ public class PotAndEncoder {
     }
 
     public static class Debug {
-        public final int movingBufferMaxSize;
-        public final int averagingBufferMaxSize;
         public final double averageAbsRelDifference;
         public final double averagePotDifference;
     
@@ -183,20 +180,16 @@ public class PotAndEncoder {
         public final double offset;
         public final double firstOffset;
     
-        protected Debug(int movingBufferMaxSize,
-                                     int averagingBufferMaxSize,
-                                     double averageAbsRelDifference,
-                                     double averagePotDifference,
-                                     double absAngleDegEstimate,
-                                     double absAngleDegEstimateAtCalib,
-                                     double absAngleNumRotationsSinceCalib,
-                                     boolean error,
-                                     boolean offsetReady,
-                                     double offset,
-                                     double firstOffset)
+        protected Debug(double averageAbsRelDifference,
+                        double averagePotDifference,
+                        double absAngleDegEstimate,
+                        double absAngleDegEstimateAtCalib,
+                        double absAngleNumRotationsSinceCalib,
+                        boolean error,
+                        boolean offsetReady,
+                        double offset,
+                        double firstOffset)
         {
-            this.movingBufferMaxSize = movingBufferMaxSize;
-            this.averagingBufferMaxSize = averagingBufferMaxSize;
             this.averageAbsRelDifference = averageAbsRelDifference;
             this.averagePotDifference = averagePotDifference;
             this.absAngleDegEstimate = absAngleDegEstimate;
