@@ -25,11 +25,12 @@ public class IntakeLoop extends LoopBase {
     protected void Enabled() {
         IntakeCommand newCommand = status.getIntakeCommand();
         double currentTime = Timer.getFPGATimestamp();
-
+        
+        // Determine new state
         if(newCommand.getIntakeState() != null)
             status.setIntakeState(newCommand.getIntakeState());
 
-        // Determine new state
+        // Execute state
         switch (status.getIntakeState())
         {
             case Defense:
@@ -49,7 +50,6 @@ public class IntakeLoop extends LoopBase {
             break;
         }
 
-        // Execute state
         HAL.setDeploySolenoid(status.getIntakeState().intakeDeployed);
         HAL.setIntakeMotor(status.getIntakeState().intakePower);
         HAL.setIntakeNeutralMode(status.getIntakeState().intakeNeutralMode);
