@@ -11,9 +11,8 @@ public class IntakeLoop extends LoopBase {
     public static IntakeLoop getInstance(){if(instance == null) instance = new IntakeLoop(); return instance;}
 
     private final IntakeStatus status = IntakeStatus.getInstance();
-    private final IntakeHAL HAL = IntakeHAL.getInstance();
 
-    private static final double kDisabledNeutralModeThreshold = 5;
+    private static final double kDisabledTimeThreshold = 5;
     private static final double kSpikeCurrentThreshold = 15;
     private static final double kSpikeTimeThreshold = 0.5;
 
@@ -25,11 +24,11 @@ public class IntakeLoop extends LoopBase {
     protected void Enabled() {
         IntakeCommand newCommand = status.getIntakeCommand();
         double currentTime = Timer.getFPGATimestamp();
-        
-        // Determine new state
-        if(newCommand.getIntakeState() != null)
-            status.setIntakeState(newCommand.getIntakeState());
 
+        // Determine new state                    (Don't change if current spike and grabbing)
+        if(newCommand.getIntakeState() != null && (status.getIntakeState() != IntakeState.Grab || status.getIntakeCurrent() < kSpikeCurrentThreshold))
+            status.setIntakeState(newCommand.getIntakeState());
+        
         // Execute state
         switch (status.getIntakeState())
         {
@@ -50,27 +49,29 @@ public class IntakeLoop extends LoopBase {
             break;
         }
 
-        HAL.setDeploySolenoid(status.getIntakeState().intakeDeployed);
-        HAL.setIntakeMotor(status.getIntakeState().intakePower);
-        HAL.setIntakeNeutralMode(status.getIntakeState().intakeNeutralMode);
+        status.setDeploySolenoid(status.getIntakeState().intakeDeployed)
+              .setIntakePower(status.getIntakeState().intakePower)
+              .setIntakeNeutralMode(status.getIntakeState().intakeNeutralMode);
     }
 
     private double disabledTimestamp;
     @Override
     protected void Disabled() {
+        double currentTime = Timer.getFPGATimestamp();
+
         if(status.Enabled.IsInitState)
-            disabledTimestamp = Timer.getFPGATimestamp();
+            disabledTimestamp = currentTime;
         
-        if(Timer.getFPGATimestamp() - disabledTimestamp < kDisabledNeutralModeThreshold)
-            HAL.setIntakeNeutralMode(status.getIntakeState().intakeNeutralMode);
+        if(currentTime - disabledTimestamp < kDisabledTimeThreshold)
+            status.setIntakeNeutralMode(status.getIntakeState().intakeNeutralMode);
         else
         {
-            HAL.setIntakeNeutralMode(IdleMode.kCoast);
-            status.setIntakeState(IntakeState.Release);
+            status.setIntakeNeutralMode(IdleMode.kCoast)
+                  .setIntakeState(IntakeState.Defense);
         }
 
-        HAL.setDeploySolenoid(false);
-        HAL.setIntakeMotor(0);
+        status.setDeploySolenoid(false)
+              .setIntakePower(0);
     }
     @Override
     protected void Update() {

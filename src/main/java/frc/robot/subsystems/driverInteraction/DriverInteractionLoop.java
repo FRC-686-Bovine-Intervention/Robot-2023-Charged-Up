@@ -69,7 +69,7 @@ public class DriverInteractionLoop extends LoopBase {
             break;
 
             case Release:
-                if(DriverControlButtons.Intake.getRisingEdge())
+                if(!DriverControlButtons.Intake.getButton())
                     intakeCommand.setIntakeState(IntakeState.Defense);
             break;
 
@@ -80,7 +80,7 @@ public class DriverInteractionLoop extends LoopBase {
 
             case Grab:
                 if(!DriverControlButtons.Intake.getButton())
-                    intakeCommand.setIntakeState(IntakeState.Release);
+                    intakeCommand.setIntakeState(IntakeState.Defense);
             break;
         }
         intake.setCommand(intakeCommand);
