@@ -60,30 +60,26 @@ public class DriverInteractionLoop extends LoopBase {
         //     assistCommand.setDriverAssistState(DriverAssistState.AutoBalance);
         // driverAssist.setCommand(assistCommand);
 
-        IntakeCommand intakeCommand = new IntakeCommand();
-        switch(IntakeStatus.getInstance().getIntakeState())
-        {
-            case Defense:
-                if(DriverControlButtons.Intake.getRisingEdge())
-                    intakeCommand.setIntakeState(IntakeState.Grab);
-            break;
+        // IntakeCommand intakeCommand = new IntakeCommand();
+        // switch(IntakeStatus.getInstance().getIntakeState())
+        // {
+        //     // case Hold:
+        //     case Release:
+        //         if(DriverControlButtons.Intake.getRisingEdge())
+        //             intakeCommand.setIntakeState(IntakeState.Grab);
+        //     break;
 
-            case Release:
-                if(!DriverControlButtons.Intake.getButton())
-                    intakeCommand.setIntakeState(IntakeState.Defense);
-            break;
+        //     case Hold:
+        //         if(DriverControlButtons.Intake.getRisingEdge())
+        //             intakeCommand.setIntakeState(IntakeState.Release);
+        //     break;
 
-            case Hold:
-                if(DriverControlButtons.Intake.getRisingEdge())
-                    intakeCommand.setIntakeState(IntakeState.Release);
-            break;
-
-            case Grab:
-                if(!DriverControlButtons.Intake.getButton())
-                    intakeCommand.setIntakeState(IntakeState.Defense);
-            break;
-        }
-        intake.setCommand(intakeCommand);
+        //     case Grab:
+        //         if(!DriverControlButtons.Intake.getButton())
+        //             intakeCommand.setIntakeState(IntakeState.Release);
+        //     break;
+        // }
+        // intake.setCommand(intakeCommand);
     }
 
     @Override public void Disabled() {}
