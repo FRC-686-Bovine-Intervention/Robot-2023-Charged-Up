@@ -4,6 +4,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import frc.robot.subsystems.arm.ArmHAL.LimelightPipeline;
 import frc.robot.subsystems.arm.ArmStatus.ArmState;
+import frc.robot.subsystems.driverInteraction.DriverInteractionStatus.DriverControlAxes;
 import frc.robot.subsystems.framework.LoopBase;
 
 public class ArmLoop extends LoopBase {

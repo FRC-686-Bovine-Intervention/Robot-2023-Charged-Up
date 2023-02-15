@@ -2,6 +2,7 @@ package frc.robot.subsystems.arm;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.SensorCollection;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj.RobotBase;
@@ -18,6 +19,7 @@ public class ArmHAL {
 
     private static final double kEncoderUnitsToDegrees = 360.0 / 4096.0;
     private static final boolean kTurretMotorInverted = true;
+    private static final boolean kTurretEncoderInverted = true;
 
     public ArmHAL() {
         if (RobotBase.isReal()) {
@@ -27,7 +29,10 @@ public class ArmHAL {
         }
 
         if (turretMotor != null) {
-            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.Analog);
+            turretMotor.configFactoryDefault();
+            turretMotor.getSensorCollection().syncQuadratureWithPulseWidth(0, 0, true);
+            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
+            turretMotor.setSensorPhase(kTurretEncoderInverted);
             turretMotor.setInverted(kTurretMotorInverted);
         }
     }
@@ -95,9 +100,10 @@ public class ArmHAL {
         return this;
     }
 
-    public double getTurretPosition(){
+    public double getTurretRelative(){
         return turretMotor != null ? turretMotor.getSelectedSensorPosition() * 1.0 * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
     }
-    
-    
+    // public double getTurretAbsolute(){
+    //     return turretEncoder != null ? turretEncoder.get * 1.0 * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
+    // }
 }
