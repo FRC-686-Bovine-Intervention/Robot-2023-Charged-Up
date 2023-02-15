@@ -3,29 +3,15 @@ package frc.robot.lib.util.sensorCalibration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
+import frc.robot.lib.util.Util;
 
-public class PotAndEncoderCalilbrationTest {
-
-    // public class HackedHAL extends PotAndEncoderHAL{
-    //     public double potReading;
-    //     public double absReading;
-    //     public double encReading;
-
-    //     public HackedHAL(){
-    //         super(0, 0, new PotAndEncoderConfig(0,0,0,0,0,0));
-    //     }
-
-    //     @Override
-    //     public double getPotentiometerReadingDeg()     {return potReading;}
-    //     @Override
-    //     public double getAbsoluteEncoderReadingDeg()   {return absReading;}
-    //     @Override
-    //     public double getRelativeEncoderReadingDeg()   {return encReading;}
-    // }
+public class PotAndEncoderTest {
     
     static final double kEps = 1e-9;
 
@@ -36,11 +22,13 @@ public class PotAndEncoderCalilbrationTest {
     double potentiometerAngleDegAtCalib     = 421.0840;     
     double absoluteEncoderAngleDegAtCalib   = 288.0176;     
     
+    final PotAndEncoder.HAL hal = mock(PotAndEncoder.HAL.class);
+
     final PotAndEncoder.Config config = new PotAndEncoder.Config(potentiometerGearRatio, encoderGearRatio, 
-                potentiometerNTurns, outputAngleAtCalibration, potentiometerAngleDegAtCalib, absoluteEncoderAngleDegAtCalib, null);
+                potentiometerNTurns, outputAngleAtCalibration, potentiometerAngleDegAtCalib, absoluteEncoderAngleDegAtCalib, hal);
     
     // simulate hardware inputs
-    PotAndEncoder.Reading simulatePotAndEncoderReadings(double outputAngleDeg)
+    PotAndEncoder.Reading mockHALReading(double outputAngleDeg)
     {
         double potAngleDeg = potentiometerGearRatio * outputAngleDeg;
         double encAngleDeg = encoderGearRatio * outputAngleDeg;
@@ -48,17 +36,17 @@ public class PotAndEncoderCalilbrationTest {
         double potReadingDeg, absReadingDeg, relReadingDeg;
         
         potReadingDeg = potAngleDeg + (potentiometerAngleDegAtCalib - potentiometerGearRatio*outputAngleAtCalibration);
-        potReadingDeg = Math.max(potReadingDeg, 0.0);
-        potReadingDeg = Math.min(potReadingDeg, potentiometerNTurns*360.0);
+        potReadingDeg = Util.limit(potReadingDeg, 0.0, potentiometerNTurns*360.0);
 
         absReadingDeg = encAngleDeg + (absoluteEncoderAngleDegAtCalib - encoderGearRatio*outputAngleAtCalibration);
-        absReadingDeg = absReadingDeg - 360.0 * Math.floor(absReadingDeg / 360.0);    // modulo 360
+        absReadingDeg = Util.fmodulo(absReadingDeg, 360.0);    // modulo 360
 
         relReadingDeg = encAngleDeg;
-        relReadingDeg = relReadingDeg - 360.0 * Math.floor(relReadingDeg / 360.0);    // modulo 360        
+        relReadingDeg = Util.fmodulo(relReadingDeg, 360.0);    // modulo 360        
 
         return new PotAndEncoder.Reading(potReadingDeg, absReadingDeg, relReadingDeg);
     }
+
 
     @Test
     public void TestIsMoving() 
@@ -70,31 +58,33 @@ public class PotAndEncoderCalilbrationTest {
         double outputAngleDeg = 0.0;
         for (int k=0; k<100; k++) {
             outputAngleDeg += 1.0;
-            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            status = potEncoder.update(reading);
+            when(hal.getReading()).thenReturn(mockHALReading(outputAngleDeg));
+     
+            status = potEncoder.update();
             assertTrue(status.moving);
         }
 
         // should still be declared moving while moving buffer is filling
         outputAngleDeg += 1.0;
+        when(hal.getReading()).thenReturn(mockHALReading(outputAngleDeg));  
+
         for (int k=0; k<config.movingBufferMaxSize-1; k++) {
-            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            status = potEncoder.update(reading);
+            status = potEncoder.update();
             assertTrue(status.moving);
         }        
 
         // shortly thereafter it should detect movement stops
         for (int k=0; k<10; k++) {
-            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            status = potEncoder.update(reading);
+            status = potEncoder.update();
         }               
         assertFalse(status.moving);
 
         // and immediately notice moving once the angle changes again
         for (int k=0; k<10; k++) {
             outputAngleDeg += 1.0;
-            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            status = potEncoder.update(reading);
+            when(hal.getReading()).thenReturn(mockHALReading(outputAngleDeg));   
+            
+            status = potEncoder.update();
             assertTrue(status.moving);
         }
     
@@ -110,31 +100,33 @@ public class PotAndEncoderCalilbrationTest {
         double outputAngleDeg = 0.0;
         for (int k=0; k<100; k++) {
             outputAngleDeg += 1.0;
-            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            status = potEncoder.update(reading);
+            when(hal.getReading()).thenReturn(mockHALReading(outputAngleDeg));
+     
+            status = potEncoder.update();
             assertFalse(status.calibrated);
         }
 
         // stopped moving, start filling averaging buffers
         outputAngleDeg += 1.0;
         for (int k=0; k<config.movingBufferMaxSize-1+config.averagingBufferMaxSize-1; k++) {
-            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            status = potEncoder.update(reading);
+            when(hal.getReading()).thenReturn(mockHALReading(outputAngleDeg));
+     
+            status = potEncoder.update();
             assertFalse(status.calibrated);
         }        
 
         // should be calibrated shortly thereafter
         for (int k=0; k<10; k++) {
-            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            status = potEncoder.update(reading);
+            status = potEncoder.update();
         }
         assertTrue(status.calibrated);
 
         // remains calibrated even after movement restarts
         for (int k=0; k<100; k++) {
             outputAngleDeg += 1.0;
-            PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-            status = potEncoder.update(reading);
+            when(hal.getReading()).thenReturn(mockHALReading(outputAngleDeg));
+     
+            status = potEncoder.update();
             assertTrue(status.calibrated);
         }
     } 
@@ -172,8 +164,9 @@ public class PotAndEncoderCalilbrationTest {
             for (int k=0; k<movePeriod; k++)
             {
                 outputAngleDeg += deltaAngle;
-                PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-                status = potEncoder.update(reading);
+                when(hal.getReading()).thenReturn(mockHALReading(outputAngleDeg));
+     
+                status = potEncoder.update();
                 assertTrue(status.moving);
             }
 
@@ -184,10 +177,10 @@ public class PotAndEncoderCalilbrationTest {
             }
 
             outputAngleDeg = dwellList[dwellCnt];
+            when(hal.getReading()).thenReturn(mockHALReading(outputAngleDeg));
             for (int k=0; k<dwellPeriod; k++)
             {
-                PotAndEncoder.Reading reading = simulatePotAndEncoderReadings(outputAngleDeg);
-                status = potEncoder.update(reading);
+                status = potEncoder.update();
             }
             assertFalse(status.moving);
             assertTrue(status.calibrated);

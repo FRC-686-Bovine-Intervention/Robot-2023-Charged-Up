@@ -229,7 +229,7 @@ public class PotAndEncoder {
     
         public HAL(int potAnalogInputPort, int encPort, double potentiometerNTurns, double potentiometerAngleDegAtCalib, double outputAngleDegAtCalibration)
         {
-            pot = new AnalogPotentiometer(new AnalogInput(potAnalogInputPort), potentiometerNTurns*360.0, potentiometerAngleDegAtCalib - outputAngleDegAtCalibration);
+            pot = new AnalogPotentiometer(potAnalogInputPort, potentiometerNTurns*360.0, potentiometerAngleDegAtCalib - outputAngleDegAtCalibration);
             enc = new CANCoder(encPort);
             CANCoderConfiguration canConfig = new CANCoderConfiguration();
             enc.configAllSettings(canConfig);  // configure to default settings
