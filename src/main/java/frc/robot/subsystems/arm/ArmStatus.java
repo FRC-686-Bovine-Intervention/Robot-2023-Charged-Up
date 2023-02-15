@@ -3,46 +3,38 @@ package frc.robot.subsystems.arm;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
-import frc.robot.lib.sensorCalibration.PotAndEncoder;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class ArmStatus extends StatusBase {
     private static ArmStatus instance;
     public static ArmStatus getInstance(){if(instance == null) instance = new ArmStatus(); return instance;}
 
+    private final ArmHAL HAL = ArmHAL.getInstance();
+
     private ArmStatus() {Subsystem = Arm.getInstance();}
 
     public enum ArmState {
-        Defense,
-        Grab,
-        Hold,
-        Align,
-        Extend,
-        Release
+        Defense,        // Arm is idling, retracted fully and waiting for the intake to do something
+        IdentifyCone,   // Arm is checking if the piece in the intake is a cone
+        IdentifyCube,   // Arm is checking if the piece in the intake is a cube
+        Grab,           // Arm has identified the location of the piece and arm is grabbing the piece from the intake
+        Hold,           // Arm has grabbed the piece and is holding it in the defense position
+        Align,          // Robot has entered the community and the turret should align to the alliance wall
+        Extend,         // Driver has selected a node to extend to and arm is extending to it
+        Adjust,         // Driver and limelight are fudging the position of the turret to align piece on the node
+        Release         // Driver has decided the piece will score on the node and tells the arm to release the piece
     }
 
     private ArmState armState = ArmState.Defense;
     public ArmState getArmState()                   {return armState;}
     public ArmStatus setArmState(ArmState armState) {this.armState = armState; return this;}
 
-    private PotAndEncoder.Status shoulderPotAndEncoderStatus;
-    public PotAndEncoder.Status getShoulderStatus() {return shoulderPotAndEncoderStatus;}
-    public ArmStatus setShoulderStatus(PotAndEncoder.Status shoulderPotAndEncoderStatus) {this.shoulderPotAndEncoderStatus = shoulderPotAndEncoderStatus; return this;}
-    
-    private PotAndEncoder.Status elbowPotAndEncoderStatus;
-    public PotAndEncoder.Status getElbowStatus() {return elbowPotAndEncoderStatus;}
-    public ArmStatus setElbowStatus(PotAndEncoder.Status elbowPotAndEncoderStatus) {this.elbowPotAndEncoderStatus = elbowPotAndEncoderStatus; return this;}
-
     @Override
     public void exportToTable(LogTable table) {
-        setShoulderStatus(HAL.getShoulderPotEncoder().exportToTable(table, "Shoulder PotEncoder"));
-        setElbowStatus(HAL.getElbowPotEncoder().exportToTable(table, "Elbow PotEncoder"));
     }
     
     @Override
     public void importFromTable(LogTable table) {
-        setShoulderStatus(HAL.getShoulderPotEncoder().importFromTable(table, "Shoulder PotEncoder", shoulderPotAndEncoderStatus.reading));
-        setElbowStatus(HAL.getElbowPotEncoder().importFromTable(table, "Elbow PotEncoder", elbowPotAndEncoderStatus.reading));
     }
     
     @Override
@@ -51,7 +43,5 @@ public class ArmStatus extends StatusBase {
 
     @Override
     public void recordOutputs(Logger logger, String prefix) {
-        shoulderPotAndEncoderStatus.recordOutputs(logger, prefix + "Shoulder PotEncoder");
-        elbowPotAndEncoderStatus.recordOutputs(logger, prefix + "Elbow PotEncoder");
     }
 }
