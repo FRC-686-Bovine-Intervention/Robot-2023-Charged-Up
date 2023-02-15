@@ -17,9 +17,10 @@ public class IntakeStatus extends StatusBase {
     private IntakeStatus() {Subsystem = Intake.getInstance();}
 
     public enum IntakeState {
-        Grab    (0.7,   true,   IdleMode.kCoast),
+        Defense (0,     false,  IdleMode.kCoast),
+        Grab    (1,     true,   IdleMode.kCoast),
         Hold    (0.2,   false,  IdleMode.kBrake),
-        Release (-0.1,  false,  IdleMode.kCoast);
+        Release (-0.7,  false,  IdleMode.kCoast);
         public final double intakePower;
         public final boolean intakeDeployed;
         public final IdleMode intakeNeutralMode;
@@ -33,23 +34,35 @@ public class IntakeStatus extends StatusBase {
 
     private IntakeCommand intakeCommand = new IntakeCommand();
     public IntakeCommand getIntakeCommand()                             {return intakeCommand;}
-    public IntakeStatus setIntakeCommand(IntakeCommand intakeCommand)   {this.intakeCommand = intakeCommand; return this;}
+    private IntakeStatus setIntakeCommand(IntakeCommand intakeCommand)  {this.intakeCommand = intakeCommand; return this;}
 
-    private IntakeState intakeState = IntakeState.Release;
+    private IntakeState intakeState = IntakeState.Defense;
     public IntakeState getIntakeState()                         {return intakeState;}
     public IntakeStatus setIntakeState(IntakeState intakeState) {this.intakeState = intakeState; return this;}
 
     private double intakeCurrent;
     public double getIntakeCurrent()                            {return intakeCurrent;}
-    public IntakeStatus setIntakeCurrent(double intakeCurrent)  {this.intakeCurrent = intakeCurrent; return this;}
+    private IntakeStatus setIntakeCurrent(double intakeCurrent) {this.intakeCurrent = intakeCurrent; return this;}
+
+    private double intakePower;
+    public double getIntakePower()                          {return intakePower;}
+    public IntakeStatus setIntakePower(double intakePower)  {this.intakePower = intakePower; return this;}
+
+    private IdleMode intakeNeutralMode;
+    public IdleMode getIntakeNeutralMode()                                  {return intakeNeutralMode;}
+    public IntakeStatus setIntakeNeutralMode(IdleMode intakeNeutralMode)    {this.intakeNeutralMode = intakeNeutralMode; return this;}
+
+    private boolean deploySolenoid;
+    public boolean getDeploySolenoid()                              {return deploySolenoid;}
+    public IntakeStatus setDeploySolenoid(boolean deploySolenoid)   {this.deploySolenoid = deploySolenoid; return this;}
 
     @Override
     protected void exportToTable(LogTable table) {
-        table.put("Intake Motor Current", getIntakeCurrent());
+        table.put("Intake Motor Current", intakeCurrent);
     }
     @Override
     protected void importFromTable(LogTable table) {
-        setIntakeCurrent(table.getDouble("Intake Motor Current", getIntakeCurrent()));
+        setIntakeCurrent(table.getDouble("Intake Motor Current", intakeCurrent));
     }
     @Override
     protected void updateInputs() {
@@ -58,7 +71,14 @@ public class IntakeStatus extends StatusBase {
     }
     @Override
     protected void recordOutputs(Logger logger, String prefix) {
-        logger.recordOutput(prefix + "Intake State", getIntakeState().name());
-        logger.recordOutput(prefix + "Command/Input State", (getIntakeCommand().getIntakeState() == null ? "null" : getIntakeCommand().getIntakeState().name()));
+        HAL.setIntakeMotor(intakePower)
+           .setIntakeNeutralMode(intakeNeutralMode)
+           .setDeploySolenoid(deploySolenoid);
+
+        logger.recordOutput(prefix + "Intake State", intakeState.name());
+        logger.recordOutput(prefix + "Intake Motor/Power", intakePower);
+        logger.recordOutput(prefix + "Intake Motor/Neutral Mode", intakeNeutralMode.name());
+        logger.recordOutput(prefix + "Intake Solenoid Deployed", deploySolenoid);
+        intakeCommand.log(logger, prefix + "Command");
     }
 }

@@ -6,9 +6,8 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
-import io.github.oblarg.oblog.Loggable;
 
-public abstract class StatusBase implements LoggableInputs, Loggable{
+public abstract class StatusBase implements LoggableInputs{
 
     public SubsystemBase Subsystem;
 

@@ -4,6 +4,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Solenoid;
 import frc.robot.Constants;
@@ -26,7 +27,7 @@ public class IntakeHAL {
         if(RobotBase.isReal())
         {
             intakeMotor = new CANSparkMax(Constants.kRollerMotorID, MotorType.kBrushless);
-            deploySolenoid = null;//new Solenoid(PneumaticsModuleType.CTREPCM, Constants.kIntakeSolenoidID);
+            deploySolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.kIntakeSolenoidID);
         }
         else
         {
