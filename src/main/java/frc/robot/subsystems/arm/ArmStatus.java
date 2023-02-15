@@ -3,6 +3,7 @@ package frc.robot.subsystems.arm;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
+import frc.robot.lib.sensorCalibration.PotAndEncoder;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class ArmStatus extends StatusBase {
@@ -24,23 +25,33 @@ public class ArmStatus extends StatusBase {
     public ArmState getArmState()                   {return armState;}
     public ArmStatus setArmState(ArmState armState) {this.armState = armState; return this;}
 
+    private PotAndEncoder.Status shoulderPotAndEncoderStatus;
+    public PotAndEncoder.Status getShoulderStatus() {return shoulderPotAndEncoderStatus;}
+    public ArmStatus setShoulderStatus(PotAndEncoder.Status shoulderPotAndEncoderStatus) {this.shoulderPotAndEncoderStatus = shoulderPotAndEncoderStatus; return this;}
+    
+    private PotAndEncoder.Status elbowPotAndEncoderStatus;
+    public PotAndEncoder.Status getElbowStatus() {return elbowPotAndEncoderStatus;}
+    public ArmStatus setElbowStatus(PotAndEncoder.Status elbowPotAndEncoderStatus) {this.elbowPotAndEncoderStatus = elbowPotAndEncoderStatus; return this;}
+
     @Override
-    protected void exportToTable(LogTable table) {
-        
+    public void exportToTable(LogTable table) {
+        setShoulderStatus(HAL.getShoulderPotEncoder().exportToTable(table, "Shoulder PotEncoder"));
+        setElbowStatus(HAL.getElbowPotEncoder().exportToTable(table, "Elbow PotEncoder"));
+    }
+    
+    @Override
+    public void importFromTable(LogTable table) {
+        setShoulderStatus(HAL.getShoulderPotEncoder().importFromTable(table, "Shoulder PotEncoder", shoulderPotAndEncoderStatus.reading));
+        setElbowStatus(HAL.getElbowPotEncoder().importFromTable(table, "Elbow PotEncoder", elbowPotAndEncoderStatus.reading));
+    }
+    
+    @Override
+    public void updateInputs() {
     }
 
     @Override
-    protected void importFromTable(LogTable table) {
-        
-    }
-
-    @Override
-    protected void updateInputs() {
-        
-    }
-
-    @Override
-    protected void recordOutputs(Logger logger, String prefix) {
-        
+    public void recordOutputs(Logger logger, String prefix) {
+        shoulderPotAndEncoderStatus.recordOutputs(logger, prefix + "Shoulder PotEncoder");
+        elbowPotAndEncoderStatus.recordOutputs(logger, prefix + "Elbow PotEncoder");
     }
 }

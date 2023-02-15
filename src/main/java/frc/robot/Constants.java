@@ -17,7 +17,11 @@ public class Constants {
     // Arm Hardware
     public final static int kTurretMotorID =    6;
     public final static int kShoulderMotorID =  7;
+    public final static int kShoulderAnalogInputPort = 0;
+    public final static int kShoulderEncoderId = 8;
     public final static int kElbowMotorID =     8;
+    public final static int kElbowAnalogInputPort    = 1;
+    public final static int kElbowEncoderId = 8;
     public final static int kClawSolenoidID =   1;
     // Control Hardware
     public final static int kThrustmasterPort =   0;
