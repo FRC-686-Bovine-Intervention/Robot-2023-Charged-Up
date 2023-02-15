@@ -103,7 +103,7 @@ public class ArmStatus extends StatusBase {
 
     @Override
     protected void updateInputs() {
-        setTurretPosition(HAL.getTurretPosition());
+        setTurretPosition(HAL.getTurretRelative());
         setTargetXOffset(HAL.getTargetXOffset());
         setTargetInView(HAL.getTargetInView());
         currentPipeline = HAL.getPipeline();
