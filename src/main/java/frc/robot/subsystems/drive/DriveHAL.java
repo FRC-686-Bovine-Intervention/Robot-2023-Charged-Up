@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.RemoteFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -23,6 +25,10 @@ public class DriveHAL {
     private static final int kVelocityControlSlot = 0;
 	private static final int kPositionControlSlot = 1;
 	private static final int kMotionMagicControlSlot = 2;
+
+    private final WPI_TalonFX lMotorMaster, rMotorMaster;
+    private final CANCoder lCanCoder, rCanCoder;
+    private final ArrayList<BaseMotorController> lMotorSlaves = new ArrayList<BaseMotorController>(), rMotorSlaves = new ArrayList<BaseMotorController>();
 
 	// Motor Controller Inversions
 	
@@ -126,6 +132,8 @@ public class DriveHAL {
             rMotorMaster = new WPI_TalonFX(Constants.kRightMasterID);
             lMotorSlaves.add(new WPI_TalonFX(Constants.kLeftSlaveID));
             rMotorSlaves.add(new WPI_TalonFX(Constants.kRightSlaveID));
+            lCanCoder = new CANCoder(Constants.kLeftCANCoderID);
+            rCanCoder = new CANCoder(Constants.kRightCANCoderID);
     
             gyro = new WPI_Pigeon2(Constants.kPigeonID);
         }
@@ -133,6 +141,8 @@ public class DriveHAL {
         {
             lMotorMaster = null;
             rMotorMaster = null;
+            lCanCoder = null;
+            rCanCoder = null;
     
             gyro = null;
         }
@@ -179,6 +189,13 @@ public class DriveHAL {
             lMotorMaster.configMotionCruiseVelocity(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxVel), kTalonTimeoutMs);
             lMotorMaster.configMotionAcceleration(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxAccel), kTalonTimeoutMs);
 
+            // Set CANCoder as encoder
+            if(rCanCoder != null)
+            {
+                lMotorMaster.configRemoteFeedbackFilter(lCanCoder, 0);
+                lMotorMaster.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0);
+            }
+
             lMotorMaster.configOpenloopRamp(kDriveOpenLoopRampRate, 0);
         }
 
@@ -223,7 +240,14 @@ public class DriveHAL {
             
             rMotorMaster.configMotionCruiseVelocity(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxVel), kTalonTimeoutMs);
             rMotorMaster.configMotionAcceleration(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxAccel), kTalonTimeoutMs);
-            
+
+            // Set CANCoder as encoder
+            if(rCanCoder != null)
+            {
+                rMotorMaster.configRemoteFeedbackFilter(rCanCoder, 0);
+                rMotorMaster.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0);
+            }
+
             rMotorMaster.configOpenloopRamp(kDriveOpenLoopRampRate, 0);
         }
 
@@ -247,31 +271,11 @@ public class DriveHAL {
     		rMotorSlave.setNeutralMode(NeutralMode.Coast);
 			rMotorSlave.setInverted(InvertType.FollowMaster);
         }
-
-        // ArrayList<MotorController> lMotorControllers = new ArrayList<MotorController>(), rMotorControllers = new ArrayList<MotorController>();
-        // lMotorControllers.add(lMotorMaster);
-        // rMotorControllers.add(rMotorMaster);
-        // for(BaseMotorController motorController : lMotorSlaves) {
-        //     lMotorControllers.add(motorController);
-        // }
-        // for(BaseMotorController motorController : rMotorSlaves) {
-        //     rMotorControllers.add(motorController);
-        // }
-
-        // MotorController[] MCType = new MotorController[lMotorControllers.size()];
-        // lControllerGroup = new MotorControllerGroup(lMotorControllers.toArray(MCType));
-        // rControllerGroup = new MotorControllerGroup(rMotorControllers.toArray(MCType));
-
-
         setMotors(ControlMode.PercentOutput, 0, 0);
         setNeutralMode(NeutralMode.Coast);
         setEncoders();
     }
 
-    private final WPI_TalonFX lMotorMaster, rMotorMaster;
-    private final ArrayList<BaseMotorController> lMotorSlaves = new ArrayList<BaseMotorController>(), rMotorSlaves = new ArrayList<BaseMotorController>();
-    // private final MotorControllerGroup lControllerGroup, rControllerGroup;
-    
 	public static double encoderUnitsToInches(double _encoderPosition)  {return _encoderPosition / kTalonFXEncoderUnitsPerRev / kDriveGearRatio * kDriveWheelCircumInches;}
 	public static double inchesToEncoderUnits(double _inches)           {return _inches / kDriveWheelCircumInches * kTalonFXEncoderUnitsPerRev * kDriveGearRatio;}
 
