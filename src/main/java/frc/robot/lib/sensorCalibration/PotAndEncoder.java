@@ -7,7 +7,6 @@ import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.CANCoderConfiguration;
 
 import edu.wpi.first.util.CircularBuffer;
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import frc.robot.lib.util.Unwrapper;
 
