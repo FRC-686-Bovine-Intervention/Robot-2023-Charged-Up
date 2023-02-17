@@ -2,6 +2,7 @@ package frc.robot.subsystems.arm;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.arm.ArmHAL.LimelightPipeline;
 import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.driverInteraction.DriverInteractionStatus.DriverControlAxes;
@@ -15,15 +16,25 @@ public class ArmLoop extends LoopBase {
     // private final Intake intake = Intake.getInstance();
     // private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
 
-    private static final double kTurretMaxAngularVelocity = 30;
-    private static final double kTurretMaxAngularAcceleration = 10;
+    private static final double kTurretMaxAngularVelocity = 135;
+    private static final double kTurretMaxAngularAcceleration = 270;
     private final TrapezoidProfile.Constraints turretPIDConstraints = new TrapezoidProfile.Constraints(kTurretMaxAngularVelocity, kTurretMaxAngularAcceleration);
-    private final ProfiledPIDController turretPID = new ProfiledPIDController(0.0025, 0, 0, turretPIDConstraints);
+    private final ProfiledPIDController turretPID = new ProfiledPIDController(0.08, 0, 0, turretPIDConstraints);
 
     private ArmLoop() {Subsystem = Arm.getInstance();}
 
+    private double stateStartTimestamp;
+    private ArmState prevState;
+
     @Override
     protected void Enabled() {
+        double currentTimestamp = Timer.getFPGATimestamp();
+        
+        if(prevState != status.getArmState())
+            stateStartTimestamp = currentTimestamp;
+
+        prevState = status.getArmState();
+
         switch(status.getArmState())
         {
             case Defense:
@@ -35,12 +46,14 @@ public class ArmLoop extends LoopBase {
             case IdentifyCone:
                 // Swap limelight pipeline
                 status.setPipeline(LimelightPipeline.cone);
+                status.setTurretPower(0.0);
                 // Check for cone in intake bounding box
                 // If false, jump to IdentifyCube
                 // If true, set turret target pos and jump to Grab
                 if (status.getPipeline() == LimelightPipeline.cone) {
                     if(status.getTargetInView()){
                         status.setTargetTurretAngle(status.getTargetTurretAngle() + status.getTargetXOffset());
+                        turretPID.setGoal(status.getTargetTurretAngle());
                         status.setArmState(ArmState.Grab);
                     } else {
                         // status.setArmState(ArmState.IdentifyCube);
@@ -51,6 +64,7 @@ public class ArmLoop extends LoopBase {
             case IdentifyCube:
                 // Swap limelight pipeline
                 status.setPipeline(LimelightPipeline.cube);
+                status.setTurretPower(0.0);
                 // Check for cube in intake bounding box
                 // If false, jump to IdentifyCone
                 // System.out.print("I AM A CUBE");
@@ -58,6 +72,7 @@ public class ArmLoop extends LoopBase {
                 if (status.getPipeline() == LimelightPipeline.cube) {
                     if(status.getTargetInView()){
                         status.setTargetTurretAngle(status.getTargetTurretAngle() + status.getTargetXOffset());
+                        turretPID.setGoal(status.getTargetTurretAngle());
                         status.setArmState(ArmState.Grab);
                     } else {
                         //status.setArmState(ArmState.IdentifyCone);
@@ -67,7 +82,8 @@ public class ArmLoop extends LoopBase {
 
             case Grab:
                 // Move turret to target pos
-                turretPID.setGoal(status.getTargetTurretAngle());
+                if(currentTimestamp == stateStartTimestamp)
+                    turretPID.reset(status.getTurretPosition());
                 status.setTurretPower(turretPID.calculate(status.getTurretPosition()));
                 // Extend arm to grab piece
                 // Grab piece
@@ -104,7 +120,9 @@ public class ArmLoop extends LoopBase {
     }
     @Override
     protected void Disabled() {
-        
+        status.setTurretPower(0.0);
+        status.setArmState(ArmState.IdentifyCube);
+
     }
     @Override
     protected void Update() {

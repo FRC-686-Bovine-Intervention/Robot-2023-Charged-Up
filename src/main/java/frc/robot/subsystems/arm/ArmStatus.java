@@ -122,7 +122,8 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Limelight/Valid Target", getTargetInView());
 
         logger.recordOutput(prefix + "Turret/Power", getTurretPower());
-        logger.recordOutput(prefix + "Turret/Current Position", getTurretPosition());
+        logger.recordOutput(prefix + "Turret/Relative Position", getTurretPosition());
+        logger.recordOutput(prefix + "Turret/Absolute Position", HAL.getTurretAbsolute());
         logger.recordOutput(prefix + "Turret/Target Angle", getTargetTurretAngle());
     }
 }

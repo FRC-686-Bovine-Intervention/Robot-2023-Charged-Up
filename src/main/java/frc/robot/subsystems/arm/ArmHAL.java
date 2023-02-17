@@ -30,10 +30,13 @@ public class ArmHAL {
 
         if (turretMotor != null) {
             turretMotor.configFactoryDefault();
-            turretMotor.getSensorCollection().syncQuadratureWithPulseWidth(0, 0, true);
-            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative);
+            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 0);
+            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 1, 0);
+            if(getTurretRelative() == 0)
+                turretMotor.getSensorCollection().syncQuadratureWithPulseWidth(0, 0, true);
             turretMotor.setSensorPhase(kTurretEncoderInverted);
             turretMotor.setInverted(kTurretMotorInverted);
+            
         }
     }
 
@@ -101,9 +104,9 @@ public class ArmHAL {
     }
 
     public double getTurretRelative(){
-        return turretMotor != null ? turretMotor.getSelectedSensorPosition() * 1.0 * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
+        return turretMotor != null ? turretMotor.getSelectedSensorPosition(0) * 1.0 * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
     }
-    // public double getTurretAbsolute(){
-    //     return turretEncoder != null ? turretEncoder.get * 1.0 * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
-    // }
+    public double getTurretAbsolute(){
+        return turretMotor != null ? turretMotor.getSelectedSensorPosition(1) * 1.0 * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
+    }
 }
