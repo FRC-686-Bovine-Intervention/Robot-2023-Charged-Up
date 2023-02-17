@@ -66,3 +66,8 @@ class DCMotor:
     def getNEO550(self, numMotors):
         rpm = 11000
         return DCMotor(12, 0.97, 100, 1.4, rpm * math.pi / (60.0 / 2.0), numMotors)
+
+    @classmethod
+    def getFalcon500(self, numMotors):
+        rpm = 6380
+        return DCMotor(12, 4.69, 257, 1.5, rpm * math.pi / (60.0 / 2.0), numMotors)

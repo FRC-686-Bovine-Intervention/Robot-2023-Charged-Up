@@ -1,0 +1,30 @@
+{
+  "INTAKE": {
+    "type": "rectangle",
+    "args": [
+      3.5,
+      0,
+      15,
+      21
+    ]
+  },
+  "MID_SHELF": {
+    "type": "rectangle",
+    "args": [
+      26.5,
+      0,
+      63.25,
+      26.5
+    ]
+  },
+  "HIGH_SHELF": {
+    "type": "rectangle",
+    "args": [
+      46.875,
+      0,
+      63.25,
+      35.5
+    ]
+  }
+
+}

@@ -1,103 +1,39 @@
 {
-  "origin": [
-    0.0,
-    0.654
+  "center_to_side_bumper_inches": 15.25,
+  "shoulder": [
+    0.343,
+    1.270
   ],
-  "shoulder": {
-    "mass": 1.036005,
-    "length": 0.686,
-    "moi": 0.08,
-    "cgRadius": 0.4318,
-    "minAngle": 0.0,
-    "maxAngle": 3.1415926536,
+  "proximal": {
+    "mass": 1.95,
+    "length": 0.5842,
+    "moi": 0.153,
+    "cgRadius": 0.17,
+    "minAngle": -3.14,
+    "maxAngle":  3.14,
     "motor": {
-      "type": "neo",
-      "count": 2,
-      "reduction": 197.0
-    }
-  },
-  "elbow": {
-    "mass": 1.036005,
-    "length": 0.84,
-    "moi": 0.08,
-    "cgRadius": 0.4318,
-    "minAngle": 0.5235987756,
-    "maxAngle": 5.7595865316,
-    "motor": {
-      "type": "neo",
+      "type": "falcon",
       "count": 1,
-      "reduction": 200.0
+      "reduction": 100.0
     }
   },
-  "wrist": {
-    "mass": 2.721554,
-    "length": 0.261,
-    "moi": 0.039538,
-    "cgRadius": 0.0574802,
-    "minAngle": -2.0943951024,
-    "maxAngle": 2.0943951024,
+  "distal": {
+    "mass": 0.767,
+    "length": 0.559,
+    "moi": 0.013,
+    "cgRadius": 0.068,
+    "minAngle": -3.14,
+    "maxAngle":  3.14,
     "motor": {
-      "type": "neo",
+      "type": "falcon",
       "count": 1,
-      "reduction": 120.0
+      "reduction": 100.0
     }
   },
-  "solver": {
-    "interiorPoints": 25,
-    "maxVoltage": 10,
-    "maxJerk": 30
-  },
-  "constraints": {
-    "floor": {
-      "type": "minY",
-      "args": [
-        0
-      ]
-    },
-    "robotBody": {
-      "type": "rectangle",
-      "args": [
-        -0.5,
-        -1,
-        0.73,
-        0.45
-      ]
-    },
-    "nodeMidFront": {
-      "type": "rectangle",
-      "args": [
-        0.5,
-        -1,
-        5,
-        1
-      ]
-    },
-    "nodeHighFront": {
-      "type": "rectangle",
-      "args": [
-        1.1,
-        -1,
-        5,
-        1.2
-      ]
-    },
-    "nodeMidBack": {
-      "type": "rectangle",
-      "args": [
-        -5,
-        -1,
-        -0.5,
-        1
-      ]
-    },
-    "nodeHighBack": {
-      "type": "rectangle",
-      "args": [
-        -5,
-        -1,
-        -1.1,
-        1.2
-      ]
+  "grabber": {
+    "mass": 1.213,
+    "length": 0.392,
+    "moi": 0.019,
+    "cgRadius": 0.098
     }
-  }
 }

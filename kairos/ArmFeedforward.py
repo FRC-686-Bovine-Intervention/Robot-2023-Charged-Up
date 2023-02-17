@@ -23,12 +23,12 @@ class JointConfig:
 
 class ArmFeedforward:
     _g = 9.80665
-    _shoulder: JointConfig
-    _elbow: JointConfig
+    _proximal: JointConfig
+    _distal: JointConfig
 
-    def __init__(self, shoulder: JointConfig, elbow: JointConfig):
-        self._shoulder = shoulder
-        self._elbow = elbow
+    def __init__(self, proximal: JointConfig, distal: JointConfig):
+        self._proximal = proximal
+        self._distal = distal
 
     def calculate(self, position, velocity, acceleration):
         M = [[0, 0], [0, 0]]
@@ -36,68 +36,68 @@ class ArmFeedforward:
         Tg = [0, 0]
 
         M[0][0] = (
-            self._shoulder.mass * (self._shoulder.cgRadius**2.0)
-            + self._elbow.mass
-            * ((self._shoulder.length**2.0) + (self._elbow.cgRadius**2.0))
-            + self._shoulder.moi
-            + self._elbow.moi
+            self._proximal.mass * (self._proximal.cgRadius**2.0)
+            + self._distal.mass
+            * ((self._proximal.length**2.0) + (self._distal.cgRadius**2.0))
+            + self._proximal.moi
+            + self._distal.moi
             + 2
-            * self._elbow.mass
-            * self._shoulder.length
-            * self._elbow.cgRadius
+            * self._distal.mass
+            * self._proximal.length
+            * self._distal.cgRadius
             * cos(position[1])
         )
         M[1][0] = (
-            self._elbow.mass * (self._elbow.cgRadius**2)
-            + self._elbow.moi
-            + self._elbow.mass
-            * self._shoulder.length
-            * self._elbow.cgRadius
+            self._distal.mass * (self._distal.cgRadius**2)
+            + self._distal.moi
+            + self._distal.mass
+            * self._proximal.length
+            * self._distal.cgRadius
             * cos(position[1])
         )
         M[0][1] = (
-            self._elbow.mass * (self._elbow.cgRadius**2)
-            + self._elbow.moi
-            + self._elbow.mass
-            * self._shoulder.length
-            * self._elbow.cgRadius
+            self._distal.mass * (self._distal.cgRadius**2)
+            + self._distal.moi
+            + self._distal.mass
+            * self._proximal.length
+            * self._distal.cgRadius
             * cos(position[1])
         )
-        M[1][1] = self._elbow.mass * (self._elbow.cgRadius**2) + self._elbow.moi
+        M[1][1] = self._distal.mass * (self._distal.cgRadius**2) + self._distal.moi
 
         C[0][0] = (
-            -self._elbow.mass
-            * self._shoulder.length
-            * self._elbow.cgRadius
+            -self._distal.mass
+            * self._proximal.length
+            * self._distal.cgRadius
             * sin(position[1])
             * velocity[1]
         )
         C[1][0] = (
-            self._elbow.mass
-            * self._shoulder.length
-            * self._elbow.cgRadius
+            self._distal.mass
+            * self._proximal.length
+            * self._distal.cgRadius
             * sin(position[1])
             * velocity[0]
         )
         C[0][1] = (
-            -self._elbow.mass
-            * self._shoulder.length
-            * self._elbow.cgRadius
+            -self._distal.mass
+            * self._proximal.length
+            * self._distal.cgRadius
             * sin(position[1])
             * (velocity[0] + velocity[1])
         )
 
         Tg[0] = (
-            self._shoulder.mass * self._shoulder.cgRadius
-            + self._elbow.mass * self._shoulder.length
+            self._proximal.mass * self._proximal.cgRadius
+            + self._distal.mass * self._proximal.length
         ) * self._g * cos(
             position[0]
-        ) + self._elbow.mass * self._elbow.cgRadius * self._g * cos(
+        ) + self._distal.mass * self._distal.cgRadius * self._g * cos(
             position[0] + position[1]
         )
         Tg[1] = (
-            self._elbow.mass
-            * self._elbow.cgRadius
+            self._distal.mass
+            * self._distal.cgRadius
             * self._g
             * cos(position[0] + position[1])
         )
@@ -115,6 +115,6 @@ class ArmFeedforward:
             M_times_acceleration[1] + C_times_velocity[1] + Tg[1],
         )
         return (
-            self._shoulder.motor.getVoltage(torque[0], velocity[0]),
-            self._elbow.motor.getVoltage(torque[1], velocity[1]),
+            self._proximal.motor.getVoltage(torque[0], velocity[0]),
+            self._distal.motor.getVoltage(torque[1], velocity[1]),
         )
