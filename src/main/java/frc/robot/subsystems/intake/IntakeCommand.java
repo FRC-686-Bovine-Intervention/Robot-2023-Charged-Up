@@ -5,6 +5,11 @@ import org.littletonrobotics.junction.Logger;
 import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
 
 public class IntakeCommand {
+    public IntakeCommand() {this(null);}
+    public IntakeCommand(IntakeState intakeState){
+        setIntakeState(intakeState);
+    }
+
     private IntakeState intakeState = null;
     public IntakeState getIntakeState()                             {return intakeState;}
     public IntakeCommand setIntakeState(IntakeState intakeState)    {this.intakeState = intakeState; return this;}

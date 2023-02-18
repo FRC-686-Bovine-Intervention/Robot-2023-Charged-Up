@@ -18,7 +18,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.lib.util.LimelightHelpers;
-import frc.robot.subsystems.vision.VisionStatus.LimelightPipeline;
 
 public class VisionHAL {
     private static VisionHAL instance;

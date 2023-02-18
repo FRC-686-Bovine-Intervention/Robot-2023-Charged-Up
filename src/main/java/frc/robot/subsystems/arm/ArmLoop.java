@@ -3,18 +3,21 @@ package frc.robot.subsystems.arm;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.subsystems.arm.ArmHAL.LimelightPipeline;
 import frc.robot.subsystems.arm.ArmStatus.ArmState;
-import frc.robot.subsystems.driverInteraction.DriverInteractionStatus.DriverControlAxes;
 import frc.robot.subsystems.framework.LoopBase;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeCommand;
+import frc.robot.subsystems.intake.IntakeStatus;
+import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
+import frc.robot.subsystems.vision.VisionStatus.LimelightPipeline;
 
 public class ArmLoop extends LoopBase {
     private static ArmLoop instance;
     public static ArmLoop getInstance(){if(instance == null) instance = new ArmLoop(); return instance;}
 
     private final ArmStatus status = ArmStatus.getInstance();
-    // private final Intake intake = Intake.getInstance();
-    // private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
+    private final Intake intake = Intake.getInstance();
+    private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
 
     private static final double kTurretMaxAngularVelocity = 135;
     private static final double kTurretMaxAngularAcceleration = 270;
@@ -28,70 +31,45 @@ public class ArmLoop extends LoopBase {
 
     @Override
     protected void Enabled() {
+        ArmCommand newCommand = status.getCommand();
         double currentTimestamp = Timer.getFPGATimestamp();
+
+        if(newCommand.getArmState() != null)
+            status.setArmState(newCommand.getArmState());
         
         if(prevState != status.getArmState())
             stateStartTimestamp = currentTimestamp;
 
         prevState = status.getArmState();
 
+        status.setTurretPower(0.0);
+
         switch(status.getArmState())
         {
             case Defense:
                 // Set arm pos to defense
-                // if(intakeStatus.getIntakeState() == IntakeState.Hold)
-                //     status.setArmState(ArmState.IdentifyCone);
+                if(intakeStatus.getIntakeState() == IntakeState.Hold)
+                    status.setArmState(ArmState.IdentifyPiece);
             break;
 
-            case IdentifyCone:
-                // Swap limelight pipeline
-                status.setPipeline(LimelightPipeline.cone);
-                status.setTurretPower(0.0);
-                // Check for cone in intake bounding box
-                // If false, jump to IdentifyCube
-                // If true, set turret target pos and jump to Grab
-                if (status.getPipeline() == LimelightPipeline.cone) {
-                    if(status.getTargetInView()){
-                        status.setTargetTurretAngle(status.getTargetTurretAngle() + status.getTargetXOffset());
-                        turretPID.setGoal(status.getTargetTurretAngle());
-                        status.setArmState(ArmState.Grab);
-                    } else {
-                        // status.setArmState(ArmState.IdentifyCube);
-                    }
-                }
+            case IdentifyPiece:
+                // Check for piece in intake bounding box
             break;
             
-            case IdentifyCube:
-                // Swap limelight pipeline
-                status.setPipeline(LimelightPipeline.cube);
-                status.setTurretPower(0.0);
-                // Check for cube in intake bounding box
-                // If false, jump to IdentifyCone
-                // System.out.print("I AM A CUBE");
-                // If true, set turret target pos and jump to Grab
-                if (status.getPipeline() == LimelightPipeline.cube) {
-                    if(status.getTargetInView()){
-                        status.setTargetTurretAngle(status.getTargetTurretAngle() + status.getTargetXOffset());
-                        turretPID.setGoal(status.getTargetTurretAngle());
-                        status.setArmState(ArmState.Grab);
-                    } else {
-                        //status.setArmState(ArmState.IdentifyCone);
-                    }
-                }
-            break;
-
             case Grab:
                 // Move turret to target pos
-                if(currentTimestamp == stateStartTimestamp)
-                    turretPID.reset(status.getTurretPosition());
-                status.setTurretPower(turretPID.calculate(status.getTurretPosition()));
                 // Extend arm to grab piece
                 // Grab piece
                 // Set intake to release
+                if(currentTimestamp - stateStartTimestamp >= 2)
+                    intake.setCommand(new IntakeCommand(IntakeState.Release));
                 // Jump to Hold
+                if(currentTimestamp - stateStartTimestamp >= 3)
+                    status.setArmState(ArmState.Hold);
             break;
 
             case Hold:
+                intake.setCommand(new IntakeCommand(IntakeState.Defense));
                 // Move arm to hold position
                 // Check if robot is in community, if so jump to Align
             break;
@@ -115,14 +93,15 @@ public class ArmLoop extends LoopBase {
             case Release:
                 // Outtake piece
                 // Wait a bit then jump to Defense
+                if(currentTimestamp - stateStartTimestamp >= 1)
+                    status.setArmState(ArmState.Defense);
             break;
         }
     }
     @Override
     protected void Disabled() {
         status.setTurretPower(0.0);
-        status.setArmState(ArmState.IdentifyCube);
-
+        status.setArmState(ArmState.Defense); //TODO: Add disable time threshold
     }
     @Override
     protected void Update() {
