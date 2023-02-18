@@ -3,6 +3,7 @@ package frc.robot.subsystems.arm;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
+import frc.robot.subsystems.arm.ArmHAL.LimelightPipeline;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class ArmStatus extends StatusBase {
@@ -25,23 +26,89 @@ public class ArmStatus extends StatusBase {
         Release         // Driver has decided the piece will score on the node and tells the arm to release the piece
     }
 
-    private ArmState armState = ArmState.Defense;
+    private ArmState armState = ArmState.IdentifyCube;
     public ArmState getArmState()                   {return armState;}
     public ArmStatus setArmState(ArmState armState) {this.armState = armState; return this;}
 
+    private double targetTurretAngle; //TODO: Units
+    public ArmStatus setTargetTurretAngle(double angle){
+        targetTurretAngle = angle;
+        return this;
+    }
+    public double getTargetTurretAngle(){
+        return targetTurretAngle;
+    }
+
+    private LimelightPipeline targetPipeline;
+    private LimelightPipeline currentPipeline;
+    public LimelightPipeline getPipeline() {
+        return currentPipeline;
+    }
+    public ArmStatus setPipeline(LimelightPipeline pipeline) {
+        this.targetPipeline = pipeline;
+        return this;
+    }
+
+    private boolean targetInView;
+    public ArmStatus setTargetInView(boolean targetInView) {
+        this.targetInView = targetInView;
+        return this;
+    }
+    public boolean getTargetInView() {
+        return targetInView;
+    }
+
+    private double turretPower;
+    public double getTurretPower() {
+        return turretPower;
+    }
+    public ArmStatus setTurretPower(double turretPower) {
+        this.turretPower = turretPower;
+        return this;
+    }
+
+    private double turretPosition; 
+    public ArmStatus setTurretPosition(double turretPosition) {
+        this.turretPosition = turretPosition;
+        return this;
+    }
+    public double getTurretPosition() {
+        return turretPosition;
+    }
+
+    private double targetXOffset = 0.0;
+    private ArmStatus setTargetXOffset(double offset) {
+        targetXOffset = offset;
+        return this;
+    }
+    public double getTargetXOffset() {
+        return targetXOffset;
+    }
+
     @Override
     public void exportToTable(LogTable table) {
+        table.put("Turret Position", getTurretPosition());
     }
     
     @Override
     public void importFromTable(LogTable table) {
+        setTurretPosition(table.getDouble("Turret Position", turretPosition));
     }
     
     @Override
     public void updateInputs() {
+        setTurretPosition(HAL.getTurretRelative());
     }
 
     @Override
     public void recordOutputs(Logger logger, String prefix) {
+        HAL.setTurretPower(turretPower);
+
+        logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
+
+        logger.recordOutput(prefix + "Turret/Power", getTurretPower());
+        logger.recordOutput(prefix + "Turret/Relative Position", getTurretPosition());
+        logger.recordOutput(prefix + "Turret/Absolute Position", HAL.getTurretAbsolute());
+        logger.recordOutput(prefix + "Turret/Target Angle", getTargetTurretAngle());
     }
 }
