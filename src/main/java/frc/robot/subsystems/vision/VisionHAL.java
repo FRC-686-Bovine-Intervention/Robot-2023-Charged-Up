@@ -17,6 +17,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.lib.util.LimelightHelpers;
+import frc.robot.subsystems.vision.VisionStatus.LimelightPipeline;
 
 public class VisionHAL {
     private static VisionHAL instance;
@@ -24,11 +26,11 @@ public class VisionHAL {
 
     private final ArrayList<Pair<PhotonCamera, Transform3d>> cameraPairs = new ArrayList<Pair<PhotonCamera, Transform3d>>();
 
+    private static final String kLimelightName = "limelight";
+
     private final ArrayList<AprilTag> aprilTags = new ArrayList<AprilTag>();
     private final AprilTagFieldLayout aprilTagFieldLayout;
     public AprilTagFieldLayout getAprilTagFieldLayout() {return aprilTagFieldLayout;}
-
-    // private final RobotPoseEstimator robotPoseEstimator;
 
     private VisionHAL()
     {
@@ -42,8 +44,6 @@ public class VisionHAL {
                             new PhotonCamera("TestCam"),
                             new Transform3d(new Translation3d(Units.inchesToMeters(15), 0, Units.inchesToMeters(30)), new Rotation3d())));
         }
-        
-        // robotPoseEstimator = new RobotPoseEstimator(aprilTagFieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, cameraPairs);
     }
 
     public ArrayList<AprilTag> getVisibleTags()
@@ -92,14 +92,9 @@ public class VisionHAL {
         return list;
     }
 
-    // public Pose3d getEstimatedGlobalPose(Pose3d prevEstimatedRobotPose) {
-    //     robotPoseEstimator.setReferencePose(prevEstimatedRobotPose);
-    
-    //     Optional<Pair<Pose3d, Double>> result = robotPoseEstimator.update();
-    //     if (result.isPresent()) {
-    //         return result.get().getFirst();
-    //     } else {
-    //         return null;
-    //     }
-    // }
+    public boolean getTargetExists() {return LimelightHelpers.getTV(kLimelightName);}
+    public double getTargetXAngle() {return LimelightHelpers.getTX(kLimelightName);}
+    public double getTargetYAngle() {return LimelightHelpers.getTY(kLimelightName);}
+    public int getCurrentPipeline() {return (int)LimelightHelpers.getCurrentPipelineIndex(kLimelightName);}
+    public VisionHAL setPipeline(int pipelineIndex) {LimelightHelpers.setPipelineIndex(kLimelightName, pipelineIndex); return this;}
 }
