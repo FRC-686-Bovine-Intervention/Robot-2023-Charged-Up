@@ -11,5 +11,9 @@ public class Vision extends SubsystemBase {
         Loop = VisionLoop.getInstance();
         Status = VisionStatus.getInstance();
     }
+
+    private VisionCommand   command = new VisionCommand();
+    public VisionCommand    getVisionCommand()                              {return command;}
+    public Vision           setVisionCommand(VisionCommand visionCommand)   {this.command = visionCommand; return this;}
     
 }
