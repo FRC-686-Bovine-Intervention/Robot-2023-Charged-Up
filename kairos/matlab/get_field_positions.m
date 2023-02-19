@@ -19,17 +19,17 @@ field.shelf_depth = 17.0;
 field.dbl_substation_shelf_depth = 14.0;
 
 field.low_shelf_front_corner.x    = center_to_side_bumper;
-field.low_shelf_scoring.x         = field.low_shelf_front_corner.x + field.shelf_depth/2;
+field.SCORE_HYBRID.x         = field.low_shelf_front_corner.x + field.shelf_depth/2;
 field.low_shelf.y                 = 0.0;
 field.mid_shelf_front_corner.x    = center_to_side_bumper + 14.25;
-field.mid_shelf_scoring.x         = field.mid_shelf_front_corner.x + field.shelf_depth/2;
+field.SCORE_MID_CUBE.x         = field.mid_shelf_front_corner.x + field.shelf_depth/2;
 field.mid_shelf.y                 = 23.5;
 field.high_shelf_front_corner.x   = center_to_side_bumper + 31.625;
-field.high_shelf_scoring.x        = field.high_shelf_front_corner.x + field.shelf_depth/2;
+field.SCORE_HIGH_CUBE.x        = field.high_shelf_front_corner.x + field.shelf_depth/2;
 field.high_shelf.y                = 35.5;
 field.dbl_substation_front_corner.x   = field.dbl_substation.x;
 field.dbl_substation_front_corner.y   = field.dbl_substation.y + 4.0;
-field.dbl_substation_intake.x         = field.dbl_substation_front_corner.x + field.dbl_substation_shelf_depth/2;
-field.dbl_substation_intake.y         = field.dbl_substation_front_corner.y;
+field.DOUBLE_SUBTATION.x         = field.dbl_substation_front_corner.x + field.dbl_substation_shelf_depth/2;
+field.DOUBLE_SUBTATION.y         = field.dbl_substation_front_corner.y;
 
 field.back_wall.x = center_to_side_bumper + 48;

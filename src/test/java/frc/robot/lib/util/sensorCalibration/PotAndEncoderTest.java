@@ -8,8 +8,8 @@ import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 
+import edu.wpi.first.math.MathUtil;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
-import frc.robot.lib.util.Util;
 
 public class PotAndEncoderTest {
     
@@ -36,13 +36,13 @@ public class PotAndEncoderTest {
         double potReadingDeg, absReadingDeg, relReadingDeg;
         
         potReadingDeg = potAngleDeg + (potentiometerAngleDegAtCalib - potentiometerGearRatio*outputAngleAtCalibration);
-        potReadingDeg = Util.limit(potReadingDeg, 0.0, potentiometerNTurns*360.0);
+        potReadingDeg = MathUtil.clamp(potReadingDeg, 0.0, potentiometerNTurns*360.0);
 
         absReadingDeg = encAngleDeg + (absoluteEncoderAngleDegAtCalib - encoderGearRatio*outputAngleAtCalibration);
-        absReadingDeg = Util.fmodulo(absReadingDeg, 360.0);    // modulo 360
+        absReadingDeg = MathUtil.inputModulus(absReadingDeg, 0.0, 360.0);    // modulo 360
 
         relReadingDeg = encAngleDeg;
-        relReadingDeg = Util.fmodulo(relReadingDeg, 360.0);    // modulo 360        
+        relReadingDeg = MathUtil.inputModulus(relReadingDeg, 0.0, 360.0);    // modulo 360        
 
         return new PotAndEncoder.Reading(potReadingDeg, absReadingDeg, relReadingDeg);
     }

@@ -1,0 +1,58 @@
+{
+  "defense": {
+    "fileIdx": 1,
+    "xy": [
+      0.0,
+      25.0
+    ]
+  },
+  "intake": {
+    "fileIdx": 2,
+    "xy": [
+      16.3,
+      11.0
+    ]
+  },
+  "double_substation": {
+    "fileIdx": 3,
+    "xy": [
+      22.25,
+      37.3
+    ]
+  },
+  "score_hybrid": {
+    "fileIdx": 4,
+    "xy": [
+      23.75,
+      6.0
+    ]
+  },
+  "score_mid_cube": {
+    "fileIdx": 5,
+    "xy": [
+      38.0,
+      29.5
+    ]
+  },
+  "score_high_cube": {
+    "fileIdx": 6,
+    "xy": [
+      55.375,
+      41.5
+    ]
+  },
+  "score_mid_cone": {
+    "fileIdx": 7,
+    "xy": [
+      38.0,
+      40.0
+    ]
+  },
+  "score_high_cone": {
+    "fileIdx": 8,
+    "xy": [
+      55.0,
+      52.0
+    ]
+  }
+}

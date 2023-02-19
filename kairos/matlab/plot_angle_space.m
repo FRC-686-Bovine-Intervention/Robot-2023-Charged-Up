@@ -1,6 +1,6 @@
 function plot_angle_space(ax, field, obstacles, obstacleEnum)
 
-cmap = colormap('lines');
+cmap = colormap(ax, 'lines');
 lt_gray = 0.85*[1 1 1];
 
 % h = plot(mygrid.theta1(~mygrid.blocked), mygrid.theta2(~mygrid.blocked), 'k.');
