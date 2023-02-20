@@ -1,6 +1,8 @@
 package frc.robot.subsystem.arm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.arm.ArmTrajectory;
 
 public class ArmTrajectoryTest {
@@ -66,10 +69,18 @@ public class ArmTrajectoryTest {
         assertEquals(0.0, state.get(1,1), kEps);
         
         
-        double theta0_actual = 1.0;
-        double theta1_actual = 2.0;
+        double theta0_actual =  0.01;
+        double theta1_actual = -0.02;
 
-        ArmTrajectory interpTraj = ArmTrajectory.interpolateStaringPositionError(traj, theta0_actual, theta1_actual);
+        assertTrue(traj.startIsNear(theta0_actual, theta1_actual, Units.degreesToRadians(10.0)));
+
+        theta0_actual = 1.0;
+        theta1_actual = 2.0;
+
+        assertFalse(traj.startIsNear(theta0_actual, theta1_actual, Units.degreesToRadians(10.0)));
+
+
+        ArmTrajectory interpTraj = traj.interpolateStaringPositionError(theta0_actual, theta1_actual);
 
         // interpTraj should end in the same place
         finalState = interpTraj.getFinalState();

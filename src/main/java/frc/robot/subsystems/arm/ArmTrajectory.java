@@ -143,24 +143,33 @@ public class ArmTrajectory {
         .fill(position0, velocity0, acceleration0, position1, velocity1, acceleration1);
   }
 
-  public static ArmTrajectory interpolateStaringPositionError(ArmTrajectory baseTrajectory, double theta0_actual, double theta1_actual) {
-    ArmTrajectory trajectory = baseTrajectory;
 
+
+  public ArmTrajectory interpolateStaringPositionError(double theta0_actual, double theta1_actual) {
     // measure the difference between the expected and actual starting positions
     Matrix<N2,N1> theta_actual = VecBuilder.fill(theta0_actual, theta1_actual);
-    Matrix<N2,N1> theta_error = theta_actual.minus(baseTrajectory.points.get(0));
+    Matrix<N2,N1> theta_error = theta_actual.minus(points.get(0));
     
     // linearly interpolate that error along the path
     // full error at the start, 0 at the end
-    int N = trajectory.points.size();
+    int N = points.size();
+    List<Vector<N2>> newPoints = new ArrayList<Vector<N2>>();
     for (int k=0; k<N; k++) {
-      Matrix<N2,N1> theta = baseTrajectory.points.get(k);
+      Matrix<N2,N1> theta = points.get(k);
       double beta = (double)(N-1-k)/(N-1);
       theta = theta.plus(theta_error.times(beta));
-      trajectory.points.set(k, new Vector<N2>(theta));
+      newPoints.add(new Vector<N2>(theta));
     }
 
-    return trajectory;
+    return new ArmTrajectory(startPos, finalPos, totalTime, newPoints);
+  }
+
+
+  public boolean startIsNear(double theta0_actual, double theta1_actual, double threshold) {
+    Matrix<N2,N1> theta_actual = VecBuilder.fill(theta0_actual, theta1_actual);
+    Matrix<N2,N1> theta_error = theta_actual.minus(points.get(0));
+
+    return (theta_error.maxAbs() < threshold);
   }
 
 }

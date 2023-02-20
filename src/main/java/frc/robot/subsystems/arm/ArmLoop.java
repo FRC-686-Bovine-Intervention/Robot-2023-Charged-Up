@@ -190,12 +190,15 @@ public class ArmLoop extends LoopBase {
                 currentState = setpointState;
             }
         }
+
+        // calculate feedforward and feedback voltages
         var voltages = dynamics.feedforward(currentState);
         double shoulderAngleSetpoint = currentState.get(0,0);
         double elbowAngleSetpoint = currentState.get(1,0);            
         double shoulderPidFeedback = shoulderFeedback.calculate(shoulderAngleRad, shoulderAngleSetpoint);
         double elbowPidFeedback = elbowFeedback.calculate(elbowAngleRad, elbowAngleSetpoint) ;
         
+        // set motors to achieve the currentState
         hal.setShoulderMotorVoltage(voltages.get(0,0) + shoulderPidFeedback);
         hal.setElbowMotorVoltage(voltages.get(1,0) + elbowPidFeedback);
         
@@ -238,11 +241,25 @@ public class ArmLoop extends LoopBase {
 
 
     public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos) {
+        // get pre-planned trajectory
         ArmTrajectory baseTrajectory = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
 
+        // get current arm positions
         double shoulderAngleRad = Units.degreesToRadians(status.getShoulderState().positionDeg);
         double elbowAngleRad = Units.degreesToRadians(status.getElbowState().positionDeg);
-        currentTrajectory = ArmTrajectory.interpolateStaringPositionError(baseTrajectory, shoulderAngleRad, elbowAngleRad);
+
+        // throw error if selected trajectory is no where near the current position
+        if (!baseTrajectory.startIsNear(shoulderAngleRad, elbowAngleRad, internalDisableMaxError)) {
+            internalDisable = true;
+            currentTrajectory = null;
+            return;
+        }
+
+        // any errors in the starting position (in particular due to manual XZ adjustments)
+        // will be linearly intepolated into the trajectory
+        // to smoothly remove these adjustments without needing a separate path
+        currentTrajectory = baseTrajectory;
+        currentTrajectory.interpolateStaringPositionError(shoulderAngleRad, elbowAngleRad);
     }
 
     public void manualAdjustment(double xThrottle, double yThrottle, double zThrottle) {
