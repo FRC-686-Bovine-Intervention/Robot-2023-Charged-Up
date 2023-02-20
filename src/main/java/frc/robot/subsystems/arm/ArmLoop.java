@@ -3,13 +3,16 @@ package frc.robot.subsystems.arm;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -41,7 +44,9 @@ public class ArmLoop extends LoopBase {
     private final ArmTrajectory[][] armTrajectories = new ArmTrajectory[ArmPose.Preset.values().length+1][ArmPose.Preset.values().length+1];
     private ArmTrajectory currentTrajectory = null;
     private Timer trajectoryTimer = new Timer();
-    private Matrix<N2,N3> setpointState = null;         // angles to revert to when not following trajectory
+
+    private Matrix<N2,N3> finalTrajectoryState = null;
+    private Matrix<N2,N3> setpointState = null;       
   
     private PIDController shoulderFeedback = new PIDController(0.0, 0.0, 0.0, Constants.loopPeriodSecs);
     private PIDController elbowFeedback    = new PIDController(0.0, 0.0, 0.0, Constants.loopPeriodSecs);    
@@ -54,6 +59,24 @@ public class ArmLoop extends LoopBase {
     
     private Supplier<Boolean> disableSupplier = () -> false;
 
+    private final double xMinSetpoint =  0.0; 
+    private final double xMaxSetpoint;          // calculated
+    private final double zMinSetpoint =  0.0; 
+    private final double zMaxSetpoint = 72.0; 
+
+    private double xThrottle = 0.0;
+    private double zThrottle = 0.0;
+    private double xAdjustment = 0.0; // extension from turret center of rotation
+    private double zAdjustment = 0.0; // height
+    private final double xAdjustmentMaxRangeInches = 12.0;
+    private final double zAdjustmentMaxRangeInches = 12.0;
+    private final double xAdjustmentMaxRange = Units.inchesToMeters(xAdjustmentMaxRangeInches);
+    private final double zAdjustmentMaxRange = Units.inchesToMeters(zAdjustmentMaxRangeInches);
+
+    private final double manualMaxSpeedInchesPerSec = 6.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
+    private final double manualMaxSpeedMetersPerSec = Units.inchesToMeters(manualMaxSpeedInchesPerSec);
+    private final double manualMaxSpeedDegreesPerSec = 10.0;  // speed the turret is allowed to manually spin
+    
     private ArmLoop() {
         Subsystem = Arm.getInstance();
     
@@ -96,6 +119,10 @@ public class ArmLoop extends LoopBase {
                                          config.distal().minAngle(), config.distal().maxAngle());
          
          dynamics = new ArmDynamics(config.proximal(), ArmDynamics.rigidlyCombineJoints(config.distal(), config.grabber()));
+
+         xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches());
+         finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
+         setpointState = finalTrajectoryState;
     } 
 
     @Override
@@ -103,11 +130,6 @@ public class ArmLoop extends LoopBase {
         // Get measured positions
         double shoulderAngleRad = Units.degreesToRadians(status.getShoulderState().positionDeg);
         double elbowAngleRad = Units.degreesToRadians(status.getElbowState().positionDeg);
-
-        // record current setpoint.  revert to defense on estop
-        setpointState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
-        double shoulderAngleSetpoint = setpointState.get(0,0); 
-        double elbowAngleSetpoint = setpointState.get(1,0);
 
         // if internally disabled, set the setpoint to the current position (don't move when enabling)
         if (internalDisable) {
@@ -124,21 +146,51 @@ public class ArmLoop extends LoopBase {
         }
 
         // move arm!
-        Matrix<N2,N3> currentState;
+        Matrix<N2,N3> currentState = setpointState;
         if (currentTrajectory != null) {
             // follow trajectory
             trajectoryTimer.start();                            // multiple calls to start will not restart timer
-            setpointState = currentTrajectory.getFinalState();  // if the trajectory is interrupted, go to the last setpoint
+            finalTrajectoryState = currentTrajectory.getFinalState();
+            setpointState = finalTrajectoryState;               // if the trajectory is interrupted, go to the last setpoint
 
             // interpolate state from trajectory
             currentState = currentTrajectory.sample(trajectoryTimer.get());
+
         } else {
-            // maintain setpoint
-            currentState = setpointState;
+            // make manual adjustments to final XZ pose
+            Vector<N2> thetaFinalTrajectory = new Vector<>(finalTrajectoryState.extractColumnVector(0));
+            Translation2d xzFinalTrajectory = kinematics.forward(thetaFinalTrajectory);
+            double xFinalTrajectory = xzFinalTrajectory.getX();
+            double zfinalTrajectory = xzFinalTrajectory.getY(); // note: Translation2d assumes XY plane, but we are using it in the XZ plane
+
+            // update manual adjustments
+            // xThrottle and zThrottle are assumed to be joystick inputs in the range [-1, +1]
+            xAdjustment += xThrottle * manualMaxSpeedMetersPerSec * Constants.loopPeriodSecs;
+            zAdjustment += zThrottle * manualMaxSpeedMetersPerSec * Constants.loopPeriodSecs;
+
+            // clamp manual adjustments
+            xAdjustment = MathUtil.clamp(xAdjustment, -xAdjustmentMaxRange, +xAdjustmentMaxRange);
+            zAdjustment = MathUtil.clamp(zAdjustment, -zAdjustmentMaxRange, +zAdjustmentMaxRange);
+
+            // verify frame perimeter
+            double xSetpoint = MathUtil.clamp(xFinalTrajectory + xAdjustment, xMinSetpoint, xMaxSetpoint);
+            double zSetpoint = MathUtil.clamp(zfinalTrajectory + zAdjustment, zMinSetpoint, zMaxSetpoint);
+
+            // calcualate current manual adjustment after clamping
+            xAdjustment = xSetpoint - xFinalTrajectory;
+            zAdjustment = zSetpoint - zfinalTrajectory;
+
+            // find new setpoint
+            Optional<Vector<N2>> optTheta = kinematics.inverse(xSetpoint, zSetpoint);
+            if (optTheta.isPresent()) {
+                Vector<N2> setpointTheta = optTheta.get();
+                setpointState = ArmTrajectory.getFixedState(setpointTheta);
+                currentState = setpointState;
+            }
         }
         var voltages = dynamics.feedforward(currentState);
-        shoulderAngleSetpoint = currentState.get(0,0);
-        elbowAngleSetpoint = currentState.get(1,0);            
+        double shoulderAngleSetpoint = currentState.get(0,0);
+        double elbowAngleSetpoint = currentState.get(1,0);            
         double shoulderPidFeedback = shoulderFeedback.calculate(shoulderAngleRad, shoulderAngleSetpoint);
         double elbowPidFeedback = elbowFeedback.calculate(elbowAngleRad, elbowAngleSetpoint) ;
         
@@ -152,7 +204,7 @@ public class ArmLoop extends LoopBase {
             internalDisableTimer.reset();
         } else {
             if ((Math.abs(shoulderAngleRad - shoulderAngleSetpoint) < internalDisableMaxError) &&
-                Math.abs(elbowAngleRad - elbowAngleSetpoint) < internalDisableMaxError) {
+                (Math.abs(elbowAngleRad - elbowAngleSetpoint) < internalDisableMaxError)) {
                 internalDisableTimer.reset();
             } else if (internalDisableTimer.hasElapsed(internalDisableMaxErrorTime)) {
                 internalDisable = true;
@@ -180,7 +232,16 @@ public class ArmLoop extends LoopBase {
 
     @Override
     protected void Update() {
-
-
     }
+
+
+    public void manualAdjustment(double xThrottle, double yThrottle, double zThrottle) {
+        // xThrottle and zThrottle are assumed to be joystick inputs in the range [-1, +1]
+        this.xThrottle = xThrottle;
+        this.zThrottle = zThrottle;
+
+        // TODO: adjust turret angle target
+        // yAdjustmentInches += yThrottle * manualMaxSpeedDegreesPerSec * Constants.loopPeriodSecs;
+    }
+    
 }

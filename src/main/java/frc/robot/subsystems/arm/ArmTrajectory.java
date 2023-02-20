@@ -78,9 +78,9 @@ public class ArmTrajectory {
     return getFixedState(position.get(0,0), position.get(1,0));
   }
 
-  public static Matrix<N2, N3> getFixedState(double position_0, double position_1) {
+  public static Matrix<N2, N3> getFixedState(double position0, double position1) {
     // set posistion_0 and position_1, but zero out the velocity and acceleration terms
-    return new MatBuilder<>(Nat.N2(), Nat.N3()).fill(position_0, 0.0, 0.0, position_1, 0.0, 0.0);
+    return new MatBuilder<>(Nat.N2(), Nat.N3()).fill(position0, 0.0, 0.0, position1, 0.0, 0.0);
   }
 
 
@@ -89,52 +89,55 @@ public class ArmTrajectory {
    * accelerations of the joints.
    */
   public Matrix<N2, N3> sample(double time) {
-    var dt = getTotalTime() / (points.size() - 1);  // includes grannyFactor
+    int N = points.size();
+    var dt = getTotalTime() / (N-1);  // includes grannyFactor
 
     // Get surrounding points
-    int prevIndex = (int) Math.floor(time / dt);
-    int nextIndex = (int) Math.ceil(time / dt);
-    if (nextIndex == prevIndex) nextIndex++;
-    int secondPrevIndex = prevIndex - 1;
-    int secondNextIndex = nextIndex + 1;
+    int iPrev1 = (int) Math.floor(time / dt);
+    int iNext1 = (int) Math.ceil(time / dt);
+    if (iNext1 == iPrev1) iNext1++;
+    int iPrev2 = iPrev1 - 1;
+    int iNext2 = iNext1 + 1;
 
     // Clamp to allowed indices
-    prevIndex = MathUtil.clamp(prevIndex, 0, points.size() - 1);
-    nextIndex = MathUtil.clamp(nextIndex, 0, points.size() - 1);
-    secondPrevIndex = MathUtil.clamp(secondPrevIndex, 0, points.size() - 1);
-    secondNextIndex = MathUtil.clamp(secondNextIndex, 0, points.size() - 1);
+    iPrev1 = MathUtil.clamp(iPrev1, 0, N-1);
+    iNext1 = MathUtil.clamp(iNext1, 0, N-1);
+    iPrev2 = MathUtil.clamp(iPrev2, 0, N-1);
+    iNext2 = MathUtil.clamp(iNext2, 0, N-1);
+
+    // get neighboring trajectory points
+    double theta0_prev2 = points.get(iPrev2).get(0, 0);
+    double theta1_prev2 = points.get(iPrev2).get(1, 0);
+    double theta0_prev1 = points.get(iPrev1).get(0, 0);
+    double theta1_prev1 = points.get(iPrev1).get(1, 0);
+    double theta0_next1 = points.get(iNext1).get(0, 0);
+    double theta1_next1 = points.get(iNext1).get(1, 0);
+    double theta0_next2 = points.get(iNext2).get(0, 0);
+    double theta1_next2 = points.get(iNext2).get(1, 0);
 
     // Calculate positions
-    double position_0 =
-        MathUtil.interpolate(
-          points.get(prevIndex).get(0, 0), points.get(nextIndex).get(0, 0), (time % dt) / dt);
-    double position_1 =
-        MathUtil.interpolate(
-          points.get(prevIndex).get(1, 0), points.get(nextIndex).get(1, 0), (time % dt) / dt);
+    double position0 = MathUtil.interpolate(theta0_prev1, theta0_next1, (time % dt) / dt);
+    double position1 = MathUtil.interpolate(theta1_prev1, theta1_next1, (time % dt) / dt);
 
     // Calculate velocities
-    double velocity_0 = (points.get(nextIndex).get(0, 0) - points.get(prevIndex).get(0, 0)) / dt;
-    double velocity_1 = (points.get(nextIndex).get(1, 0) - points.get(prevIndex).get(1, 0)) / dt;
+    double velocity0 = (theta0_next1 - theta0_prev1) / dt;
+    double velocity1 = (theta1_next1 - theta1_prev1) / dt;
 
     // Calculate accelerations
-    double acceleration_0, acceleration_1;
+    double acceleration0, acceleration1;
     if ((time % dt) / dt < 0.5) {
-      double prevVelocity_0 =
-          (points.get(prevIndex).get(0, 0) - points.get(secondPrevIndex).get(0, 0)) / dt;
-      double prevVelocity_1 =
-          (points.get(prevIndex).get(1, 0) - points.get(secondPrevIndex).get(1, 0)) / dt;
-      acceleration_0 = (velocity_0 - prevVelocity_0) / dt;
-      acceleration_1 = (velocity_1 - prevVelocity_1) / dt;
+      double velocity0_prev = (theta0_prev1 - theta0_prev2) / dt;
+      double velocity1_prev = (theta1_prev1 - theta1_prev2) / dt;
+      acceleration0 = (velocity0 - velocity0_prev) / dt;
+      acceleration1 = (velocity1 - velocity1_prev) / dt;
     } else {
-      double nextVelocity_0 =
-          (points.get(secondNextIndex).get(0, 0) - points.get(nextIndex).get(0, 0)) / dt;
-      double nextVelocity_1 =
-          (points.get(secondNextIndex).get(1, 0) - points.get(nextIndex).get(1, 0)) / dt;
-      acceleration_0 = (nextVelocity_0 - velocity_0) / dt;
-      acceleration_1 = (nextVelocity_1 - velocity_1) / dt;
+      double velocity0_next = (theta0_next2 - theta0_next1) / dt;
+      double velocity1_next = (theta1_next2 - theta1_next1) / dt;
+      acceleration0 = (velocity0_next - velocity0) / dt;
+      acceleration1 = (velocity1_next - velocity1) / dt;
     }
 
     return new MatBuilder<>(Nat.N2(), Nat.N3())
-        .fill(position_0, velocity_0, acceleration_0, position_1, velocity_1, acceleration_1);
+        .fill(position0, velocity0, acceleration0, position1, velocity1, acceleration1);
   }
 }

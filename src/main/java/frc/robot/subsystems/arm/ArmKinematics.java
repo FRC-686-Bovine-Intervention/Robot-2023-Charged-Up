@@ -38,10 +38,16 @@ public class ArmKinematics {
     this.maxTheta21 = maxTheta21;
   }
 
+
   /** Converts joint angles to the end effector position. */
   public Translation2d forward(Vector<N2> theta) {
-    double theta1  = theta.get(0,0);  // shoulder angle, relative to horizontal
-    double theta21 = theta.get(1,0);  // elbow angle, relative to shoulder angle
+    return forward(theta.get(0,0), theta.get(1,0));
+  }
+
+  /** Converts joint angles to the end effector position. */
+  public Translation2d forward(double theta1, double theta21) {
+    // theta1 is shoulder angle, relative to horizontal
+    // theta21 is elbow angle, relative to shoulder angle
     double theta2  = theta1 + theta21;         // elbow angle, relative to horizontal
 
     return shoulder.plus( new Translation2d(l1 * Math.cos(theta1) + l2 * Math.cos(theta2),
@@ -51,18 +57,22 @@ public class ArmKinematics {
 
   /** Converts the end effector position to joint angles. */
   public Optional<Vector<N2>> inverse(Translation2d position) {
+    return inverse(position.getX(), position.getY());
+  }
+
+  /** Converts the end effector position to joint angles. */
+  public Optional<Vector<N2>> inverse(double x2, double y2) {
 
     /* find where pivot point between 2 joints could be
      * (finding intersection of 2 circles centered at the base pivot and [x,z]
      * https://math.stackexchange.com/questions/256100/how-can-i-find-the-points-at-which-two-circles-intersect */
 
-    // shoulder position
+    // x0 is shoulder position
     double x0 = shoulder.getX();
     double y0 = shoulder.getY();
 
-    // end effector position
-    double x2 = position.getX();
-    double y2 = position.getY();
+    // x1 is elbow position
+    // x2 is end effector position
 
     double D = Math.sqrt((x2-x0)*(x2-x0) + (y2-y0)*(y2-y0));
     double J = (l1*l1 - l2*l2) / (2.0*D*D);

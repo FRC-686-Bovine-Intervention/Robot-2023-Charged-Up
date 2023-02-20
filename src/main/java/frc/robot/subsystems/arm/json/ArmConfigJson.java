@@ -21,6 +21,8 @@ import frc.robot.subsystems.arm.ArmDynamics;
 
 /** Represents all of the arm config data shared between the robot code and solver. */
 public record ArmConfigJson(
+    double frame_width_inches,
+    double bumper_width_inches,
     Translation2d shoulder,
     ArmDynamics.JointConfig proximal,
     ArmDynamics.JointConfig distal,
