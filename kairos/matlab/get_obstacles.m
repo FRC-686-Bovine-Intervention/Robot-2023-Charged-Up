@@ -1,4 +1,4 @@
-function [obstacle, obstacleEnum] = get_obstacles(center_to_side_bumper, fieldPos, margin, intake_margin, calc)
+function [obstacle, obstacleEnum] = get_obstacles(bumper_width_inches, fieldPos, margin, intake_margin, calc)
 %=====================================
 % Define obstacles
 %=====================================
@@ -18,7 +18,7 @@ obstacleEnum.MID_POLE_VERT_MARGIN   = 12;
 obstacleEnum.HIGH_POLE_VERT_MARGIN  = 13;
 
 
-obstacle{obstacleEnum.ROBOT_BODY}.x = [-center_to_side_bumper    -center_to_side_bumper  +center_to_side_bumper  +center_to_side_bumper];
+obstacle{obstacleEnum.ROBOT_BODY}.x = [-bumper_width_inches/2    -bumper_width_inches/2  +bumper_width_inches/2  +bumper_width_inches/2];
 obstacle{obstacleEnum.ROBOT_BODY}.y = [0.0                       9.0 + intake_margin.y     9.0 + intake_margin.y     0.0];
 
 obstacle{obstacleEnum.INTAKE}.x = [6.5    6.5-intake_margin.x       9.0 + intake_margin.x    12.0 + intake_margin.x];

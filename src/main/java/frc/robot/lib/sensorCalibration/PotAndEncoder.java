@@ -157,6 +157,8 @@ public class PotAndEncoder {
                     offset, 
                     firstOffset));
     }
+
+
     public static class Status {
 
         public final Config config;
@@ -184,6 +186,7 @@ public class PotAndEncoder {
             reading.recordOutputs(logger, prefix + "/Reading");
         }
     }
+
 
     public static class Debug {
         public final double averageAbsRelDifference;
@@ -221,6 +224,7 @@ public class PotAndEncoder {
         }
     }
 
+
     public static class HAL {
 
         AnalogPotentiometer pot;
@@ -239,6 +243,7 @@ public class PotAndEncoder {
         public double getRelativeEncoderReadingDeg()    {return enc.getPosition();}
         public Reading getReading()        {return new Reading(getPotentiometerReadingDeg(), getAbsoluteEncoderReadingDeg(), getRelativeEncoderReadingDeg());}
     }
+
 
     public static class Reading {
         public final double potAngleDeg;
@@ -278,6 +283,7 @@ public class PotAndEncoder {
         }
     }
 
+    
     public static class Config {
         public final double potentiometerGearRatio;             // gear ratio: potentiometer rotations / output rotations
         public final double encoderGearRatio;                   // gear ratio: encoder rotations / output rotations

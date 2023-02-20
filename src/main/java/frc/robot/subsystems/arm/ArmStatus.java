@@ -3,13 +3,14 @@ package frc.robot.subsystems.arm;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
+import frc.robot.lib.sensorCalibration.PotAndEncoder;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class ArmStatus extends StatusBase {
     private static ArmStatus instance;
     public static ArmStatus getInstance(){if(instance == null) instance = new ArmStatus(); return instance;}
 
-    private final ArmHAL HAL = ArmHAL.getInstance();
+    private final ArmHAL hal = ArmHAL.getInstance();
 
     private ArmStatus() {Subsystem = Arm.getInstance();}
 
@@ -29,6 +30,14 @@ public class ArmStatus extends StatusBase {
     public ArmState getArmState()                   {return armState;}
     public ArmStatus setArmState(ArmState armState) {this.armState = armState; return this;}
 
+    private PotAndEncoder.Status shoulderStatus;
+    public PotAndEncoder.Status getShoulderState() {return shoulderStatus;}
+    public ArmStatus setShoulderState(PotAndEncoder.Status state) {this.shoulderStatus = state; return this;}
+
+    private PotAndEncoder.Status elbowStatus;
+    public PotAndEncoder.Status getElbowState(){return elbowStatus;}
+    public ArmStatus setElbowState(PotAndEncoder.Status state) {this.elbowStatus = state; return this;}
+
     @Override
     public void exportToTable(LogTable table) {
     }
@@ -39,9 +48,13 @@ public class ArmStatus extends StatusBase {
     
     @Override
     public void updateInputs() {
+        setShoulderState(hal.getShoulderPotEncoder().update());
+        setElbowState(hal.getElbowPotEncoder().update());
     }
 
     @Override
     public void recordOutputs(Logger logger, String prefix) {
+        shoulderStatus.recordOutputs(logger, prefix+"Shoulder Encoder");
+        elbowStatus.recordOutputs(logger, prefix+"Elbow Encoder");
     }
 }

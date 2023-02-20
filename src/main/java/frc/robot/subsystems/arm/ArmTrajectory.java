@@ -24,6 +24,7 @@ public class ArmTrajectory {
   private final String finalPos;   // final position in XZ coordinates
   private double totalTime = 0.0;         // total trajectory time
   private List<Vector<N2>> points = new ArrayList<>();  // rough trajectory of theta1, theta2 in equally spaced times across totalTime
+  Matrix<N2, N3> finalState;
 
   /** Creates an arm trajectory with the given parameters. */
   public ArmTrajectory(String startPos, String finalPos, double totalTime, List<Vector<N2>> points) {
@@ -31,20 +32,35 @@ public class ArmTrajectory {
     this.finalPos = finalPos;
     this.totalTime = totalTime;
     this.points = points;
+
+    // precalculate the final state, as we will use this to hold position after completing the trajectory
+    this.finalState = getFixedState(points.get(points.size()-1));
   }
 
+  /** slow down factor for arm movements */
+  private double grannyFactor = 1.0;  // default to full speed motions
 
-  public String getStartPos() {
+  public double getGrannyFactor() {
+    return grannyFactor;
+  }
+
+  public void setGrannyFactor(double grannyFactor) {
+    this.grannyFactor = MathUtil.clamp(grannyFactor, 1.0, 10.0);
+  }
+
+  /** get start position string */
+  public String getStartString() {
     return startPos;
   }
 
-  public String getFinalPos() {
+  /** set final position string */
+  public String getFinalString() {
     return finalPos;
   }
   
-  /** Returns the total time for the trajectory. */
+  /** Returns the total time for the trajectory, possibly lengthened by GrannyFactor. */
   public double getTotalTime() {
-    return this.totalTime;
+    return this.totalTime * this.grannyFactor;
   }
 
   /** Returns the generated interior points. */
@@ -52,12 +68,28 @@ public class ArmTrajectory {
     return this.points;
   }
 
+  /** Returns the final state */
+  public Matrix<N2, N3> getFinalState() {
+    return this.finalState;
+  }
+
+  public static Matrix<N2, N3> getFixedState(Vector<N2> position) {
+    // set posistion_0 and position_1, but zero out the velocity and acceleration terms
+    return getFixedState(position.get(0,0), position.get(1,0));
+  }
+
+  public static Matrix<N2, N3> getFixedState(double position_0, double position_1) {
+    // set posistion_0 and position_1, but zero out the velocity and acceleration terms
+    return new MatBuilder<>(Nat.N2(), Nat.N3()).fill(position_0, 0.0, 0.0, position_1, 0.0, 0.0);
+  }
+
+
   /**
    * Samples the trajectory at a time, returning a matrix with the position, velocities, and
    * accelerations of the joints.
    */
   public Matrix<N2, N3> sample(double time) {
-    var dt = totalTime / (points.size() - 1);
+    var dt = getTotalTime() / (points.size() - 1);  // includes grannyFactor
 
     // Get surrounding points
     int prevIndex = (int) Math.floor(time / dt);

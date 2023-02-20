@@ -19,8 +19,8 @@ if __name__ == "__main__":
     constraints_inches = json.loads(open("src/main/deploy/constraints.json", "r").read())
     solver_config = json.loads(open("src/main/deploy/solver_config.json", "r").read())
 
-    center_to_side_bumper_inches = arm_config["center_to_side_bumper_inches"]
-    preset_pose_inches = ArmPresetPoses.get_preset_poses(center_to_side_bumper_inches)
+    bumper_width_inches = arm_config["bumper_width_inches"]
+    preset_pose_inches = ArmPresetPoses.get_preset_poses(bumper_width_inches)
 
     # convert all Imperial inputs to Metric
     preset_poses = preset_pose_inches.copy()
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     for key in constraints_inches:
         constraints[key] = {}
         constraints[key]["type"] = constraints_inches[key]["type"]
-        constraints[key]["args"] = (constraints_inches[key]["args"].copy()*inch).to("meter").value
+        constraints[key]["args"] = (constraints_inches[key]["args"]*inch).to("meter").value
 
     solver = Solver(arm_config, constraints, solver_config)
 
@@ -47,9 +47,10 @@ if __name__ == "__main__":
             }
             result = solver.solve(request)
 
-            json_output = {"startPos" : start, "finalPos": final, "totalTime": result[0], "theta1":result[1], "theta2":result[2]}
-
             if result is not None:
+                json_output = {"startPos": start, "finalPos": final, "totalTime": result[0], "theta1": result[1],
+                               "theta2": result[2]}
+
                 filename = "src/main/deploy/paths/arm_path_{0}_{1}.json".format(
                     preset_poses[start]["fileIdx"].value, preset_poses[final]["fileIdx"].value)
                 with open(filename, "w") as outfile:

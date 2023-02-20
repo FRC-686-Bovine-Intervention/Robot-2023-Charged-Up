@@ -1,4 +1,32 @@
 {
+  "no_thru_arm": {
+    "type": "minX",
+    "args": [
+      -1,
+      0
+    ]
+  },
+  "max_extension": {
+    "type": "maxX",
+    "args": [
+      60,
+      0
+    ]
+  },
+  "floor": {
+    "type": "minY",
+    "args": [
+      0,
+      0
+    ]
+  },
+  "max_height": {
+    "type": "maxY",
+    "args": [
+      72,
+      0
+    ]
+  },
   "INTAKE": {
     "type": "rectangle",
     "args": [
@@ -11,10 +39,10 @@
   "MID_SHELF": {
     "type": "rectangle",
     "args": [
-      26.5,
+      29.5,
       0,
-      63.25,
-      26.5
+      69.5,
+      23.5
     ]
   },
   "HIGH_SHELF": {
@@ -22,9 +50,26 @@
     "args": [
       46.875,
       0,
-      63.25,
+      69.5,
       35.5
     ]
+  },
+  "MID_SHELF_VERT_MARGIN": {
+    "type": "rectangle",
+    "args": [
+      26.5,
+      0,
+      29.5,
+      26.5
+    ]
+  },
+  "MID_SHELF_HORIZ_MARGIN": {
+    "type": "rectangle",
+    "args": [
+      29.5,
+      23.5,
+      46.875,
+      26.5
+    ]
   }
-
 }

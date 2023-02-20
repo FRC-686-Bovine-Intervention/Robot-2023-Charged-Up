@@ -72,6 +72,14 @@ public class ArmDynamics {
     return combined;
   }
 
+  public boolean isGoodProximalAngle(double angle, double extraThreshold) {
+    return (angle >= proximal.minAngle) && (angle <= proximal.maxAngle + extraThreshold);
+  }
+
+  public boolean isGoodDistalAngle(double angle, double extraThreshold) {
+    return (angle >= distal.minAngle - extraThreshold) && (angle <= distal.maxAngle + extraThreshold);
+  }
+
   /** Calculates the joint voltages based on the joint positions (feedforward). */
   public Vector<N2> feedforward(Vector<N2> position) {
     return feedforward(position, VecBuilder.fill(0.0, 0.0), VecBuilder.fill(0.0, 0.0));

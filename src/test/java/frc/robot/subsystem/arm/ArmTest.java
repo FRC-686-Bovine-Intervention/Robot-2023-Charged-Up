@@ -48,18 +48,18 @@ public class ArmTest {
 
         ArmPose.Preset.writePresets(presets);
 
-        assertEquals(1, ArmPose.Preset.DEFENSE.getFileIdx());
+        assertEquals(0, ArmPose.Preset.DEFENSE.getFileIdx());
         assertEquals(0.0, ArmPose.Preset.DEFENSE.getX(), kEps);
         assertEquals(25.0, ArmPose.Preset.DEFENSE.getY(), kEps);
         
-        assertEquals(1, ArmPose.Preset.DEFENSE.getFileIdx());
-        assertEquals(2, ArmPose.Preset.INTAKE.getFileIdx());
-        assertEquals(3, ArmPose.Preset.DOUBLE_SUBSTATION.getFileIdx());
-        assertEquals(4, ArmPose.Preset.SCORE_HYBRID.getFileIdx());
-        assertEquals(5, ArmPose.Preset.SCORE_MID_CUBE.getFileIdx());
-        assertEquals(6, ArmPose.Preset.SCORE_HIGH_CUBE.getFileIdx());
-        assertEquals(7, ArmPose.Preset.SCORE_MID_CONE.getFileIdx());
-        assertEquals(8, ArmPose.Preset.SCORE_HIGH_CONE.getFileIdx());
+        assertEquals(0, ArmPose.Preset.DEFENSE.getFileIdx());
+        assertEquals(1, ArmPose.Preset.INTAKE.getFileIdx());
+        assertEquals(2, ArmPose.Preset.DOUBLE_SUBSTATION.getFileIdx());
+        assertEquals(3, ArmPose.Preset.SCORE_HYBRID.getFileIdx());
+        assertEquals(4, ArmPose.Preset.SCORE_MID_CUBE.getFileIdx());
+        assertEquals(5, ArmPose.Preset.SCORE_HIGH_CUBE.getFileIdx());
+        assertEquals(6, ArmPose.Preset.SCORE_MID_CONE.getFileIdx());
+        assertEquals(7, ArmPose.Preset.SCORE_HIGH_CONE.getFileIdx());
     }
 
     @Test
@@ -86,11 +86,11 @@ public class ArmTest {
             }
         }
     
-        assertEquals("defense", paths[1][1].startPos());
-        assertEquals("score_high_cone", paths[1][8].finalPos());
+        assertEquals("defense", paths[0][0].startPos());
+        assertEquals("score_high_cone", paths[0][7].finalPos());
         
-        assertEquals("score_high_cone", paths[8][1].startPos());
-        assertEquals("defense", paths[8][1].finalPos());
+        assertEquals("score_high_cone", paths[7][0].startPos());
+        assertEquals("defense", paths[7][0].finalPos());
 
     }
 
