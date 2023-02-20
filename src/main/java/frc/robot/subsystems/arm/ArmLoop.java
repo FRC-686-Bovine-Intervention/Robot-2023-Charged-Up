@@ -143,6 +143,8 @@ public class ArmLoop extends LoopBase {
             trajectoryTimer.stop();
             trajectoryTimer.reset();
             currentTrajectory = null;
+            xAdjustment = 0.0;
+            zAdjustment = 0.0;
         }
 
         // move arm!
@@ -234,6 +236,14 @@ public class ArmLoop extends LoopBase {
     protected void Update() {
     }
 
+
+    public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos) {
+        ArmTrajectory baseTrajectory = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
+
+        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderState().positionDeg);
+        double elbowAngleRad = Units.degreesToRadians(status.getElbowState().positionDeg);
+        currentTrajectory = ArmTrajectory.interpolateStaringPositionError(baseTrajectory, shoulderAngleRad, elbowAngleRad);
+    }
 
     public void manualAdjustment(double xThrottle, double yThrottle, double zThrottle) {
         // xThrottle and zThrottle are assumed to be joystick inputs in the range [-1, +1]

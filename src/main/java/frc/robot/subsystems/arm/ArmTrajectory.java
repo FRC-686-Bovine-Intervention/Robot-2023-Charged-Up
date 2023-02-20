@@ -14,7 +14,9 @@ import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 
@@ -140,4 +142,25 @@ public class ArmTrajectory {
     return new MatBuilder<>(Nat.N2(), Nat.N3())
         .fill(position0, velocity0, acceleration0, position1, velocity1, acceleration1);
   }
+
+  public static ArmTrajectory interpolateStaringPositionError(ArmTrajectory baseTrajectory, double theta0_actual, double theta1_actual) {
+    ArmTrajectory trajectory = baseTrajectory;
+
+    // measure the difference between the expected and actual starting positions
+    Matrix<N2,N1> theta_actual = VecBuilder.fill(theta0_actual, theta1_actual);
+    Matrix<N2,N1> theta_error = theta_actual.minus(baseTrajectory.points.get(0));
+    
+    // linearly interpolate that error along the path
+    // full error at the start, 0 at the end
+    int N = trajectory.points.size();
+    for (int k=0; k<N; k++) {
+      Matrix<N2,N1> theta = baseTrajectory.points.get(k);
+      double beta = (double)(N-1-k)/(N-1);
+      theta = theta.plus(theta_error.times(beta));
+      trajectory.points.set(k, new Vector<N2>(theta));
+    }
+
+    return trajectory;
+  }
+
 }
