@@ -7,7 +7,6 @@ import com.ctre.phoenix.sensors.CANCoder;
 import com.ctre.phoenix.sensors.CANCoderConfiguration;
 
 import edu.wpi.first.util.CircularBuffer;
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import frc.robot.lib.util.Unwrapper;
 
@@ -49,22 +48,19 @@ public class PotAndEncoder {
         calibrated = false;
     }
 
-    public Status exportToTable(LogTable table, String name)
+    public Reading getReading()
     {
-        Reading reading = config.HAL.getReading();
-        reading.exportToTable(table, name);
-        return update(reading);
+        Reading r = new Reading(0, 0, 0);
+        if(config.HAL != null)
+            r = config.HAL.getReading();
+        return r;
     }
 
-    public Status importFromTable(LogTable table, String name, Reading defaultReading)
+    public Status update()
     {
-        return update(defaultReading.importFromTable(table, name));
-    }
-
-    public Status update() {
         if(config.HAL != null)
             return update(config.HAL.getReading());
-        throw new NullPointerException("Called a PotAndEncoder auto update without setting a HAL");
+        throw new NullPointerException("Called PotAndEncoder auto update without setting a HAL");
     }
     public Status update(Reading reading)
     {
@@ -238,7 +234,7 @@ public class PotAndEncoder {
         public double getPotentiometerReadingDeg()      {return pot.get();}
         public double getAbsoluteEncoderReadingDeg()    {return enc.getAbsolutePosition();}
         public double getRelativeEncoderReadingDeg()    {return enc.getPosition();}
-        public Reading getReading()        {return new Reading(getPotentiometerReadingDeg(), getAbsoluteEncoderReadingDeg(), getRelativeEncoderReadingDeg());}
+        public Reading getReading()                     {return new Reading(getPotentiometerReadingDeg(), getAbsoluteEncoderReadingDeg(), getRelativeEncoderReadingDeg());}
     }
 
     public static class Reading {
@@ -270,12 +266,6 @@ public class PotAndEncoder {
             return new Reading(table.getDouble(name + "/Potentiometer Angle (Deg)", potAngleDeg),
                                table.getDouble(name + "/Absolute Encoder Angle (Deg)", absAngleDeg),
                                table.getDouble(name + "/Relative Angle (Deg)", relAngleDeg));
-        }
-        public static Reading importFromTable(LogTable table, String name, Reading defaultReading)
-        {
-            return new Reading(table.getDouble(name + "/Potentiometer Angle (Deg)", defaultReading.potAngleDeg),
-                               table.getDouble(name + "/Absolute Encoder Angle (Deg)", defaultReading.absAngleDeg),
-                               table.getDouble(name + "/Relative Angle (Deg)", defaultReading.relAngleDeg));
         }
     }
 

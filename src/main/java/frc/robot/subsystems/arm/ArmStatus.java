@@ -3,6 +3,7 @@ package frc.robot.subsystems.arm;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
+import frc.robot.lib.sensorCalibration.PotAndEncoder;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class ArmStatus extends StatusBase {
@@ -33,11 +34,12 @@ public class ArmStatus extends StatusBase {
     public ArmState     getArmState()                   {return armState;}
     protected ArmStatus setArmState(ArmState armState)  {this.armState = armState; return this;}
 
+    // Turret
     private double      turretPosition; 
     public double       getTurretPosition() {return turretPosition;}
     private ArmStatus   setTurretPosition(double turretPosition) {this.turretPosition = turretPosition; return this;}
 
-    private double      targetTurretAngle; //TODO: Units
+    private double      targetTurretAngle;
     public double       getTargetTurretAngle()              {return targetTurretAngle;}
     protected ArmStatus setTargetTurretAngle(double angle)  {targetTurretAngle = angle; return this;}
 
@@ -45,25 +47,54 @@ public class ArmStatus extends StatusBase {
     public double       getTurretPower()                    {return turretPower;}
     protected ArmStatus setTurretPower(double turretPower)  {this.turretPower = turretPower; return this;}
 
+    // Shoulder
+    private PotAndEncoder.Reading   shoulderReading;
+    private ArmStatus               setShoulderReading(PotAndEncoder.Reading shoulderReading)   {this.shoulderReading = shoulderReading; return this;}
+    
+    private PotAndEncoder.Status    shoulderStatus;
+    public PotAndEncoder.Status     getShoulderStatus()                                     {return shoulderStatus;}
+    private ArmStatus               setShoulderStatus(PotAndEncoder.Status shoulderStatus)  {this.shoulderStatus = shoulderStatus; return this;}
+    
+    // Elbow
+    private PotAndEncoder.Reading   elbowReading;
+    private ArmStatus               setElbowReading(PotAndEncoder.Reading elbowReading) {this.elbowReading = elbowReading; return this;}
+
+    private PotAndEncoder.Status    elbowStatus;
+    public PotAndEncoder.Status     getElbowStatus()                                    {return elbowStatus;}
+    private ArmStatus               setElbowStatus(PotAndEncoder.Status elbowStatus)    {this.elbowStatus = elbowStatus; return this;}
+
+    @Override
+    public void updateInputs() {
+        setCommand(arm.getCommand());
+        setTurretPosition(HAL.getTurretRelative());
+        setShoulderReading(HAL.getShoulderPotEncoder().getReading());
+    }
+
     @Override
     public void exportToTable(LogTable table) {
         table.put("Turret Position", getTurretPosition());
+        shoulderReading.exportToTable(table, "Shoulder Reading");
+        elbowReading.exportToTable(table, "Elbow Reading");
     }
     
     @Override
     public void importFromTable(LogTable table) {
         setTurretPosition(table.getDouble("Turret Position", turretPosition));
-    }
-    
-    @Override
-    public void updateInputs() {
-        setCommand(arm.getCommand());
-        setTurretPosition(HAL.getTurretRelative());
+        setShoulderReading(shoulderReading.importFromTable(table, "Shoulder Reading"));
+        setElbowReading(elbowReading.importFromTable(table, "Elbow Reading"));
     }
 
     @Override
-    public void recordOutputs(Logger logger, String prefix) {
+    public void processTable() {
+        setShoulderStatus(HAL.getShoulderPotEncoder().update(shoulderReading));
+        setElbowStatus(HAL.getElbowPotEncoder().update(elbowReading));
+    }
+
+    @Override
+    public void processOutputs(Logger logger, String prefix) {
         HAL.setTurretPower(turretPower);
+
+        command.recordOutputs(logger, prefix + "Command");
 
         logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
 
@@ -71,5 +102,8 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Turret/Relative Position", getTurretPosition());
         logger.recordOutput(prefix + "Turret/Absolute Position", HAL.getTurretAbsolute());
         logger.recordOutput(prefix + "Turret/Target Angle", getTargetTurretAngle());
+
+        shoulderStatus.recordOutputs(logger, prefix + "Shoulder Encoder");
+        elbowStatus.recordOutputs(logger, prefix + "Elbow Encoder");
     }
 }

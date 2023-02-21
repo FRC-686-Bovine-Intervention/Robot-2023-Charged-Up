@@ -57,6 +57,11 @@ public class IntakeStatus extends StatusBase {
     public IntakeStatus setDeploySolenoid(boolean deploySolenoid)   {this.deploySolenoid = deploySolenoid; return this;}
 
     @Override
+    protected void updateInputs() {
+        setIntakeCommand(intake.getCommand());
+        setIntakeCurrent(HAL.getIntakeCurrent());
+    }
+    @Override
     protected void exportToTable(LogTable table) {
         table.put("Intake Motor Current", intakeCurrent);
     }
@@ -65,12 +70,7 @@ public class IntakeStatus extends StatusBase {
         setIntakeCurrent(table.getDouble("Intake Motor Current", intakeCurrent));
     }
     @Override
-    protected void updateInputs() {
-        setIntakeCommand(intake.getCommand());
-        setIntakeCurrent(HAL.getIntakeCurrent());
-    }
-    @Override
-    protected void recordOutputs(Logger logger, String prefix) {
+    protected void processOutputs(Logger logger, String prefix) {
         HAL.setIntakeMotor(intakePower)
            .setIntakeNeutralMode(intakeNeutralMode)
            .setDeploySolenoid(deploySolenoid);
@@ -81,4 +81,6 @@ public class IntakeStatus extends StatusBase {
         logger.recordOutput(prefix + "Intake Solenoid Deployed", deploySolenoid);
         intakeCommand.log(logger, prefix + "Command");
     }
+
+    @Override protected void processTable() {}
 }

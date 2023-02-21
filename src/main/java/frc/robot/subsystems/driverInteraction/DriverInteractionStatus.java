@@ -86,7 +86,7 @@ public class DriverInteractionStatus extends StatusBase {
     private DriverInteractionStatus() {Subsystem = DriverInteraction.getInstance();}
 
     @Override
-    public void updateInputs() {
+    protected void updateInputs() {
         for(DriverControlButtons button : DriverControlButtons.values())
             button.update();
         for(DriverControlAxes axis : DriverControlAxes.values())
@@ -96,7 +96,7 @@ public class DriverInteractionStatus extends StatusBase {
     }
 
     @Override
-    public void recordOutputs(Logger logger, String prefix) {
+    protected void processOutputs(Logger logger, String prefix) {
         for(DriverControlButtons button : DriverControlButtons.values())
             logger.recordOutput(prefix + "Joystick Buttons/" + button.name(), button.getButton());
         for(DriverControlAxes axis : DriverControlAxes.values())
@@ -105,6 +105,7 @@ public class DriverInteractionStatus extends StatusBase {
             logger.recordOutput(prefix + "Joystick POVs/" + POV.name(), POV.getPOV());
     }
 
-    @Override public void exportToTable(LogTable table) {}
-    @Override public void importFromTable(LogTable table) {}
+    @Override protected void exportToTable(LogTable table) {}
+    @Override protected void importFromTable(LogTable table) {}
+    @Override protected void processTable() {}
 }
