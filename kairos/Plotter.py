@@ -12,7 +12,7 @@ import matplotlib.animation
 import matplotlib.pyplot as plt
 
 
-def plot(result, arm_config):
+def plot(result, config):
     # Get animation points
     dt = result[0] / (len(result[1]) - 1)
     animation_points = []
@@ -46,18 +46,18 @@ def plot(result, arm_config):
         theta_2 = (next_point[2] - last_point[2]) * t + last_point[2]
 
         x = [
-            arm_config["shoulder"][0],
-            arm_config["shoulder"][0] + arm_config["proximal"]["length"] * math.cos(theta_1),
-            arm_config["shoulder"][0]
-            + arm_config["proximal"]["length"] * math.cos(theta_1)
-            + arm_config["distal"]["length"] * math.cos(theta_1 + theta_2),
+            config["origin"][0],
+            config["origin"][0] + config["shoulder"]["length"] * math.cos(theta_1),
+            config["origin"][0]
+            + config["shoulder"]["length"] * math.cos(theta_1)
+            + config["elbow"]["length"] * math.cos(theta_1 + theta_2),
         ]
         y = [
-            arm_config["shoulder"][1],
-            arm_config["shoulder"][1] + arm_config["proximal"]["length"] * math.sin(theta_1),
-            arm_config["shoulder"][1]
-            + arm_config["proximal"]["length"] * math.sin(theta_1)
-            + arm_config["distal"]["length"] * math.sin(theta_1 + theta_2),
+            config["origin"][1],
+            config["origin"][1] + config["shoulder"]["length"] * math.sin(theta_1),
+            config["origin"][1]
+            + config["shoulder"]["length"] * math.sin(theta_1)
+            + config["elbow"]["length"] * math.sin(theta_1 + theta_2),
         ]
         ax.clear()
         ax.plot([-2, 2], [0, 0])
