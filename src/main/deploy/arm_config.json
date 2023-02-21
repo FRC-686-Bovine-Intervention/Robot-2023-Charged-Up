@@ -3,28 +3,28 @@
   "bumper_width_inches": 30.5,
   "shoulder": [
     0.343,
-    1.270
+    1.27
   ],
   "proximal": {
-    "mass": 1.95,
-    "length": 0.5842,
+    "mass": 1.5966451424,
+    "length": 0.6858,
     "moi": 0.153,
-    "cgRadius": 0.17,
+    "cgRadius": 0.12382499999999999,
     "minAngle": -3.14,
-    "maxAngle":  3.14,
+    "maxAngle": 0,
     "motor": {
       "type": "falcon",
       "count": 1,
-      "reduction": 100.0
+      "reduction": 112.5
     }
   },
   "distal": {
-    "mass": 0.767,
-    "length": 0.559,
+    "mass": 0.5488467677,
+    "length": 0.35559999999999997,
     "moi": 0.013,
-    "cgRadius": 0.068,
-    "minAngle": -3.14,
-    "maxAngle":  3.14,
+    "cgRadius": 0.0635,
+    "minAngle": 0,
+    "maxAngle": 3.0,
     "motor": {
       "type": "falcon",
       "count": 1,
@@ -32,9 +32,15 @@
     }
   },
   "grabber": {
-    "mass": 1.213,
-    "length": 0.392,
+    "mass": 3.152039031875,
+    "length": 0.30479999999999996,
     "moi": 0.019,
-    "cgRadius": 0.098
-    }
+    "cgRadius": 0.0635
+  },
+  "cone": {
+    "mass": 0.652039031875,
+    "length": 0.212725,
+    "moi": 0.019,
+    "cgRadius": 0.0
+  }
 }

@@ -13,29 +13,6 @@
       0
     ]
   },
-  "floor": {
-    "type": "minY",
-    "args": [
-      0,
-      0
-    ]
-  },
-  "max_height": {
-    "type": "maxY",
-    "args": [
-      72,
-      0
-    ]
-  },
-  "INTAKE": {
-    "type": "rectangle",
-    "args": [
-      3.5,
-      0,
-      15,
-      21
-    ]
-  },
   "MID_SHELF": {
     "type": "rectangle",
     "args": [

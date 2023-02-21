@@ -34,7 +34,7 @@ class ArmKinematics:
 
         return [x1, y1], [x2, y2]
 
-    def reverse_kinematics(self, x2, y2, elbow_forward=0):
+    def inverse_kinematics(self, x2, y2, elbow_forward=0):
 
         x0 = self._shoulder[0]
         y0 = self._shoulder[1]

@@ -37,14 +37,12 @@ if __name__ == "__main__":
 
     for start in preset_poses:
         for final in preset_poses:
-            # start = ArmPresetEnum.DEFENSE
-            # final = ArmPresetEnum.SCORE_HIGH_CONE
 
             request = {
                 "start_xy": preset_poses[start]["xy"],
                 "final_xy": preset_poses[final]["xy"],
                 "constraintOverrides": [],
-            }
+                }
             result = solver.solve(request)
 
             if result is not None:

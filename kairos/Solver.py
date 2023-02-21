@@ -213,12 +213,20 @@ class Solver:
         x2_end = [parameters["final_xy"][0]]
         y2_end = [parameters["final_xy"][1]]
 
-        [theta1_beg, theta2_beg, valid] = kinematics.reverse_kinematics(x2_beg, y2_beg)
-        [theta1_end, theta2_end, valid] = kinematics.reverse_kinematics(x2_end, y2_end)
+        [theta1_beg, theta2_beg, valid] = kinematics.inverse_kinematics(x2_beg, y2_beg)
+        [theta1_end, theta2_end, valid] = kinematics.inverse_kinematics(x2_end, y2_end)
         theta1_beg = theta1_beg[0]
         theta1_end = theta1_end[0]
         theta2_beg = theta2_beg[0]
         theta2_end = theta2_end[0]
+
+        if (x2_beg == x2_end) and (y2_beg == y2_end):
+            result = (0.0, [], [])
+            for _ in range(len(self._theta_points)):
+                result[1].append(theta1_beg)
+                result[2].append(theta2_beg)
+            return result
+
 
         # Update position parameters
         opti.set_value(
