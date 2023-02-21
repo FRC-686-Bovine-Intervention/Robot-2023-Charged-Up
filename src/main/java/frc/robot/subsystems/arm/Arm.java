@@ -2,11 +2,14 @@ package frc.robot.subsystems.arm;
 
 import frc.robot.subsystems.framework.SubsystemBase;
 
+
+
 public class Arm extends SubsystemBase {
     private static Arm instance;
     public static Arm getInstance(){if(instance == null) instance = new Arm(); return instance;}
 
-    private Arm(){}
+    
+    private Arm() {}
 
     @Override
     public void init()

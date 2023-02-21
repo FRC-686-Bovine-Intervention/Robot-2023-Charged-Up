@@ -1,0 +1,72 @@
+{
+    "floor": {
+        "type": "minY",
+        "args": [
+        0
+        ]
+    },
+    "robotBody": {
+        "type": "rectangle",
+        "args": [
+        -0.6,
+        -1,
+        0.7,
+        0.45
+        ]
+    },
+    "cubeIntake": {
+        "type": "rectangle",
+        "args": [
+        0.4,
+        -1,
+        0.7,
+        0.55
+        ]
+    },
+    "coneIntake": {
+        "type": "rectangle",
+        "args": [
+        -0.6,
+        -1,
+        -0.25,
+        0.55
+        ]
+    },
+    "nodeMidFront": {
+        "type": "rectangle",
+        "args": [
+        0.55,
+        -1,
+        5,
+        0.85
+        ]
+    },
+    "nodeHighFront": {
+        "type": "rectangle",
+        "args": [
+        0.9,
+        -1,
+        5,
+        1.2
+        ]
+    },
+    "nodeMidBack": {
+        "type": "rectangle",
+        "args": [
+        -5,
+        -1,
+        -0.55,
+        0.85
+        ]
+    },
+    "nodeHighBack": {
+        "type": "rectangle",
+        "args": [
+        -5,
+        -1,
+        -0.9,
+        1.2
+        ]
+    }
+}
+

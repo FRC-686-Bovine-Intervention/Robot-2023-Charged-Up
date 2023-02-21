@@ -41,5 +41,7 @@ public class Constants {
     public final static double kCenterToSideBumper = 15.0;
     public final static double kCenterToFrontBumper = 19.5;
     public final static double kCenterToIntake = 32.0;
+
+    public final static double loopPeriodSecs = 0.020;
 }
 

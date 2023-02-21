@@ -10,9 +10,6 @@ public class UnwrapperTest {
     @Test
     public void TestUnwrap360() {
         
-        double initialValue = 0.0;
-        double period = 360;
-
         Unwrapper unwrapDeg = new Unwrapper(0.0, 360.0);
         
         assertEquals(  1.0, unwrapDeg.unwrap(  1.0), kEps);         // small step from initial value
