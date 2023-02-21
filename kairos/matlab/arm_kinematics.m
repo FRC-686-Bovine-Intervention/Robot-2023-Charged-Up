@@ -26,7 +26,7 @@ classdef arm_kinematics < handle
 
 
         
-        function [theta1, theta2, x2, y2, valid] = reverse_kinematics(obj, x3, y3, varargin)
+        function [theta1, theta2, x2, y2, valid] = inverse_kinematics(obj, x3, y3, varargin)
             % find where pivot point between 2 joints could be
             % (finding intersection of 2 circles centered at the base pivot and [x,z]
             % https://math.stackexchange.com/questions/256100/how-can-i-find-the-points-at-which-two-circles-intersect
