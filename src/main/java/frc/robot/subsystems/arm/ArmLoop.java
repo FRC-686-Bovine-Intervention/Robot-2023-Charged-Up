@@ -11,32 +11,30 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
+import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.arm.json.ArmConfigJson;
 import frc.robot.subsystems.arm.json.ArmPathsJson;
 import frc.robot.subsystems.arm.json.ArmPresetsJson;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.wpilibj.Timer;
-import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeCommand;
 import frc.robot.subsystems.intake.IntakeStatus;
 import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
-import frc.robot.subsystems.vision.VisionStatus.LimelightPipeline;
 
 public class ArmLoop extends LoopBase {
     private static ArmLoop instance;
     public static ArmLoop getInstance(){if(instance == null) instance = new ArmLoop(); return instance;}
 
+    private final ArmHAL hal = ArmHAL.getInstance();
     private final ArmStatus status = ArmStatus.getInstance();
     private final Intake intake = Intake.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
@@ -151,8 +149,8 @@ public class ArmLoop extends LoopBase {
         if(newCommand.getArmState() != null)
             status.setArmState(newCommand.getArmState());
         // Get measured positions
-        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderState().positionDeg);
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowState().positionDeg);
+        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
+        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
 
         // if internally disabled, set the setpoint to the current position (don't move when enabling)
         if (internalDisable) {
@@ -330,8 +328,8 @@ public class ArmLoop extends LoopBase {
         ArmTrajectory baseTrajectory = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
 
         // get current arm positions
-        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderState().positionDeg);
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowState().positionDeg);
+        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
+        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
 
         // throw error if selected trajectory is no where near the current position
         if (!baseTrajectory.startIsNear(shoulderAngleRad, elbowAngleRad, internalDisableMaxError)) {
