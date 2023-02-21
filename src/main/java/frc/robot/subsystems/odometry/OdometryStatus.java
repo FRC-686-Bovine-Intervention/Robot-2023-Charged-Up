@@ -30,15 +30,16 @@ public class OdometryStatus extends StatusBase {
     public OdometryStatus   setRobotSpeedInPerSec(WheelSpeeds robotSpeed)   {this.robotSpeed = robotSpeed; return this;}
 
     @Override
-    public void recordOutputs(Logger logger, String prefix) {
+    protected void processOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "Robot Pose (Meters, Rad)", AdvantageUtil.deconstruct(getRobotPose()));
         logger.recordOutput(prefix + "Robot Speed (M|Sec)/Left", getRobotSpeedInPerSec().left);
         logger.recordOutput(prefix + "Robot Speed (M|Sec)/Right", getRobotSpeedInPerSec().right);
 
         logger.recordOutput(prefix + "Robot Forward Pose (Meters, Rad)", robotPose.plus(new Transform2d(new Translation2d(3,0),new Rotation2d())));
     }
-
-    @Override public void exportToTable(LogTable table) {}
-    @Override public void importFromTable(LogTable table) {}
-    @Override public void updateInputs() {}
+    
+    @Override protected void updateInputs() {}
+    @Override protected void exportToTable(LogTable table) {}
+    @Override protected void importFromTable(LogTable table) {}
+    @Override protected void processTable() {}
 }

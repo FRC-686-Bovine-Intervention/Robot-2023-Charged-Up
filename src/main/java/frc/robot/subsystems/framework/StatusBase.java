@@ -35,7 +35,6 @@ public abstract class StatusBase implements LoggableInputs{
         table.put("Enabled State", Enabled.name());
         exportToTable(table);
     }
-    protected abstract void exportToTable(LogTable table);
 
     @Override
     public final void fromLog(LogTable table)
@@ -59,7 +58,6 @@ public abstract class StatusBase implements LoggableInputs{
         }
         importFromTable(table);
     }
-    protected abstract void importFromTable(LogTable table);
 
     protected final void runPreLoop()
     {
@@ -86,8 +84,8 @@ public abstract class StatusBase implements LoggableInputs{
         }
         updateInputs();
         Logger.getInstance().processInputs(this.getClass().getSimpleName(), this);
+        processTable();
     }
-    protected abstract void updateInputs();
 
     protected final void runPostLoop()
     {
@@ -96,7 +94,36 @@ public abstract class StatusBase implements LoggableInputs{
         String prefix = Subsystem.getClass().getSimpleName() + "/";
         Logger.getInstance().recordOutput(prefix + "Enabled Switch", EnabledSwitch);
         Logger.getInstance().recordOutput(prefix + "Enabled State", Enabled.name());
-        recordOutputs(Logger.getInstance(), prefix);
+        processOutputs(Logger.getInstance(), prefix);
     }
-    protected abstract void recordOutputs(Logger logger, String prefix);
+
+    /**
+     * First thing called in a loop<p>
+     * Should be for reading raw inputs from the HAL
+     */
+    protected abstract void updateInputs();
+    /**
+     * Called directly after updateInputs if the code is not running in a simulation<p>
+     * Should be for exporting raw inputs to a table
+     * @param table - The {@link LogTable} to record to
+     */
+    protected abstract void exportToTable(LogTable table);
+    /**
+     * Called directly after updateInputs if the code is running in a simulation<p>
+     * Should be for reading raw inputs from a table
+     * @param table - The {@link LogTable} to pull from
+     */
+    protected abstract void importFromTable(LogTable table);
+    /**
+     * Called directly after the table methods<p>
+     * Should be for updating "hardware" with the table data
+     */
+    protected abstract void processTable();
+    /**
+     * Called directly after the loop methods<p>
+     * Should be sending loop outputs to the HAL and recording outputs to AdvantageKit
+     * @param logger - How to record to AdvantageKit {@code logger.recordOutput(prefix + "Your value name here", value);}
+     * @param prefix - Used to organize all subsystem outputs into their own folder
+     */
+    protected abstract void processOutputs(Logger logger, String prefix);
 }

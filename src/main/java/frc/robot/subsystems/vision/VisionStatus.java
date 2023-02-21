@@ -101,7 +101,17 @@ public class VisionStatus extends StatusBase {
     protected VisionStatus  setLatestCubeYAngle(double latestCubeYAngle)    {this.latestCubeYAngle = latestCubeYAngle; return this;}
 
     @Override
-    public void exportToTable(LogTable table) {
+    protected void updateInputs() {
+        setCommand(vision.getVisionCommand());
+        setVisionPoses(HAL.getVisionPoses());
+        setCurrentPipeline(LimelightPipeline.getFromIndex(HAL.getCurrentPipeline()));
+        setTargetXAngle(HAL.getTargetXAngle());
+        setTargetYAngle(HAL.getTargetYAngle());
+        setTargetExists(HAL.getTargetExists());
+    }
+
+    @Override
+    protected void exportToTable(LogTable table) {
         table.put("Vision Poses", AdvantageUtil.deconstructPose2ds(visionPoses));
         long[] tagIDs = new long[0];
         ArrayList<Pose3d> tagPoses = new ArrayList<Pose3d>();
@@ -128,7 +138,7 @@ public class VisionStatus extends StatusBase {
     }
 
     @Override
-    public void importFromTable(LogTable table) {
+    protected void importFromTable(LogTable table) {
         setVisionPoses(AdvantageUtil.reconstructPose2d(table.getDoubleArray("Vision Poses", null)));
         setCurrentPipeline(LimelightPipeline.getFromName(table.getString("Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null")));
         setTargetXAngle(table.getDouble("Limelight/Target X Angle (Deg)", targetXAngle));
@@ -137,16 +147,7 @@ public class VisionStatus extends StatusBase {
     }
 
     @Override
-    public void updateInputs() {
-        setCommand(vision.getVisionCommand());
-        setVisionPoses(HAL.getVisionPoses());
-        setCurrentPipeline(LimelightPipeline.getFromIndex(HAL.getCurrentPipeline()));
-        setTargetXAngle(HAL.getTargetXAngle());
-        setTargetYAngle(HAL.getTargetYAngle());
-        setTargetExists(HAL.getTargetExists());
-    }
-
-    @Override public void recordOutputs(Logger logger, String prefix) {
+    protected void processOutputs(Logger logger, String prefix) {
         HAL.setPipeline(getTargetPipeline().id);
 
         logger.recordOutput(prefix + "Limelight/Target Pipeline", getTargetPipeline().name());
@@ -155,4 +156,6 @@ public class VisionStatus extends StatusBase {
         logger.recordOutput(prefix + "Limelight/Latest Cube X Angle (Deg)", getLatestCubeXAngle());
         logger.recordOutput(prefix + "Limelight/Latest Cube Y Angle (Deg)", getLatestCubeYAngle());
     }
+
+    @Override protected void processTable() {}
 }

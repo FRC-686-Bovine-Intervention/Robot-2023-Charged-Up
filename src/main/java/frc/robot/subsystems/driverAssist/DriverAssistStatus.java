@@ -53,7 +53,7 @@ public class DriverAssistStatus extends StatusBase {
     }
 
     @Override
-    protected void recordOutputs(Logger logger, String prefix) {
+    protected void processOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "Command/Target Pose",     assistCommand.getTargetPose());
         logger.recordOutput(prefix + "Calculated Trajectory",   getTrajectory());
         logger.recordOutput(prefix + "Driver Assist State",     getDriverAssistState().name());
@@ -67,4 +67,5 @@ public class DriverAssistStatus extends StatusBase {
     
     @Override protected void exportToTable(LogTable table) {}
     @Override protected void importFromTable(LogTable table) {}
+    @Override protected void processTable() {}
 }

@@ -19,9 +19,9 @@ public class DriveStatus extends StatusBase {
 
     private final DriveHAL HAL = DriveHAL.getInstance();
 
-    private DriveCommand command = DriveCommand.COAST();
-    public DriveCommand getCommand()                    {return command;}
-    public DriveStatus  setCommand(DriveCommand command) {this.command = command; return this;}
+    private DriveCommand    command = DriveCommand.COAST();
+    public DriveCommand     getCommand()                    {return command;}
+    public DriveStatus      setCommand(DriveCommand command) {this.command = command; return this;}
 
     private ControlMode talonControlMode = ControlMode.Disabled;
     public ControlMode  getTalonMode()                      {return talonControlMode;}
@@ -31,7 +31,7 @@ public class DriveStatus extends StatusBase {
     public NeutralMode  getNeutralMode()                        {return neutralMode;}
     public DriveStatus  setNeutralMode(NeutralMode neutralMode) {this.neutralMode = neutralMode; return this;}
 	
-	private double lDistanceInches, rDistanceInches;
+	private double      lDistanceInches, rDistanceInches;
     public double       getLeftDistanceInches()                         {return lDistanceInches;}
     public double       getRightDistanceInches()                        {return rDistanceInches;}
     public DriveStatus  setLeftDistanceInches(double lDistanceInches)   {this.lDistanceInches = lDistanceInches; return this;}
@@ -46,7 +46,7 @@ public class DriveStatus extends StatusBase {
     public DriveStatus  setLeftSpeedInchesPerSec(double lSpeedInchesPerSec)     {this.wheelSpeeds.left = lSpeedInchesPerSec; return this;}
     public DriveStatus  setRightSpeedInchesPerSec(double rSpeedInchesPerSec)    {this.wheelSpeeds.right = rSpeedInchesPerSec; return this;}
     
-	private Rotation2d rotation = new Rotation2d();
+	private Rotation2d  rotation = new Rotation2d();
     public Rotation2d   getRotation()                       {return rotation;}
     public double       getHeadingRad()                     {return rotation.getRadians();}
     public double       getHeadingDeg()                     {return rotation.getDegrees();}
@@ -54,27 +54,27 @@ public class DriveStatus extends StatusBase {
     public DriveStatus  setHeadingRad(double headingRad)    {this.rotation = Rotation2d.fromRadians(headingRad); return this;}
     public DriveStatus  setHeadingDeg(double headingDeg)    {this.rotation = Rotation2d.fromDegrees(headingDeg); return this;}
 
-    private double pitchDeg;
+    private double      pitchDeg;
     public double       getPitchDeg()                   {return pitchDeg;}
     public double       getPitchRad()                   {return Units.degreesToRadians(getPitchDeg());}
     public DriveStatus  setPitchDeg(double pitchDeg)    {this.pitchDeg = pitchDeg; return this;}
     public DriveStatus  setPitchRad(double pitchRad)    {setPitchDeg(Units.radiansToDegrees(pitchRad)); return this;}
 	
-	private double lMotorCurrent, rMotorCurrent;
+	private double      lMotorCurrent, rMotorCurrent;
     public double       getLeftMotorCurrent()                       {return lMotorCurrent;}
     public double       getRightMotorCurrent()                      {return rMotorCurrent;}
     public DriveStatus  setLeftMotorCurrent(double lMotorCurrent)   {this.lMotorCurrent = lMotorCurrent; return this;}
     public DriveStatus  setRightMotorCurrent(double rMotorCurrent)  {this.rMotorCurrent = rMotorCurrent; return this;}
     public DriveStatus  setMotorCurrent(double lMotorCurrent, double rMotorCurrent) {setLeftMotorCurrent(lMotorCurrent); setRightMotorCurrent(rMotorCurrent); return this;}
 	
-    private double lMotorStatus, rMotorStatus;
+    private double      lMotorStatus, rMotorStatus;
     public double       getLeftMotorStatus()                        {return lMotorStatus;}
     public double       getRightMotorStatus()                       {return rMotorStatus;}
     public DriveStatus  setLeftMotorStatus(double lMotorStatus)     {this.lMotorStatus = lMotorStatus; return this;}
     public DriveStatus  setRightMotorStatus(double rMotorStatus)    {this.rMotorStatus = rMotorStatus; return this;}
     public DriveStatus  setMotorStatus(double lMotorStatus, double rSpeedInchesPerSec) {setLeftMotorStatus(lMotorStatus); setRightMotorStatus(rMotorStatus); return this;}
 	
-    private double lMotorPIDError, rMotorPIDError;
+    private double      lMotorPIDError, rMotorPIDError;
     public double       getLeftMotorPIDError()                          {return lMotorPIDError;}
     public double       getRightMotorPIDError()                         {return rMotorPIDError;}
     public DriveStatus  setLeftMotorPIDError(double lMotorPIDError)     {this.lMotorPIDError = lMotorPIDError; return this;}
@@ -88,7 +88,17 @@ public class DriveStatus extends StatusBase {
     }
 
     @Override
-    public void exportToTable(LogTable table) {
+    protected void updateInputs() {
+        setDistanceInches(HAL.getLeftDistanceInches(), HAL.getRightDistanceInches());
+        setWheelSpeeds(new WheelSpeeds(HAL.getLeftSpeedInchesPerSec(), HAL.getRightSpeedInchesPerSec()));
+        setRotation(HAL.getRotation());
+        setMotorCurrent(HAL.getLeftCurrent(), HAL.getRightCurrent());
+        setMotorPIDError(HAL.getLeftPIDError(), HAL.getRightPIDError());
+        setHeadingDeg(HAL.getHeadingDeg());
+        setPitchDeg(HAL.getPitchDeg());
+    }
+    @Override
+    protected void exportToTable(LogTable table) {
         table.put("Encoded Distance (In)/Left",   getLeftDistanceInches());
         table.put("Encoded Distance (In)/Right",  getRightDistanceInches());
         table.put("Encoded Speed (In|Sec)/Left",  getLeftSpeedInchesPerSec());
@@ -100,7 +110,7 @@ public class DriveStatus extends StatusBase {
         table.put("Motor PID Error/Right",        getRightMotorPIDError());
     }
     @Override
-    public void importFromTable(LogTable table) {
+    protected void importFromTable(LogTable table) {
         setLeftDistanceInches       (table.getDouble("Encoded Distance (In)/Left",    getLeftDistanceInches()));
         setRightDistanceInches      (table.getDouble("Encoded Distance (In)/Right",   getRightDistanceInches()));
         setLeftSpeedInchesPerSec    (table.getDouble("Encoded Speed (In|Sec)/Left",   getLeftSpeedInchesPerSec()));
@@ -112,17 +122,9 @@ public class DriveStatus extends StatusBase {
         setRightMotorPIDError       (table.getDouble("Motor PID Error/Right",         getRightMotorPIDError()));
     }
     @Override
-    public void updateInputs() {
-        setDistanceInches(HAL.getLeftDistanceInches(), HAL.getRightDistanceInches());
-        setWheelSpeeds(new WheelSpeeds(HAL.getLeftSpeedInchesPerSec(), HAL.getRightSpeedInchesPerSec()));
-        setRotation(HAL.getRotation());
-        setMotorCurrent(HAL.getLeftCurrent(), HAL.getRightCurrent());
-        setMotorPIDError(HAL.getLeftPIDError(), HAL.getRightPIDError());
-        setHeadingDeg(HAL.getHeadingDeg());
-        setPitchDeg(HAL.getPitchDeg());
-    }
+    protected void processTable() {}
     @Override
-    public void recordOutputs(Logger logger, String prefix) {
+    protected void processOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "Control Mode",                    getTalonMode().name());
         logger.recordOutput(prefix + "Neutral Mode",                    getNeutralMode().name());
         logger.recordOutput(prefix + "Encoded Distance (In)/Left",      getLeftDistanceInches());

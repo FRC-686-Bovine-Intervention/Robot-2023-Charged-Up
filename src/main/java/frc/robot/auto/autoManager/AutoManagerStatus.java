@@ -77,12 +77,19 @@ public class AutoManagerStatus extends StatusBase {
     private Trajectory actionTrajectory;
     public Trajectory getActionTrajectory() {return actionTrajectory;}
     public AutoManagerStatus setActionTrajectory(Trajectory actionTrajectory) {this.actionTrajectory = actionTrajectory; return this;}
+    
+    @Override
+    protected void updateInputs() {
+        setNT_InitialDelay(initialDelayEntry.getDouble(NT_InitialDelay));
+        setNT_SelectedAutoMode(autoChooser.getSelected());
+    }
 
     @Override
     protected void exportToTable(LogTable table) {
         table.put("Initial Delay", NT_InitialDelay);
         table.put("Selected Auto Mode", NT_SelectedAutoMode != null ? NT_SelectedAutoMode.name() : null);
     }
+
     @Override
     protected void importFromTable(LogTable table) {
         setNT_InitialDelay(table.getDouble("Initial Delay", NT_InitialDelay));
@@ -98,17 +105,15 @@ public class AutoManagerStatus extends StatusBase {
         }
         setNT_SelectedAutoMode(NTAutoMode);
     }
+
     @Override
-    protected void updateInputs() {
-        setNT_InitialDelay(initialDelayEntry.getDouble(NT_InitialDelay));
-        setNT_SelectedAutoMode(autoChooser.getSelected());
-    }
-    @Override
-    protected void recordOutputs(Logger logger, String prefix) {
+    protected void processOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "Initial Delay", initialDelay);
         logger.recordOutput(prefix + "Selected Auto Mode", selectedAutoMode != null ? selectedAutoMode.name() : null);
         logger.recordOutput(prefix + "Auto Running", autoRunning);
         logger.recordOutput(prefix + "Action Index", actionIndex);
         // logger.recordOutput(prefix + "Action Trajectory", actionTrajectory);
     }
+
+    @Override protected void processTable() {}
 }
