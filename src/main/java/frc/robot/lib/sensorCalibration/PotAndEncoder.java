@@ -310,9 +310,9 @@ public class PotAndEncoder {
         public final double potentiometerGearRatio;             // gear ratio: potentiometer rotations / output rotations
         public final double encoderGearRatio;                   // gear ratio: encoder rotations / output rotations
         public final double potentiometerNTurns;                // number of turns in potentiometers full range of motion
-        public final double outputAngleDegAtCalibration;        // angle of output at calibration position, in degrees
-        public final double potentiometerAngleDegAtCalib;       // potentiometer reading at calibration position, in degrees  
-        public final double absoluteEncoderAngleDegAtCalib;     // absolute endoder reading at calibration position, in degrees
+        public final double outputAngleDegAtCalibration;        // angle of output at calibration position, in degrees (relative to reference angle of choice)
+        public final double potentiometerAngleDegAtCalib;       // potentiometer reading at calibration position, in degrees (measurement at pot, not modified by gear ratio) 
+        public final double absoluteEncoderAngleDegAtCalib;     // absolute endoder reading at calibration position, in degrees (measurement at encoder, not modified by gear ratio)
         public final HAL HAL;                      // hardware abstraction layer
         public final int movingBufferMaxSize;
         public final int averagingBufferMaxSize;

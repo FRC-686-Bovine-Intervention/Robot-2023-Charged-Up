@@ -20,12 +20,14 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 
-/** Represents a trajectory of arm states that can be generated asynchronously. */
+/**
+ * Represents a trajectory of arm states that can be generated asynchronously.
+ */
 public class ArmTrajectory {
-  private final String startPos;   // starting position in XZ coordinates
-  private final String finalPos;   // final position in XZ coordinates
-  private double totalTime = 0.0;         // total trajectory time
-  private List<Vector<N2>> points = new ArrayList<>();  // rough trajectory of theta1, theta2 in equally spaced times across totalTime
+  private final String startPos;    // starting position in XZ coordinates
+  private final String finalPos;    // final position in XZ coordinates
+  private double totalTime = 0.0;   // total trajectory time
+  private List<Vector<N2>> points = new ArrayList<>(); // rough trajectory of theta1, theta2 at equally spaced times across totalTime
   Matrix<N2, N3> finalState;
 
   /** Creates an arm trajectory with the given parameters. */
@@ -35,12 +37,13 @@ public class ArmTrajectory {
     this.totalTime = totalTime;
     this.points = points;
 
-    // precalculate the final state, as we will use this to hold position after completing the trajectory
-    this.finalState = getFixedState(points.get(points.size()-1));
+    // precalculate the final state, as we will use this to hold position after
+    // completing the trajectory
+    this.finalState = getFixedState(points.get(points.size() - 1));
   }
 
   /** slow down factor for arm movements */
-  private static double grannyFactor = 1.0;  // default to full speed motions
+  private static double grannyFactor = 1.0; // default to full speed motions
 
   public double getGrannyFactor() {
     return grannyFactor;
@@ -59,8 +62,8 @@ public class ArmTrajectory {
   public String getFinalString() {
     return finalPos;
   }
-  
-  /** Returns the total time for the trajectory, possibly lengthened by GrannyFactor. */
+
+  /**Returns the total time for the trajectory, possibly lengthened by GrannyFactor. */
   public double getTotalTime() {
     return totalTime * grannyFactor;
   }
@@ -77,7 +80,7 @@ public class ArmTrajectory {
 
   public static Matrix<N2, N3> getFixedState(Vector<N2> position) {
     // set posistion_0 and position_1, but zero out the velocity and acceleration terms
-    return getFixedState(position.get(0,0), position.get(1,0));
+    return getFixedState(position.get(0, 0), position.get(1, 0));
   }
 
   public static Matrix<N2, N3> getFixedState(double position0, double position1) {
@@ -85,27 +88,27 @@ public class ArmTrajectory {
     return new MatBuilder<>(Nat.N2(), Nat.N3()).fill(position0, 0.0, 0.0, position1, 0.0, 0.0);
   }
 
-
   /**
-   * Samples the trajectory at a time, returning a matrix with the position, velocities, and
-   * accelerations of the joints.
+   * Samples the trajectory at a time, returning a matrix with the 
+   * position, velocities, and accelerations of the joints.
    */
   public Matrix<N2, N3> sample(double time) {
     int N = points.size();
-    var dt = getTotalTime() / (N-1);  // includes grannyFactor
+    var dt = getTotalTime() / (N - 1); // includes grannyFactor
 
     // Get surrounding points
     int iPrev1 = (int) Math.floor(time / dt);
     int iNext1 = (int) Math.ceil(time / dt);
-    if (iNext1 == iPrev1) iNext1++;
+    if (iNext1 == iPrev1)
+      iNext1++;
     int iPrev2 = iPrev1 - 1;
     int iNext2 = iNext1 + 1;
 
     // Clamp to allowed indices
-    iPrev1 = MathUtil.clamp(iPrev1, 0, N-1);
-    iNext1 = MathUtil.clamp(iNext1, 0, N-1);
-    iPrev2 = MathUtil.clamp(iPrev2, 0, N-1);
-    iNext2 = MathUtil.clamp(iNext2, 0, N-1);
+    iPrev1 = MathUtil.clamp(iPrev1, 0, N - 1);
+    iNext1 = MathUtil.clamp(iNext1, 0, N - 1);
+    iPrev2 = MathUtil.clamp(iPrev2, 0, N - 1);
+    iNext2 = MathUtil.clamp(iNext2, 0, N - 1);
 
     // get neighboring trajectory points
     double theta0_prev2 = points.get(iPrev2).get(0, 0);
@@ -143,31 +146,39 @@ public class ArmTrajectory {
         .fill(position0, velocity0, acceleration0, position1, velocity1, acceleration1);
   }
 
+  public ArmTrajectory interpolateEndPoints(Double start_theta0, Double start_theta1, Double final_theta0,
+      Double final_theta1) {
+    Matrix<N2, N1> start_dtheta = VecBuilder.fill(0.0, 0.0);
+    Matrix<N2, N1> final_dtheta = VecBuilder.fill(0.0, 0.0);
 
+    // calculate the difference between the actual endpoints and the trajectory endpoints
+    if (start_theta0 != null && start_theta1 != null) {
+      Matrix<N2, N1> theta_actual = VecBuilder.fill(start_theta0, start_theta1);
+      start_dtheta = theta_actual.minus(points.get(0));
+    }
+    if (final_theta0 != null && final_theta1 != null) {
+      Matrix<N2, N1> theta_actual = VecBuilder.fill(final_theta0, final_theta1);
+      final_dtheta = theta_actual.minus(points.get(points.size() - 1));
+    }
 
-  public ArmTrajectory interpolateStaringPositionError(double theta0_actual, double theta1_actual) {
-    // measure the difference between the expected and actual starting positions
-    Matrix<N2,N1> theta_actual = VecBuilder.fill(theta0_actual, theta1_actual);
-    Matrix<N2,N1> theta_error = theta_actual.minus(points.get(0));
-    
     // linearly interpolate that error along the path
-    // full error at the start, 0 at the end
+    // full start_dtheta at the start, zero at the end
+    // zero final_dtheta at the start, full at the end
     int N = points.size();
     List<Vector<N2>> newPoints = new ArrayList<Vector<N2>>();
-    for (int k=0; k<N; k++) {
-      Matrix<N2,N1> theta = points.get(k);
-      double beta = (double)(N-1-k)/(N-1);
-      theta = theta.plus(theta_error.times(beta));
+    for (int k = 0; k < N; k++) {
+      Matrix<N2, N1> theta = points.get(k);
+      double beta = (double) (N - 1 - k) / (N - 1);
+      theta = theta.plus(start_dtheta.times(beta)).plus(final_dtheta.times(1.0 - beta));
       newPoints.add(new Vector<N2>(theta));
     }
 
     return new ArmTrajectory(startPos, finalPos, totalTime, newPoints);
   }
 
-
   public boolean startIsNear(double theta0_actual, double theta1_actual, double threshold) {
-    Matrix<N2,N1> theta_actual = VecBuilder.fill(theta0_actual, theta1_actual);
-    Matrix<N2,N1> theta_error = theta_actual.minus(points.get(0));
+    Matrix<N2, N1> theta_actual = VecBuilder.fill(theta0_actual, theta1_actual);
+    Matrix<N2, N1> theta_error = theta_actual.minus(points.get(0));
 
     return (theta_error.maxAbs() < threshold);
   }

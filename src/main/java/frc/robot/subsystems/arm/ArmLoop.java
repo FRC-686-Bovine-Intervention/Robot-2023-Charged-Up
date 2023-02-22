@@ -340,7 +340,7 @@ public class ArmLoop extends LoopBase {
         // will be linearly intepolated into the trajectory
         // to smoothly remove these adjustments without needing a separate path
         currentTrajectory = baseTrajectory;
-        currentTrajectory.interpolateStaringPositionError(shoulderAngleRad, elbowAngleRad);
+        currentTrajectory.interpolateEndPoints(Double.valueOf(shoulderAngleRad), Double.valueOf(elbowAngleRad), null, null);
     }
 
     public void manualAdjustment(double xThrottle, double yThrottle, double zThrottle) {
