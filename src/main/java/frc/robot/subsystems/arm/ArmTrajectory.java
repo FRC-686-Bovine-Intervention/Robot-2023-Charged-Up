@@ -40,14 +40,14 @@ public class ArmTrajectory {
   }
 
   /** slow down factor for arm movements */
-  private double grannyFactor = 1.0;  // default to full speed motions
+  private static double grannyFactor = 1.0;  // default to full speed motions
 
   public double getGrannyFactor() {
     return grannyFactor;
   }
 
   public void setGrannyFactor(double grannyFactor) {
-    this.grannyFactor = MathUtil.clamp(grannyFactor, 1.0, 10.0);
+    ArmTrajectory.grannyFactor = MathUtil.clamp(grannyFactor, 1.0, 10.0);
   }
 
   /** get start position string */
@@ -62,17 +62,17 @@ public class ArmTrajectory {
   
   /** Returns the total time for the trajectory, possibly lengthened by GrannyFactor. */
   public double getTotalTime() {
-    return this.totalTime * this.grannyFactor;
+    return totalTime * grannyFactor;
   }
 
   /** Returns the generated interior points. */
   public List<Vector<N2>> getPoints() {
-    return this.points;
+    return points;
   }
 
   /** Returns the final state */
   public Matrix<N2, N3> getFinalState() {
-    return this.finalState;
+    return finalState;
   }
 
   public static Matrix<N2, N3> getFixedState(Vector<N2> position) {

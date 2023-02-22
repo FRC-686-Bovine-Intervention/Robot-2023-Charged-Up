@@ -16,7 +16,7 @@ public record ArmPathsJson(
   List<Double> theta2)      // angle of distal arm in radians
   {     
   
-  public static final String jsonFilename = "paths/arm_paths_%d_%d.json";
+  public static final String jsonFilename = "paths/arm_path_%d_%d.json";
 
   public String startPos() {
         return startPos;
@@ -40,7 +40,7 @@ public record ArmPathsJson(
 
 /** Generates a config instance by reading from a JSON file. */
   public static ArmPathsJson loadJson(File source) {
-    // Set up object mapper
+       // Set up object mapper
     ObjectMapper mapper = new ObjectMapper();
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     SimpleModule module = new SimpleModule();

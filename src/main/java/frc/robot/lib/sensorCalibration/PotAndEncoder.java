@@ -144,6 +144,9 @@ public class PotAndEncoder {
 
         return new Status(position, calibrated, moving, reading, config,
                 new Debug(
+                    potAngleDeg,
+                    absAngleDeg,
+                    relAngleDeg,
                     averageAbsRelDifference, 
                     averagePotDifference, 
                     absAngleDegEstimate, 
@@ -177,15 +180,21 @@ public class PotAndEncoder {
 
         public void recordOutputs(Logger logger, String prefix)
         {
-            logger.recordOutput(prefix + "/Position (Deg)", positionDeg);
-            logger.recordOutput(prefix + "/Calibrated", calibrated);
-            logger.recordOutput(prefix + "/Moving", moving);
-            reading.recordOutputs(logger, prefix + "/Reading");
+            logger.recordOutput(prefix + "Position (Deg)", positionDeg);
+            logger.recordOutput(prefix + "Calibrated", calibrated);
+            logger.recordOutput(prefix + "Moving", moving);
+            config.recordOutputs(logger, prefix + "Config/");
+            reading.recordOutputs(logger, prefix + "Reading/");
+            debug.recordOutputs(logger, prefix + "Debug/");
         }
     }
 
 
     public static class Debug {
+        public final double potAngleDeg;
+        public final double absAngleDeg;
+        public final double relAngleDeg;
+
         public final double averageAbsRelDifference;
         public final double averagePotDifference;
     
@@ -199,7 +208,10 @@ public class PotAndEncoder {
         public final double offset;
         public final double firstOffset;
     
-        protected Debug(double averageAbsRelDifference,
+        protected Debug(double potAngleDeg,
+                        double absAngleDeg,
+                        double relAngleDeg,
+                        double averageAbsRelDifference,
                         double averagePotDifference,
                         double absAngleDegEstimate,
                         double absAngleDegEstimateAtCalib,
@@ -209,6 +221,9 @@ public class PotAndEncoder {
                         double offset,
                         double firstOffset)
         {
+            this.potAngleDeg = potAngleDeg;
+            this.absAngleDeg = absAngleDeg;
+            this.relAngleDeg = relAngleDeg;
             this.averageAbsRelDifference = averageAbsRelDifference;
             this.averagePotDifference = averagePotDifference;
             this.absAngleDegEstimate = absAngleDegEstimate;
@@ -219,6 +234,22 @@ public class PotAndEncoder {
             this.offset = offset;
             this.firstOffset = firstOffset;
         }
+
+        public void recordOutputs(Logger logger, String prefix)
+        {        
+            logger.recordOutput(prefix + "potAngleDeg", potAngleDeg);
+            logger.recordOutput(prefix + "absAngleDeg", absAngleDeg);
+            logger.recordOutput(prefix + "relAngleDeg", relAngleDeg);
+            logger.recordOutput(prefix + "averageAbsRelDifference", averageAbsRelDifference);
+            logger.recordOutput(prefix + "averagePotDifference", averagePotDifference);
+            logger.recordOutput(prefix + "absAngleDegEstimate", absAngleDegEstimate);
+            logger.recordOutput(prefix + "absAngleDegEstimateAtCalib", absAngleDegEstimateAtCalib);
+            logger.recordOutput(prefix + "absAngleNumRotationsSinceCalib", absAngleNumRotationsSinceCalib);
+            logger.recordOutput(prefix + "error", error);
+            logger.recordOutput(prefix + "offsetReady", offsetReady);
+            logger.recordOutput(prefix + "offset", offset);
+            logger.recordOutput(prefix + "firstOffset", firstOffset);      
+        }  
     }
 
 
@@ -256,21 +287,21 @@ public class PotAndEncoder {
 
         public void recordOutputs(Logger logger, String prefix)
         {
-            logger.recordOutput(prefix + "/Potentiometer Angle (Deg)", potAngleDeg);
-            logger.recordOutput(prefix + "/Absolute Encoder Angle (Deg)", absAngleDeg);
-            logger.recordOutput(prefix + "/Relative Angle (Deg)", relAngleDeg);
+            logger.recordOutput(prefix + "Potentiometer Angle (Deg)", potAngleDeg);
+            logger.recordOutput(prefix + "Absolute Encoder Angle (Deg)", absAngleDeg);
+            logger.recordOutput(prefix + "Relative Angle (Deg)", relAngleDeg);
         }
         public void exportToTable(LogTable table, String name)
         {
-            table.put(name + "/Potentiometer Angle (Deg)", potAngleDeg);
-            table.put(name + "/Absolute Encoder Angle (Deg)", absAngleDeg);
-            table.put(name + "/Relative Angle (Deg)", relAngleDeg);
+            table.put(name + "Potentiometer Angle (Deg)", potAngleDeg);
+            table.put(name + "Absolute Encoder Angle (Deg)", absAngleDeg);
+            table.put(name + "Relative Angle (Deg)", relAngleDeg);
         }
         public Reading importFromTable(LogTable table, String name)
         {
-            return new Reading(table.getDouble(name + "/Potentiometer Angle (Deg)", potAngleDeg),
-                               table.getDouble(name + "/Absolute Encoder Angle (Deg)", absAngleDeg),
-                               table.getDouble(name + "/Relative Angle (Deg)", relAngleDeg));
+            return new Reading(table.getDouble(name + "Potentiometer Angle (Deg)", potAngleDeg),
+                               table.getDouble(name + "Absolute Encoder Angle (Deg)", absAngleDeg),
+                               table.getDouble(name + "Relative Angle (Deg)", relAngleDeg));
         }
     }
 
@@ -304,5 +335,18 @@ public class PotAndEncoder {
             this.movingBufferMaxSize = movingBufferMaxSize;
             this.averagingBufferMaxSize = averagingBufferMaxSize;
         }
+
+        public void recordOutputs(Logger logger, String prefix)
+        {        
+            logger.recordOutput(prefix + "potentiometerGearRatio", potentiometerGearRatio);
+            logger.recordOutput(prefix + "encoderGearRatio", encoderGearRatio);
+            logger.recordOutput(prefix + "potentiometerNTurns", potentiometerNTurns);
+            logger.recordOutput(prefix + "outputAngleDegAtCalibration", outputAngleDegAtCalibration);
+            logger.recordOutput(prefix + "potentiometerAngleDegAtCalib", potentiometerAngleDegAtCalib);
+            logger.recordOutput(prefix + "absoluteEncoderAngleDegAtCalib", absoluteEncoderAngleDegAtCalib);
+            logger.recordOutput(prefix + "movingBufferMaxSize", movingBufferMaxSize);
+            logger.recordOutput(prefix + "averagingBufferMaxSize", averagingBufferMaxSize);      
+        }
     }
 }
+

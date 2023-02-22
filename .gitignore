@@ -177,3 +177,5 @@ kairos/.idea/*
 
 
 *.asv
+
+logs/

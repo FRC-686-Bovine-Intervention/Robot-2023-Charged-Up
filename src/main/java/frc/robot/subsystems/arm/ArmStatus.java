@@ -73,28 +73,28 @@ public class ArmStatus extends StatusBase {
     @Override
     public void exportToTable(LogTable table) {
         table.put("Turret Position", getTurretPosition());
-        shoulderReading.exportToTable(table, "Shoulder Reading");
-        elbowReading.exportToTable(table, "Elbow Reading");
+        shoulderReading.exportToTable(table, "Shoulder Reading/");
+        elbowReading.exportToTable(table, "Elbow Reading/");
     }
     
     @Override
     public void importFromTable(LogTable table) {
         setTurretPosition(table.getDouble("Turret Position", turretPosition));
-        setShoulderReading(shoulderReading.importFromTable(table, "Shoulder Reading"));
-        setElbowReading(elbowReading.importFromTable(table, "Elbow Reading"));
+        setShoulderReading(shoulderReading.importFromTable(table, "Shoulder Reading/"));
+        //ELBOWPOTsetElbowReading(elbowReading.importFromTable(table, "Elbow Reading/"));
     }
 
     @Override
     public void processTable() {
         setShoulderStatus(HAL.getShoulderPotEncoder().update(shoulderReading));
-        setElbowStatus(HAL.getElbowPotEncoder().update(elbowReading));
+        //ELBOWPOTsetElbowStatus(HAL.getElbowPotEncoder().update(elbowReading));
     }
 
     @Override
     public void processOutputs(Logger logger, String prefix) {
         HAL.setTurretPower(turretPower);
 
-        command.recordOutputs(logger, prefix + "Command");
+        command.recordOutputs(logger, prefix + "Command/");
 
         logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
 
@@ -103,7 +103,7 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Turret/Absolute Position", HAL.getTurretAbsolute());
         logger.recordOutput(prefix + "Turret/Target Angle", getTargetTurretAngle());
 
-        shoulderStatus.recordOutputs(logger, prefix + "Shoulder Encoder");
-        elbowStatus.recordOutputs(logger, prefix + "Elbow Encoder");
+        shoulderStatus.recordOutputs(logger, prefix + "Shoulder Encoder/");
+        //ELBOWPOTelbowStatus.recordOutputs(logger, prefix + "Elbow Encoder/");
     }
 }

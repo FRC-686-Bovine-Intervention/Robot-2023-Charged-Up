@@ -43,8 +43,8 @@ public class ArmHAL {
     private final static double kShoulderEncoderGearRatio                 = 72.0/16.0;
     private final static double kShoulderPotentiometerNTurns              = 3.0;    
     private final static double kShoulderAngleAtCalibration               = 0.0;      // TODO: update at calibration
-    private final static double kShoulderPotentiometerAngleDegAtCalib     = 30.0;     // TODO: update at calibration
-    private final static double kShoulderAbsoluteEncoderAngleDegAtCalib   = 30.0;     // TODO: update at calibration
+    private final static double kShoulderPotentiometerAngleDegAtCalib     = 0.0;     // TODO: update at calibration
+    private final static double kShoulderAbsoluteEncoderAngleDegAtCalib   = 0.0;     // TODO: update at calibration
 
     private final PotAndEncoder shoulderPotEncoder;
     private final PotAndEncoder.Config shoulderPotAndEncoderConfig;
@@ -54,8 +54,8 @@ public class ArmHAL {
     private final static double kElbowEncoderGearRatio                    = 64.0/16.0;
     private final static double kElbowPotentiometerNTurns                 = 3.0;
     private final static double kElbowAngleAtCalibration                  = 0.0;      // TODO: update at calibration
-    private final static double kElbowPotentiometerAngleDegAtCalib        = 30.0;     // TODO: update at calibration
-    private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 30.0;     // TODO: update at calibration
+    private final static double kElbowPotentiometerAngleDegAtCalib        = 0.0;     // TODO: update at calibration
+    private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 0.0;     // TODO: update at calibration
 
     private final PotAndEncoder elbowPotEncoder;
     private final PotAndEncoder.Config elbowPotAndEncoderConfig;
@@ -132,8 +132,8 @@ public class ArmHAL {
         return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
     }
 
-    public void setShoulderMotorVoltage(double volts) {shoulderMotor.set(ControlMode.PercentOutput, volts/12.0);}
-    public void setElbowMotorVoltage(double volts) {elbowMotor.set(ControlMode.PercentOutput, volts/12.0);}
+    public void setShoulderMotorVoltage(double volts) {}//ELBOWPOTshoulderMotor.set(ControlMode.PercentOutput, volts/12.0);}
+    public void setElbowMotorVoltage(double volts) {}//ELBOWPOTelbowMotor.set(ControlMode.PercentOutput, volts/12.0);}
     
     public PotAndEncoder getShoulderPotEncoder() {return shoulderPotEncoder;}
     public PotAndEncoder getElbowPotEncoder() {return elbowPotEncoder;}

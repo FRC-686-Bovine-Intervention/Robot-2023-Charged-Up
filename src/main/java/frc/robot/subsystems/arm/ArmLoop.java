@@ -112,29 +112,27 @@ public class ArmLoop extends LoopBase {
                  int startIdx = startPos.getFileIdx();
                  int finalIdx = finalPos.getFileIdx();
  
-                 if (startPos != finalPos) {
-                     String pathFilename = String.format(ArmPathsJson.jsonFilename, startIdx, finalIdx);
-                     
-                     File pathFile = new File(Filesystem.getDeployDirectory(), pathFilename);
-                     var path = ArmPathsJson.loadJson(pathFile);
- 
-                     // create trajectory for each path
-                     List<Vector<N2>> points = new ArrayList<>();
-                     for (int k=0; k<path.theta1().size(); k++) {
-                         points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
-                     }
-  
-                     armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), points);
-                 }
+                    String pathFilename = String.format(ArmPathsJson.jsonFilename, startIdx, finalIdx);
+                    
+                    File pathFile = new File(Filesystem.getDeployDirectory(), pathFilename);
+                    var path = ArmPathsJson.loadJson(pathFile);
+
+                    // create trajectory for each path
+                    List<Vector<N2>> points = new ArrayList<>();
+                    for (int k=0; k<path.theta1().size(); k++) {
+                        points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
+                    }
+
+                    armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), points);
              }
          }
  
-         kinematics = new ArmKinematics(new Translation2d(config.shoulder().getX(), config.shoulder().getY()),
-                                         config.proximal().length(), config.distal().length(),
-                                         config.proximal().minAngle(), config.proximal().maxAngle(), 
-                                         config.distal().minAngle(), config.distal().maxAngle());
+         kinematics = new ArmKinematics(new Translation2d(config.origin().getX(), config.origin().getY()),
+                                         config.shoulder().length(), config.elbow().length(),
+                                         config.shoulder().minAngle(), config.shoulder().maxAngle(), 
+                                         config.elbow().minAngle(), config.elbow().maxAngle());
          
-         dynamics = new ArmDynamics(config.proximal(), ArmDynamics.rigidlyCombineJoints(config.distal(), config.grabber()));
+         dynamics = new ArmDynamics(config.shoulder(), ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist()));
 
          xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches());
          finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
@@ -150,7 +148,7 @@ public class ArmLoop extends LoopBase {
             status.setArmState(newCommand.getArmState());
         // Get measured positions
         double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
+        double elbowAngleRad = 0.0;//ELBOWPOTUnits.degreesToRadians(status.getElbowStatus().positionDeg);
 
         // if internally disabled, set the setpoint to the current position (don't move when enabling)
         if (internalDisable) {
@@ -237,8 +235,8 @@ public class ArmLoop extends LoopBase {
             }
 
             // Check if beyond limits
-            if ((!dynamics.isGoodProximalAngle(shoulderAngleRad, internalDisableBeyondLimitThreshold)) ||
-                (!dynamics.isGoodDistalAngle(elbowAngleRad, internalDisableBeyondLimitThreshold))) {
+            if ((!dynamics.isGoodShoulderAngle(shoulderAngleRad, internalDisableBeyondLimitThreshold)) ||
+                (!dynamics.isGoodElbowAngle(elbowAngleRad, internalDisableBeyondLimitThreshold))) {
                 internalDisable = true;
             }
         }
@@ -329,7 +327,7 @@ public class ArmLoop extends LoopBase {
 
         // get current arm positions
         double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
+        double elbowAngleRad = 0.0;//ELBOWPOTUnits.degreesToRadians(status.getElbowStatus().positionDeg);
 
         // throw error if selected trajectory is no where near the current position
         if (!baseTrajectory.startIsNear(shoulderAngleRad, elbowAngleRad, internalDisableMaxError)) {
