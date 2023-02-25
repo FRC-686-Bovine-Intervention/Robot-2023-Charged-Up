@@ -23,10 +23,10 @@ import frc.robot.subsystems.arm.ArmDynamics;
 public record ArmConfigJson(
     double frame_width_inches,
     double bumper_width_inches,
-    Translation2d shoulder,
-    ArmDynamics.JointConfig proximal,
-    ArmDynamics.JointConfig distal,
-    ArmDynamics.JointConfig grabber) {
+    Translation2d origin,
+    ArmDynamics.JointConfig shoulder,
+    ArmDynamics.JointConfig elbow,
+    ArmDynamics.JointConfig wrist) {
 
   public static final String jsonFilename = "arm_config.json";
 

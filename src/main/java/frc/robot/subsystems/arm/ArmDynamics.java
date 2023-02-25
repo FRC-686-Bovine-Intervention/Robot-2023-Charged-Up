@@ -72,11 +72,11 @@ public class ArmDynamics {
     return combined;
   }
 
-  public boolean isGoodProximalAngle(double angle, double extraThreshold) {
+  public boolean isGoodShoulderAngle(double angle, double extraThreshold) {
     return (angle >= proximal.minAngle) && (angle <= proximal.maxAngle + extraThreshold);
   }
 
-  public boolean isGoodDistalAngle(double angle, double extraThreshold) {
+  public boolean isGoodElbowAngle(double angle, double extraThreshold) {
     return (angle >= distal.minAngle - extraThreshold) && (angle <= distal.maxAngle + extraThreshold);
   }
 

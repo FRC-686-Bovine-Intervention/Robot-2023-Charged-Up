@@ -69,18 +69,18 @@ public class ArmTrajectoryTest {
         assertEquals(0.0, state.get(1,1), kEps);
         
         
-        double theta0_actual =  0.01;
-        double theta1_actual = -0.02;
+        double start_theta0_actual =  0.01;
+        double start_theta1_actual = -0.02;
 
-        assertTrue(traj.startIsNear(theta0_actual, theta1_actual, Units.degreesToRadians(10.0)));
+        assertTrue(traj.startIsNear(start_theta0_actual, start_theta1_actual, Units.degreesToRadians(10.0)));
 
-        theta0_actual = 1.0;
-        theta1_actual = 2.0;
+        start_theta0_actual = 1.0;
+        start_theta1_actual = 2.0;
 
-        assertFalse(traj.startIsNear(theta0_actual, theta1_actual, Units.degreesToRadians(10.0)));
+        assertFalse(traj.startIsNear(start_theta0_actual, start_theta1_actual, Units.degreesToRadians(10.0)));
 
 
-        ArmTrajectory interpTraj = traj.interpolateStaringPositionError(theta0_actual, theta1_actual);
+        ArmTrajectory interpTraj = traj.interpolateEndPoints(start_theta0_actual, start_theta1_actual, null, null);
 
         // interpTraj should end in the same place
         finalState = interpTraj.getFinalState();
@@ -92,21 +92,53 @@ public class ArmTrajectoryTest {
         assertEquals(0.0, finalState.get(1,2), kEps);
 
         state = interpTraj.sample(0);
-        assertEquals(theta0_actual, state.get(0,0), kEps);
-        assertEquals(((N-1)*w0-theta0_actual)/totalTime, state.get(0,1), kEps);
-        assertEquals(theta1_actual, state.get(1,0), kEps);
-        assertEquals(((N-1)*w1-theta1_actual)/totalTime, state.get(1,1), kEps);
+        assertEquals(start_theta0_actual, state.get(0,0), kEps);
+        assertEquals(((N-1)*w0-start_theta0_actual)/totalTime, state.get(0,1), kEps);
+        assertEquals(start_theta1_actual, state.get(1,0), kEps);
+        assertEquals(((N-1)*w1-start_theta1_actual)/totalTime, state.get(1,1), kEps);
         
         state = interpTraj.sample(totalTime/2.0);
-        assertEquals((theta0_actual + (N-1) * w0)/2.0, state.get(0,0), kEps);
-        assertEquals(((N-1)*w0-theta0_actual)/totalTime, state.get(0,1), kEps);
-        assertEquals((theta1_actual + (N-1) * w1)/2.0, state.get(1,0), kEps);
-        assertEquals(((N-1)*w1-theta1_actual)/totalTime, state.get(1,1), kEps);
+        assertEquals((start_theta0_actual + (N-1) * w0)/2.0, state.get(0,0), kEps);
+        assertEquals(((N-1)*w0-start_theta0_actual)/totalTime, state.get(0,1), kEps);
+        assertEquals((start_theta1_actual + (N-1) * w1)/2.0, state.get(1,0), kEps);
+        assertEquals(((N-1)*w1-start_theta1_actual)/totalTime, state.get(1,1), kEps);
         
-        state = traj.sample(totalTime);
+        state = interpTraj.sample(totalTime);
         assertEquals(finalState.get(0,0), state.get(0,0), kEps);
         assertEquals(0.0, state.get(0,1), kEps);
         assertEquals(finalState.get(1,0), state.get(1,0), kEps);
+        assertEquals(0.0, state.get(1,1), kEps);        
+
+        double final_theta0_actual = 2.0;
+        double final_theta1_actual = 1.0;
+
+        interpTraj = traj.interpolateEndPoints(null, null, final_theta0_actual, final_theta1_actual);
+
+        // interpTraj should finish at the actual
+        finalState = interpTraj.getFinalState();
+        assertEquals(final_theta0_actual, finalState.get(0,0), kEps);
+        assertEquals(0.0, finalState.get(0,1), kEps);
+        assertEquals(0.0, finalState.get(0,2), kEps);
+        assertEquals(final_theta1_actual, finalState.get(1,0), kEps);
+        assertEquals(0.0, finalState.get(1,1), kEps);
+        assertEquals(0.0, finalState.get(1,2), kEps);
+
+        state = interpTraj.sample(0);
+        assertEquals(0.0, state.get(0,0), kEps);
+        assertEquals(final_theta0_actual/totalTime, state.get(0,1), kEps);
+        assertEquals(0.0, state.get(1,0), kEps);
+        assertEquals(final_theta1_actual/totalTime, state.get(1,1), kEps);
+        
+        state = interpTraj.sample(totalTime/2.0);
+        assertEquals(final_theta0_actual/2.0, state.get(0,0), kEps);
+        assertEquals(final_theta0_actual/totalTime, state.get(0,1), kEps);
+        assertEquals(final_theta1_actual/2.0, state.get(1,0), kEps);
+        assertEquals(final_theta1_actual/totalTime, state.get(1,1), kEps);
+        
+        state = interpTraj.sample(totalTime);
+        assertEquals(final_theta0_actual, state.get(0,0), kEps);
+        assertEquals(0.0, state.get(0,1), kEps);
+        assertEquals(final_theta1_actual, state.get(1,0), kEps);
         assertEquals(0.0, state.get(1,1), kEps);        
 
     }        

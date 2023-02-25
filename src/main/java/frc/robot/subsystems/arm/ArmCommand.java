@@ -16,6 +16,6 @@ public class ArmCommand {
     public ArmCommand   setArmState(ArmState armState)  {this.armState = armState; return this;}
 
     public void recordOutputs(Logger logger, String prefix) {
-        logger.recordOutput(prefix + "/Arm State", armState != null ? armState.name() : "null");
+        logger.recordOutput(prefix + "Arm State", armState != null ? armState.name() : "null");
     }
 }

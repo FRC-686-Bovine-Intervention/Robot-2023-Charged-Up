@@ -16,6 +16,7 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.subsystems.arm.ArmKinematics;
 import frc.robot.subsystems.arm.ArmPose;
+import frc.robot.subsystems.arm.json.ArmConfigJson;
 import frc.robot.subsystems.arm.json.ArmPathsJson;
 import frc.robot.subsystems.arm.json.ArmPresetsJson;
 
@@ -34,6 +35,20 @@ public class ArmTest {
             userDir = userDir.substring(0, idx);
             System.setProperty("user.dir", userDir);
         }
+    }
+
+    @Test
+    public void TestReadArmConfig() {
+        // workaround for deploy directory being returned incorrectly
+        setDeployDirectoryDuringTest();
+
+        // Get presets from JSON
+        File configFile = new File(Filesystem.getDeployDirectory(), ArmConfigJson.jsonFilename);
+        ArmConfigJson armConfig = ArmConfigJson.loadJson(configFile);
+
+        assertEquals(24.0, armConfig.frame_width_inches(), kEps);
+        assertEquals(30.5, armConfig.bumper_width_inches(), kEps);
+        assertEquals(257, armConfig.shoulder().motor().stallCurrentAmps, kEps);
     }
 
 
@@ -74,7 +89,7 @@ public class ArmTest {
 
         final ArmPathsJson paths[][] = new ArmPathsJson[ArmPose.Preset.values().length+1][ArmPose.Preset.values().length+1];
 
-        // Get paths from JSON
+        // Get paths from JSONs
         for (ArmPose.Preset startPos : ArmPose.Preset.values()) {
             for (ArmPose.Preset finalPos : ArmPose.Preset.values()) {
                 int startIdx = startPos.getFileIdx();
@@ -86,9 +101,12 @@ public class ArmTest {
             }
         }
     
+        assertEquals("defense", paths[0][1].startPos());
+        assertEquals("intake", paths[0][1].finalPos());
+        
         assertEquals("defense", paths[0][0].startPos());
         assertEquals("score_high_cone", paths[0][7].finalPos());
-        
+
         assertEquals("score_high_cone", paths[7][0].startPos());
         assertEquals("defense", paths[7][0].finalPos());
 

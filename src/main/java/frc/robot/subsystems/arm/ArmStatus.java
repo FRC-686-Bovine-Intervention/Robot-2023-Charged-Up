@@ -48,7 +48,7 @@ public class ArmStatus extends StatusBase {
     protected ArmStatus setTurretPower(double turretPower)  {this.turretPower = turretPower; return this;}
 
     // Shoulder
-    private PotAndEncoder.Reading   shoulderReading;
+    private PotAndEncoder.Reading   shoulderReading = new PotAndEncoder.Reading(0,0,0);
     private ArmStatus               setShoulderReading(PotAndEncoder.Reading shoulderReading)   {this.shoulderReading = shoulderReading; return this;}
     
     private PotAndEncoder.Status    shoulderStatus;
@@ -56,7 +56,7 @@ public class ArmStatus extends StatusBase {
     private ArmStatus               setShoulderStatus(PotAndEncoder.Status shoulderStatus)  {this.shoulderStatus = shoulderStatus; return this;}
     
     // Elbow
-    private PotAndEncoder.Reading   elbowReading;
+    private PotAndEncoder.Reading   elbowReading = new PotAndEncoder.Reading(0,0,0);
     private ArmStatus               setElbowReading(PotAndEncoder.Reading elbowReading) {this.elbowReading = elbowReading; return this;}
 
     private PotAndEncoder.Status    elbowStatus;
@@ -68,20 +68,21 @@ public class ArmStatus extends StatusBase {
         setCommand(arm.getCommand());
         setTurretPosition(HAL.getTurretRelative());
         setShoulderReading(HAL.getShoulderPotEncoder().getReading());
+        setElbowReading(HAL.getElbowPotEncoder().getReading());
     }
 
     @Override
     public void exportToTable(LogTable table) {
         table.put("Turret Position", getTurretPosition());
-        shoulderReading.exportToTable(table, "Shoulder Reading");
-        elbowReading.exportToTable(table, "Elbow Reading");
+        shoulderReading.exportToTable(table, "Shoulder Reading/");
+        elbowReading.exportToTable(table, "Elbow Reading/");
     }
     
     @Override
     public void importFromTable(LogTable table) {
         setTurretPosition(table.getDouble("Turret Position", turretPosition));
-        setShoulderReading(shoulderReading.importFromTable(table, "Shoulder Reading"));
-        setElbowReading(elbowReading.importFromTable(table, "Elbow Reading"));
+        setShoulderReading(shoulderReading.importFromTable(table, "Shoulder Reading/"));
+        setElbowReading(elbowReading.importFromTable(table, "Elbow Reading/"));
     }
 
     @Override
@@ -94,7 +95,7 @@ public class ArmStatus extends StatusBase {
     public void processOutputs(Logger logger, String prefix) {
         HAL.setTurretPower(turretPower);
 
-        command.recordOutputs(logger, prefix + "Command");
+        command.recordOutputs(logger, prefix + "Command/");
 
         logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
 
@@ -103,7 +104,7 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Turret/Absolute Position", HAL.getTurretAbsolute());
         logger.recordOutput(prefix + "Turret/Target Angle", getTargetTurretAngle());
 
-        shoulderStatus.recordOutputs(logger, prefix + "Shoulder Encoder");
-        elbowStatus.recordOutputs(logger, prefix + "Elbow Encoder");
+        shoulderStatus.recordOutputs(logger, prefix + "Shoulder Encoder/");
+        elbowStatus.recordOutputs(logger, prefix + "Elbow Encoder/");
     }
 }

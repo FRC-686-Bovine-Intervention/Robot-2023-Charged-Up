@@ -39,18 +39,19 @@ if __name__ == "__main__":
     for start in preset_poses:
         for final in preset_poses:
 
-            # start = "defense"
-            # final = "score_mid_cube"
-
             [start_theta1, start_theta2, valid] = kinematics.inverse_kinematics([preset_poses[start]["xy"][0]], [preset_poses[start]["xy"][1]])
             [final_theta1, final_theta2, valid] = kinematics.inverse_kinematics([preset_poses[final]["xy"][0]], [preset_poses[final]["xy"][1]])
 
-            request = {
-                "initial": [start_theta1[0], start_theta2[0]],
-                "final": [final_theta1[0], final_theta2[0]],
-                "constraintOverrides": [],
-            }
-            result = solver.solve(request)
+            if (start == final):
+                result = (0.0, start_theta1, start_theta2)
+
+            else:
+                request = {
+                    "initial": [start_theta1[0], start_theta2[0]],
+                    "final": [final_theta1[0], final_theta2[0]],
+                    "constraintOverrides": [],
+                }
+                result = solver.solve(request)
 
             passed[start][final] = (result is not None)
 
