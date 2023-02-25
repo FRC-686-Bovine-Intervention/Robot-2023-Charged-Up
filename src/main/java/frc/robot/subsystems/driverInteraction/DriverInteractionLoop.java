@@ -59,7 +59,7 @@ public class DriverInteractionLoop extends LoopBase {
 
         if(DriverControlButtons.InvertControls.getRisingEdge())
             invertDriveControls = !invertDriveControls;
-        // drive.setDriveCommand(generateDriveCommand());
+        drive.setDriveCommand(generateDriveCommand());
 
         DriverAssistCommand assistCommand = new DriverAssistCommand();
         if(DriverControlButtons.AutoBalance.getButton())
@@ -67,10 +67,10 @@ public class DriverInteractionLoop extends LoopBase {
         driverAssist.setCommand(assistCommand);
 
         IntakeCommand intakeCommand = new IntakeCommand();
-        ArmCommand armCommand = new ArmCommand();
-        switch(ArmStatus.getInstance().getArmState())
-        {
-            case Defense:
+        // ArmCommand armCommand = new ArmCommand();
+        // switch(ArmStatus.getInstance().getArmState())
+        // {
+        //     case Defense:
                 switch(intakeStatus.getIntakeState())
                 {
                     case Defense:
@@ -82,45 +82,52 @@ public class DriverInteractionLoop extends LoopBase {
                         if(!DriverControlButtons.Intake.getButton())
                             intakeCommand.setIntakeState(IntakeState.Defense);
                     break;
-                    default: break;
-                } 
-            break;
+                    case Hold:
+                        if(DriverControlButtons.Intake.getRisingEdge())
+                            intakeCommand.setIntakeState(IntakeState.Release);
+                    break;
+                    case Release:
+                        if(!DriverControlButtons.Intake.getButton())
+                            intakeCommand.setIntakeState(IntakeState.Defense);
+                    break;
+                }
+        //     break;
 
-            case IdentifyPiece:
-                if(DriverControlButtons.Intake.getRisingEdge())
-                    armCommand.setArmState(ArmState.Grab);
-            break;
+        //     case IdentifyPiece:
+        //         if(DriverControlButtons.Intake.getRisingEdge())
+        //             armCommand.setArmState(ArmState.Grab);
+        //     break;
 
-            case Grab:
-                if(DriverControlButtons.Intake.getRisingEdge())
-                    armCommand.setArmState(ArmState.Hold);
-            break;
+        //     case Grab:
+        //         if(DriverControlButtons.Intake.getRisingEdge())
+        //             armCommand.setArmState(ArmState.Hold);
+        //     break;
 
-            case Hold:
-                if(DriverControlButtons.Intake.getRisingEdge())
-                        armCommand.setArmState(ArmState.Align);
-            break;
+        //     case Hold:
+        //         if(DriverControlButtons.Intake.getRisingEdge())
+        //                 armCommand.setArmState(ArmState.Align);
+        //     break;
             
-            case Align:
-                if(DriverControlButtons.Intake.getRisingEdge())
-                        armCommand.setArmState(ArmState.Extend);
-            break;
+        //     case Align:
+        //         if(DriverControlButtons.Intake.getRisingEdge())
+        //                 armCommand.setArmState(ArmState.Extend);
+        //     break;
             
-            case Extend:
-                if(DriverControlButtons.Intake.getRisingEdge())
-                        armCommand.setArmState(ArmState.Adjust);
-            break;
+        //     case Extend:
+        //         if(DriverControlButtons.Intake.getRisingEdge())
+        //                 armCommand.setArmState(ArmState.Adjust);
+        //     break;
             
-            case Adjust:
-                if(DriverControlButtons.Intake.getRisingEdge())
-                        armCommand.setArmState(ArmState.Release);
-            break;
+        //     case Adjust:
+        //         if(DriverControlButtons.Intake.getRisingEdge())
+        //                 armCommand.setArmState(ArmState.Release);
+        //     break;
             
-            case Release:
-            break;
-        }
+        //     case Release:
+        //     break;
+        // }
         
-        arm.setCommand(armCommand);
+        // arm.setCommand(armCommand);
         intake.setCommand(intakeCommand); 
     }
 

@@ -11,7 +11,7 @@ public abstract class LoopBase {
      */
     protected SubsystemBase Subsystem;
 
-    public final void onStart() {onEverything(EnabledState.Starting);}
+    public final void onStart() {onEverything();}
 
     public final void onLoop() {onEverything();}
 
