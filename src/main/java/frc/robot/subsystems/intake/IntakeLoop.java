@@ -14,7 +14,7 @@ public class IntakeLoop extends LoopBase {
 
     private static final double kDisabledTimeThreshold = 5;
     private static final double kSpikeCurrentThreshold = 15;
-    private static final double kSpikeTimeThreshold = 0.5;
+    private static final double kSpikeTimeThreshold = 0.25;
 
     private IntakeLoop() {Subsystem = Intake.getInstance();}
 
