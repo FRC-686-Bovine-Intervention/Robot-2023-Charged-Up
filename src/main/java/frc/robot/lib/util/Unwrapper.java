@@ -2,10 +2,10 @@ package frc.robot.lib.util;
 
 public class Unwrapper 
 {
-    double initialValue;
-    double prevIn;
-    double prevOut;
-    double period;
+    private double initialValue;
+    private double prevIn;
+    private double prevOut;
+    private double period;
 
     public Unwrapper(double initialValue, double period) {
         this.initialValue = initialValue;

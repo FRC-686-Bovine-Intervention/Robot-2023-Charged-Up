@@ -41,10 +41,12 @@ public class ArmHAL {
 
     private final static double kShoulderPotentiometerGearRatio           = 72.0/16.0;
     private final static double kShoulderEncoderGearRatio                 = 72.0/16.0;
-    private final static double kShoulderPotentiometerNTurns              = 3.0;    
-    private final static double kShoulderAngleAtCalibration               = 0.0;      // TODO: update at calibration
-    private final static double kShoulderPotentiometerAngleDegAtCalib     = 0.0;     // TODO: update at calibration
-    private final static double kShoulderAbsoluteEncoderAngleDegAtCalib   = 0.0;     // TODO: update at calibration
+    private final static double kShoulderPotentiometerNTurns              = 5.0;    
+    private final static double kShoulderAngleAtCalibration               = -90.0;      // calibrated 2/23 (straight down)
+    private final static double kShoulderPotNormalizedVoltageAtCalib      = 0.4462;     // calibrated 2/23
+    private final static double kShoulderAbsoluteEncoderAngleDegAtCalib   =  85.5;      // calibrated 2/23
+    private final static boolean kShoulderPotInverted                     = false;
+    private final static boolean kShoulderEncInverted                     = false;
 
     private final PotAndEncoder shoulderPotEncoder;
     private final PotAndEncoder.Config shoulderPotAndEncoderConfig;
@@ -52,10 +54,12 @@ public class ArmHAL {
 
     private final static double kElbowPotentiometerGearRatio              = 64.0/16.0;
     private final static double kElbowEncoderGearRatio                    = 64.0/16.0;
-    private final static double kElbowPotentiometerNTurns                 = 3.0;
-    private final static double kElbowAngleAtCalibration                  = 0.0;      // TODO: update at calibration
-    private final static double kElbowPotentiometerAngleDegAtCalib        = 0.0;     // TODO: update at calibration
-    private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 0.0;     // TODO: update at calibration
+    private final static double kElbowPotentiometerNTurns                 = 5.0;
+    private final static double kElbowAngleAtCalibration                  = 0.0;       // calibrated 2/23 (straight out)
+    private final static double kElbowPotNormalizedVoltageAtCalib         = 0.4913;    // calibrated 2/23
+    private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 122.49;    // calibrated 2/23
+    private final static boolean kElbowPotInverted                        = true;
+    private final static boolean kElbowEncInverted                        = true;
 
     private final PotAndEncoder elbowPotEncoder;
     private final PotAndEncoder.Config elbowPotAndEncoderConfig;
@@ -67,18 +71,26 @@ public class ArmHAL {
         if(RobotBase.isReal())
         {
             turretMotor = new TalonSRX(Constants.kTurretMotorID);
-            shoulderPotAndEncoderHAL = null;//new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, kShoulderPotentiometerNTurns, kShoulderPotentiometerAngleDegAtCalib, kShoulderAngleAtCalibration);            
-            elbowPotAndEncoderHAL    = null;//new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, kElbowPotentiometerNTurns, kElbowPotentiometerAngleDegAtCalib, kElbowAngleAtCalibration); 
-            shoulderMotor = new WPI_TalonFX(Constants.kShoulderMotorID);
-            elbowMotor    = new WPI_TalonFX(Constants.kElbowMotorID);            
+            shoulderMotor = null;//ARMDEBUGnew WPI_TalonFX(Constants.kShoulderMotorID);
+            elbowMotor    = null;//ARMDEBUGnew WPI_TalonFX(Constants.kElbowMotorID);    
+            shoulderPotAndEncoderHAL = new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, kShoulderPotentiometerNTurns, 
+                                                             kShoulderPotentiometerGearRatio, kShoulderPotNormalizedVoltageAtCalib, kShoulderAngleAtCalibration, 
+                                                             kShoulderPotInverted, kShoulderEncInverted);            
+            elbowPotAndEncoderHAL    = new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, kElbowPotentiometerNTurns, 
+                                                            kElbowPotentiometerGearRatio, kElbowPotNormalizedVoltageAtCalib, kElbowAngleAtCalibration, 
+                                                            kElbowPotInverted, kElbowEncInverted); 
         }
         else
         {
             turretMotor = null;
             shoulderMotor = null;
             elbowMotor    = null;            
-            shoulderPotAndEncoderHAL = null;
-            elbowPotAndEncoderHAL = null;
+            shoulderPotAndEncoderHAL = new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, kShoulderPotentiometerNTurns, 
+                                                             kShoulderPotentiometerGearRatio, kShoulderPotNormalizedVoltageAtCalib, kShoulderAngleAtCalibration, 
+                                                             kShoulderPotInverted, kShoulderEncInverted);            
+            elbowPotAndEncoderHAL    = new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, kElbowPotentiometerNTurns, 
+                                                            kElbowPotentiometerGearRatio, kElbowPotNormalizedVoltageAtCalib, kElbowAngleAtCalibration, 
+                                                            kElbowPotInverted, kElbowEncInverted); 
         }
 
         if (turretMotor != null) {
@@ -90,8 +102,12 @@ public class ArmHAL {
             turretMotor.setSensorPhase(kTurretEncoderInverted);
             turretMotor.setInverted(kTurretMotorInverted);
         }
-        shoulderPotAndEncoderConfig = new PotAndEncoder.Config(kShoulderPotentiometerGearRatio, kShoulderEncoderGearRatio, kShoulderPotentiometerNTurns, kShoulderAngleAtCalibration, kShoulderPotentiometerAngleDegAtCalib, kShoulderAbsoluteEncoderAngleDegAtCalib, shoulderPotAndEncoderHAL);
-        elbowPotAndEncoderConfig = new PotAndEncoder.Config(kElbowPotentiometerGearRatio, kElbowEncoderGearRatio, kElbowPotentiometerNTurns, kElbowAngleAtCalibration, kElbowPotentiometerAngleDegAtCalib, kElbowAbsoluteEncoderAngleDegAtCalib, elbowPotAndEncoderHAL);
+        shoulderPotAndEncoderConfig = new PotAndEncoder.Config(kShoulderPotentiometerGearRatio, kShoulderEncoderGearRatio, kShoulderPotentiometerNTurns, 
+                                                                kShoulderAngleAtCalibration, kShoulderPotNormalizedVoltageAtCalib, kShoulderAbsoluteEncoderAngleDegAtCalib, 
+                                                                kShoulderPotInverted, kShoulderEncInverted, shoulderPotAndEncoderHAL);
+        elbowPotAndEncoderConfig = new PotAndEncoder.Config(kElbowPotentiometerGearRatio, kElbowEncoderGearRatio, kElbowPotentiometerNTurns, 
+                                                                kElbowAngleAtCalibration, kElbowPotNormalizedVoltageAtCalib, kElbowAbsoluteEncoderAngleDegAtCalib, 
+                                                                kElbowPotInverted, kElbowEncInverted, elbowPotAndEncoderHAL);
         shoulderPotEncoder = new PotAndEncoder(shoulderPotAndEncoderConfig);
         elbowPotEncoder = new PotAndEncoder(elbowPotAndEncoderConfig);
 
@@ -132,8 +148,8 @@ public class ArmHAL {
         return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
     }
 
-    public void setShoulderMotorVoltage(double volts) {}//ELBOWPOTshoulderMotor.set(ControlMode.PercentOutput, volts/12.0);}
-    public void setElbowMotorVoltage(double volts) {}//ELBOWPOTelbowMotor.set(ControlMode.PercentOutput, volts/12.0);}
+    public void setShoulderMotorVoltage(double volts) {if (shoulderMotor != null) { shoulderMotor.set(ControlMode.PercentOutput, volts/12.0); }}
+    public void setElbowMotorVoltage(double volts) {if (elbowMotor != null) { elbowMotor.set(ControlMode.PercentOutput, volts/12.0); }}
     
     public PotAndEncoder getShoulderPotEncoder() {return shoulderPotEncoder;}
     public PotAndEncoder getElbowPotEncoder() {return elbowPotEncoder;}

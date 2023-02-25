@@ -4,7 +4,6 @@ import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix.sensors.CANCoder;
-import com.ctre.phoenix.sensors.CANCoderConfiguration;
 
 import edu.wpi.first.util.CircularBuffer;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
@@ -13,8 +12,8 @@ import frc.robot.lib.util.Unwrapper;
 public class PotAndEncoder {
     private final Config config;
 
-    private static final Unwrapper absUnwrapper = new Unwrapper(0.0, 360.0);
-    private static final Unwrapper relUnwrapper = new Unwrapper(0.0, 360.0);
+    private final Unwrapper absUnwrapper = new Unwrapper(0.0, 360.0);
+    private final Unwrapper relUnwrapper = new Unwrapper(0.0, 360.0);
 
     private static final double movingThreshold = 2.0 / 4096.0;
     private final CircularBuffer movingBuffer;
@@ -22,16 +21,20 @@ public class PotAndEncoder {
     private final CircularBuffer potDifferenceBuffer;
 
     private final double kAllowableErrorInOutputAngleDeg;
+    private final double potentiometerAngleDegAtCalib;
 
     public PotAndEncoder(Config potAndEncoderConfig)
     {
         this.config = potAndEncoderConfig;
         this.kAllowableErrorInOutputAngleDeg = 0.9 * 360.0 / potAndEncoderConfig.encoderGearRatio;
         this.movingBuffer = new CircularBuffer(potAndEncoderConfig.movingBufferMaxSize);
+        this.readyCounter = 0;
         this.absRelDifferenceBuffer = new CircularBuffer(potAndEncoderConfig.averagingBufferMaxSize);
         this.potDifferenceBuffer = new CircularBuffer(potAndEncoderConfig.averagingBufferMaxSize);
+        this.potentiometerAngleDegAtCalib = potAndEncoderConfig.HAL.getPotAngleFromVoltage(potAndEncoderConfig.potentiometerNormalizedVoltageAtCalib); 
     }
 
+    private int readyCounter = 0;
     private boolean calibrated = false;
     private double firstOffset;
     private double offset;
@@ -62,6 +65,7 @@ public class PotAndEncoder {
             return update(config.HAL.getReading());
         throw new NullPointerException("Called PotAndEncoder auto update without setting a HAL");
     }
+    
     public Status update(Reading reading)
     {
         double averageAbsRelDifference = 0;
@@ -96,48 +100,39 @@ public class PotAndEncoder {
             moving = ((maxVal - minVal) > movingThreshold);
         }
         
-        if (moving)
-        {
-            // start averaging over again
-            absRelDifferenceBuffer.clear();
-            potDifferenceBuffer.clear();
-        }
-        else 
-        {
-            absRelDifferenceBuffer.addFirst( absAngleDeg - relAngleDeg );
-            potDifferenceBuffer.addFirst( potAngleDeg - config.potentiometerAngleDegAtCalib / config.potentiometerGearRatio);
+        absRelDifferenceBuffer.addFirst( absAngleDeg - relAngleDeg );
+        potDifferenceBuffer.addFirst( potAngleDeg - potentiometerAngleDegAtCalib / config.potentiometerGearRatio );
 
-            offsetReady = (potDifferenceBuffer.size() == config.averagingBufferMaxSize);
+        // calculate the average difference between the absolute and relative encoder values
+        // and the average difference between the current potentiometer and that at calibration
+        averageAbsRelDifference = 0;
+        averagePotDifference = 0;
+        for (int k=0; k<absRelDifferenceBuffer.size(); k++)
+        {
+            averageAbsRelDifference += absRelDifferenceBuffer.get(k);
+            averagePotDifference += potDifferenceBuffer.get(k);
+        } 
+        averageAbsRelDifference = averageAbsRelDifference / (double)absRelDifferenceBuffer.size();
+        averagePotDifference = averagePotDifference / (double)potDifferenceBuffer.size();
+        
+        absAngleDegEstimate = relAngleDeg + averageAbsRelDifference;
+        absAngleDegEstimateAtCalib = absAngleDegEstimate - averagePotDifference;
+        absAngleNumRotationsSinceCalib = (absAngleDegEstimateAtCalib - config.absoluteEncoderAngleDegAtCalib / config.encoderGearRatio) / (360.0 / config.encoderGearRatio);
 
-            if (offsetReady)
+        readyCounter = moving ? 0 : Math.min(readyCounter+1, config.averagingBufferMaxSize);
+        offsetReady = (readyCounter >= config.averagingBufferMaxSize);
+        if (offsetReady)
+        {
+            offset = averageAbsRelDifference - (360.0 * absAngleNumRotationsSinceCalib) / config.encoderGearRatio 
+                - config.absoluteEncoderAngleDegAtCalib / config.encoderGearRatio + config.outputAngleDegAtCalibration;
+
+            if (!calibrated)
             {
-                // calculate the average difference between the absolute and relative encoder values
-                // and the average difference between the current potentiometer and that at calibration
-                averageAbsRelDifference = 0;
-                averagePotDifference = 0;
-                for (int k=0; k<config.averagingBufferMaxSize; k++)
-                {
-                    averageAbsRelDifference += absRelDifferenceBuffer.get(k);
-                    averagePotDifference += potDifferenceBuffer.get(k);
-                } 
-                averageAbsRelDifference = averageAbsRelDifference / config.averagingBufferMaxSize;
-                averagePotDifference = averagePotDifference / config.averagingBufferMaxSize;
-                
-                absAngleDegEstimate = relAngleDeg + averageAbsRelDifference;
-                absAngleDegEstimateAtCalib = absAngleDegEstimate - averagePotDifference;
-                absAngleNumRotationsSinceCalib = (absAngleDegEstimateAtCalib - config.absoluteEncoderAngleDegAtCalib / config.encoderGearRatio) / (360.0 / config.encoderGearRatio);
-
-                offset = averageAbsRelDifference - (360.0 * absAngleNumRotationsSinceCalib) / config.encoderGearRatio 
-                        - config.absoluteEncoderAngleDegAtCalib / config.encoderGearRatio + config.outputAngleDegAtCalibration;
-
-                if (!calibrated)
-                {
-                    calibrated = true;
-                    firstOffset = offset;
-                }
-
-                error = (Math.abs(offset - firstOffset) > kAllowableErrorInOutputAngleDeg);
+                calibrated = true;
+                firstOffset = offset;
             }
+
+            error = (Math.abs(offset - firstOffset) > kAllowableErrorInOutputAngleDeg);
         }
 
         double position = relAngleDeg + offset;
@@ -153,6 +148,7 @@ public class PotAndEncoder {
                     absAngleDegEstimateAtCalib, 
                     absAngleNumRotationsSinceCalib, 
                     error, 
+                    readyCounter,
                     offsetReady, 
                     offset, 
                     firstOffset));
@@ -204,6 +200,7 @@ public class PotAndEncoder {
     
         public final boolean error;
         
+        public final int readyCounter;
         public final boolean offsetReady;
         public final double offset;
         public final double firstOffset;
@@ -217,6 +214,7 @@ public class PotAndEncoder {
                         double absAngleDegEstimateAtCalib,
                         double absAngleNumRotationsSinceCalib,
                         boolean error,
+                        int readyCounter,
                         boolean offsetReady,
                         double offset,
                         double firstOffset)
@@ -230,6 +228,7 @@ public class PotAndEncoder {
             this.absAngleDegEstimateAtCalib = absAngleDegEstimateAtCalib;
             this.absAngleNumRotationsSinceCalib = absAngleNumRotationsSinceCalib;
             this.error = error;
+            this.readyCounter = readyCounter;
             this.offsetReady = offsetReady;
             this.offset = offset;
             this.firstOffset = firstOffset;
@@ -246,6 +245,7 @@ public class PotAndEncoder {
             logger.recordOutput(prefix + "absAngleDegEstimateAtCalib", absAngleDegEstimateAtCalib);
             logger.recordOutput(prefix + "absAngleNumRotationsSinceCalib", absAngleNumRotationsSinceCalib);
             logger.recordOutput(prefix + "error", error);
+            logger.recordOutput(prefix + "readyCounter", readyCounter);
             logger.recordOutput(prefix + "offsetReady", offsetReady);
             logger.recordOutput(prefix + "offset", offset);
             logger.recordOutput(prefix + "firstOffset", firstOffset);      
@@ -257,20 +257,32 @@ public class PotAndEncoder {
 
         AnalogPotentiometer pot;
         CANCoder enc;
+
+        double potScale;
+        double potOffset;
     
-        public HAL(int potAnalogInputPort, int encPort, double potentiometerNTurns, double potentiometerAngleDegAtCalib, double outputAngleDegAtCalibration)
+        public HAL(int potAnalogInputPort, int encPort, double potNTurns, double potGearRatio, double potNormalizedVoltageAtCalib, double outputAngleDegAtCalibration, boolean potInverted, boolean encInverted)
         {
-            pot = new AnalogPotentiometer(potAnalogInputPort, potentiometerNTurns*360.0, potentiometerAngleDegAtCalib - outputAngleDegAtCalibration);
+            potScale = potInverted ? -potNTurns*360.0 : potNTurns*360.0;
+            potOffset = potGearRatio*outputAngleDegAtCalibration - potScale*potNormalizedVoltageAtCalib;
+            pot = new AnalogPotentiometer(potAnalogInputPort, potScale, potOffset);
+
             enc = new CANCoder(encPort);
-            CANCoderConfiguration canConfig = new CANCoderConfiguration();
-            enc.configAllSettings(canConfig);  // configure to default settings
+            enc.configFactoryDefault();
+            enc.configSensorDirection(encInverted);  // false: CCW, true: CW while looking from sensor to shaft
         }
     
         public double getPotentiometerReadingDeg()      {return pot.get();}
         public double getAbsoluteEncoderReadingDeg()    {return enc.getAbsolutePosition();}
         public double getRelativeEncoderReadingDeg()    {return enc.getPosition();}
         public Reading getReading()                     {return new Reading(getPotentiometerReadingDeg(), getAbsoluteEncoderReadingDeg(), getRelativeEncoderReadingDeg());}
+
+        public double getPotAngleFromVoltage(double voltage) {
+            return potScale*voltage + potOffset;
+        }
     }
+
+
 
 
     public static class Reading {
@@ -310,28 +322,51 @@ public class PotAndEncoder {
         public final double potentiometerGearRatio;             // gear ratio: potentiometer rotations / output rotations
         public final double encoderGearRatio;                   // gear ratio: encoder rotations / output rotations
         public final double potentiometerNTurns;                // number of turns in potentiometers full range of motion
+
+        // Pot & Encoder Calibration Setup:
+        //      A calibration project is created, with
+        //          AnalogPotentiometer pot = new AnalogPotentiometer(potPort); // using default scale = 1.0, offset = 0.0
+        //          CANCoder enc = new CANCoder(encPort);
+        //          enc.configFactoryDefault();  // using default CCW positive polarity (as viewed from LED)
+        //          (Readings from pot & encoder can be averaged to reduce noisiness)
+        //      Reference angle is chosen (could be horizontal, vertical, or other)
+        //      Joint is set to the calibration angle
+
+        // Pot and Encoder Calibration values are recorded: 
+        //      outputAngleDegAtCalibration is recorded as the angle of the joint with respect to the reference, in degrees
+        //      potentiometerNormalizedVoltageAtCalib is recorded as the output of pot.get()
+        //      absoluteEncoderAngleDegAtCalib is recorded at the output of enc.getAbsolutePosition()
+        // No adjustments for polarity, gear ratio, or number of potentiometer turns are made during calibration
         public final double outputAngleDegAtCalibration;        // angle of output at calibration position, in degrees (relative to reference angle of choice)
-        public final double potentiometerAngleDegAtCalib;       // potentiometer reading at calibration position, in degrees (measurement at pot, not modified by gear ratio) 
+        public final double potentiometerNormalizedVoltageAtCalib;       // potentiometer reading at calibration position, in degrees (measurement at pot, not modified by gear ratio) 
         public final double absoluteEncoderAngleDegAtCalib;     // absolute endoder reading at calibration position, in degrees (measurement at encoder, not modified by gear ratio)
+        
+        // in operation, the polarity of the potentiometer and absolute encoder must be configured correctly
+        public final boolean potInverted;                       // set true to invert polarity of potentiometer
+        public final boolean encInverted;                       // false: CCW, true: CW while looking from sensor to shaft
+        
         public final HAL HAL;                      // hardware abstraction layer
         public final int movingBufferMaxSize;
         public final int averagingBufferMaxSize;
          
         public Config(double potentiometerGearRatio, double encoderGearRatio, double potentiometerNTurns, 
-                double outputAngleDegAtCalibration, double potentiometerAngleDegAtCalib, double absoluteEncoderAngleDegAtCalib, HAL HAL) {
-            this(potentiometerGearRatio, encoderGearRatio, potentiometerNTurns, outputAngleDegAtCalibration, potentiometerAngleDegAtCalib, absoluteEncoderAngleDegAtCalib, HAL,
-            20, 200);
+                double outputAngleDegAtCalibration, double potentiometerNormalizedVoltageAtCalib, double absoluteEncoderAngleDegAtCalib, 
+                boolean potInverted, boolean encInverted, HAL HAL) {
+            this(potentiometerGearRatio, encoderGearRatio, potentiometerNTurns, outputAngleDegAtCalibration, potentiometerNormalizedVoltageAtCalib, absoluteEncoderAngleDegAtCalib, 
+            potInverted, encInverted, HAL, 20, 200);
         }
         public Config(double potentiometerGearRatio, double encoderGearRatio, double potentiometerNTurns, 
-                double outputAngleDegAtCalibration, double potentiometerAngleDegAtCalib, double absoluteEncoderAngleDegAtCalib,
-                HAL HAL, int movingBufferMaxSize, int averagingBufferMaxSize) {
+                double outputAngleDegAtCalibration, double potentiometerNormalizedVoltageAtCalib, double absoluteEncoderAngleDegAtCalib,
+                boolean potInverted, boolean encInverted, HAL HAL, int movingBufferMaxSize, int averagingBufferMaxSize) {
             this.potentiometerGearRatio = potentiometerGearRatio;
             this.encoderGearRatio = encoderGearRatio;
             this.potentiometerNTurns = potentiometerNTurns;
             this.outputAngleDegAtCalibration = outputAngleDegAtCalibration;
-            this.potentiometerAngleDegAtCalib = potentiometerAngleDegAtCalib;
+            this.potentiometerNormalizedVoltageAtCalib = potentiometerNormalizedVoltageAtCalib;
             this.absoluteEncoderAngleDegAtCalib = absoluteEncoderAngleDegAtCalib;
             this.HAL = HAL;
+            this.potInverted = potInverted;
+            this.encInverted = encInverted;
             this.movingBufferMaxSize = movingBufferMaxSize;
             this.averagingBufferMaxSize = averagingBufferMaxSize;
         }
@@ -342,8 +377,10 @@ public class PotAndEncoder {
             logger.recordOutput(prefix + "encoderGearRatio", encoderGearRatio);
             logger.recordOutput(prefix + "potentiometerNTurns", potentiometerNTurns);
             logger.recordOutput(prefix + "outputAngleDegAtCalibration", outputAngleDegAtCalibration);
-            logger.recordOutput(prefix + "potentiometerAngleDegAtCalib", potentiometerAngleDegAtCalib);
+            logger.recordOutput(prefix + "potentiometerNormalizedVoltageAtCalib", potentiometerNormalizedVoltageAtCalib);
             logger.recordOutput(prefix + "absoluteEncoderAngleDegAtCalib", absoluteEncoderAngleDegAtCalib);
+            logger.recordOutput(prefix + "potInverted", potInverted);
+            logger.recordOutput(prefix + "encInverted", encInverted);
             logger.recordOutput(prefix + "movingBufferMaxSize", movingBufferMaxSize);
             logger.recordOutput(prefix + "averagingBufferMaxSize", averagingBufferMaxSize);      
         }

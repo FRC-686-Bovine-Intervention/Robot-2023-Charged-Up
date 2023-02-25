@@ -148,7 +148,7 @@ public class ArmLoop extends LoopBase {
             status.setArmState(newCommand.getArmState());
         // Get measured positions
         double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
-        double elbowAngleRad = 0.0;//ELBOWPOTUnits.degreesToRadians(status.getElbowStatus().positionDeg);
+        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
 
         // if internally disabled, set the setpoint to the current position (don't move when enabling)
         if (internalDisable) {
@@ -327,7 +327,7 @@ public class ArmLoop extends LoopBase {
 
         // get current arm positions
         double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
-        double elbowAngleRad = 0.0;//ELBOWPOTUnits.degreesToRadians(status.getElbowStatus().positionDeg);
+        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
 
         // throw error if selected trajectory is no where near the current position
         if (!baseTrajectory.startIsNear(shoulderAngleRad, elbowAngleRad, internalDisableMaxError)) {
