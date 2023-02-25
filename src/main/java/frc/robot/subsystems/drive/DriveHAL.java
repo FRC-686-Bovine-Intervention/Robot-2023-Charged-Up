@@ -46,9 +46,9 @@ public class DriveHAL {
     private final WPI_Pigeon2 gyro;
 
     // Pigeon 2 Mount Pose (Gotten from Phoenix Tuner calibration)
-    private static final double kPigeonMountPoseYaw     = 91.7582;
-    private static final double kPigeonMountPosePitch   = 0.40388;
-    private static final double kPigeonMountPoseRoll    = -1.16195;
+    private static final double kPigeonMountPoseYaw     = -90.5947;
+    private static final double kPigeonMountPosePitch   = 0.320278;
+    private static final double kPigeonMountPoseRoll    = -0.0856472;
 
     //TODO: Update Drive Coefficients
 	// Wheels

@@ -23,10 +23,7 @@ public class OdometryLoop extends LoopBase {
         /*new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01),*/ // Local measurement standard deviations. Left encoder, right encoder, gyro.
         new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01)); // Global measurement standard deviations. X, Y, and theta.
 
-    private OdometryLoop()
-    {
-        Subsystem = Odometry.getInstance();
-    }
+    private OdometryLoop() {Subsystem = Odometry.getInstance();}
     
     @Override
     public void Update() {
