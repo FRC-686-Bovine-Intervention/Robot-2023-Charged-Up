@@ -14,25 +14,25 @@ public class PoseBoundingBoxUtil {
     }
     public static class RectangularBoundingBox extends BoundingBox {
 
-        public RectangularBoundingBox(Translation2d topLeftCorner, Translation2d bottomRightCorner)
+        public RectangularBoundingBox(Translation2d corner1, Translation2d corner2)
         {
-            setTopLeftCorner(topLeftCorner);
-            setBottomRightCorner(bottomRightCorner);
+            setBottomLeftCorner(new Translation2d(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY())));
+            setTopRightCorner(new Translation2d(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY())));
         }
 
-        private Translation2d topLeftCorner;
-        public Translation2d getTopLeftCorner() {return topLeftCorner;}
-        public RectangularBoundingBox setTopLeftCorner(Translation2d topLeftCorner) {this.topLeftCorner = topLeftCorner; return this;}
+        private Translation2d bottomLeftCorner;
+        public Translation2d getBottomLeftCorner() {return bottomLeftCorner;}
+        public RectangularBoundingBox setBottomLeftCorner(Translation2d bottomLeftCorner) {this.bottomLeftCorner = bottomLeftCorner; return this;}
 
-        private Translation2d bottomRightCorner;
-        public Translation2d getBottomRightCorner() {return bottomRightCorner;}
-        public RectangularBoundingBox setBottomRightCorner(Translation2d bottomRightCorner) {this.bottomRightCorner = bottomRightCorner; return this;}
+        private Translation2d topRightCorner;
+        public Translation2d getTopRightCorner() {return topRightCorner;}
+        public RectangularBoundingBox setTopRightCorner(Translation2d topRightCorner) {this.topRightCorner = topRightCorner; return this;}
 
         @Override
         public boolean withinBounds(Translation2d pose) {
-            return  (pose.getX() >= bottomRightCorner.getX() && pose.getX() <= topLeftCorner.getX())
-                                                             &&
-                    (pose.getY() >= bottomRightCorner.getY() && pose.getY() <= topLeftCorner.getY());
+            return  (pose.getX() >= bottomLeftCorner.getX() && pose.getX() <= topRightCorner.getX())
+                                                            &&
+                    (pose.getY() >= bottomLeftCorner.getY() && pose.getY() <= topRightCorner.getY());
         }
     }
     public static class CompoundBoundingBox extends BoundingBox {
@@ -44,8 +44,10 @@ public class PoseBoundingBoxUtil {
         public CompoundBoundingBox(List<BoundingBox> boxes) {this(boxes, null);}
         public CompoundBoundingBox(List<BoundingBox> positiveBoxes, List<BoundingBox> negativeBoxes)
         {
-            this.positiveBoxes.addAll(positiveBoxes);
-            this.negativeBoxes.addAll(negativeBoxes);
+            if(positiveBoxes != null)
+                this.positiveBoxes.addAll(positiveBoxes);
+            if(negativeBoxes != null)
+                this.negativeBoxes.addAll(negativeBoxes);
         }
         
         public CompoundBoundingBox addPositiveBoxes(BoundingBox... boxes)   {return addPositiveBoxes(Arrays.asList(boxes));}
