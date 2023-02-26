@@ -59,7 +59,7 @@ public class IntakeLoop extends LoopBase {
     protected void Disabled() {
         double currentTime = Timer.getFPGATimestamp();
 
-        if(status.Enabled.IsInitState)
+        if(status.EnabledState.IsInitState)
             disabledTimestamp = currentTime;
         
         if(currentTime - disabledTimestamp < kDisabledTimeThreshold)

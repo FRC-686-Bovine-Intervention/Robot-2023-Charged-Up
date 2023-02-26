@@ -22,7 +22,7 @@ public class AutoManagerLoop extends LoopBase {
     protected void Enabled() {
         if(!DriverStation.isAutonomous())
             return;
-        if(status.Enabled.IsInitState)
+        if(status.EnabledState.IsInitState)
         {
             status.setAutoRunning(true);
             actionIndex = -1;

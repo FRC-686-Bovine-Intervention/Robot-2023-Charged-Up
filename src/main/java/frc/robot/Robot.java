@@ -51,7 +51,7 @@ public class Robot extends LoggedRobot {
     subsystemController.register(DriverInteraction.getInstance());
     subsystemController.register(DriverAssist.getInstance());
     subsystemController.register(Vision.getInstance());
-    subsystemController.register(Arm.getInstance());
+    // subsystemController.register(Arm.getInstance());
     subsystemController.register(Intake.getInstance());
     subsystemController.register(Drive.getInstance());
     subsystemController.register(Odometry.getInstance());

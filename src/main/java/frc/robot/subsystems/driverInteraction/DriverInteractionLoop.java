@@ -25,6 +25,7 @@ public class DriverInteractionLoop extends LoopBase {
     private final Drive drive = Drive.getInstance();
     private final DriverAssist driverAssist = DriverAssist.getInstance();
     private final Arm arm = Arm.getInstance();
+    private final ArmStatus armStatus = ArmStatus.getInstance();
     private final Intake intake = Intake.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
 
@@ -67,68 +68,77 @@ public class DriverInteractionLoop extends LoopBase {
         driverAssist.setCommand(assistCommand);
 
         IntakeCommand intakeCommand = new IntakeCommand();
-        // ArmCommand armCommand = new ArmCommand();
-        // switch(ArmStatus.getInstance().getArmState())
-        // {
-        //     case Defense:
-                switch(intakeStatus.getIntakeState())
-                {
-                    case Defense:
-                        if(DriverControlButtons.Intake.getRisingEdge())
-                            intakeCommand.setIntakeState(IntakeState.Grab);
+        switch(intakeStatus.getIntakeState())
+        {
+            case Defense:
+                if(!armStatus.EnabledState.IsEnabled && armStatus.getArmState() != ArmState.Defense)
                     break;
-        
-                    case Grab:
-                        if(!DriverControlButtons.Intake.getButton())
-                            intakeCommand.setIntakeState(IntakeState.Defense);
-                    break;
-                    case Hold:
-                        if(DriverControlButtons.Intake.getRisingEdge())
-                            intakeCommand.setIntakeState(IntakeState.Release);
-                    break;
-                    case Release:
-                        if(!DriverControlButtons.Intake.getButton())
-                            intakeCommand.setIntakeState(IntakeState.Defense);
-                    break;
-                }
-        //     break;
+                if(DriverControlButtons.Intake.getRisingEdge())
+                    intakeCommand.setIntakeState(IntakeState.Grab);
+            break;
 
-        //     case IdentifyPiece:
-        //         if(DriverControlButtons.Intake.getRisingEdge())
-        //             armCommand.setArmState(ArmState.Grab);
-        //     break;
+            case Grab:
+                if(!DriverControlButtons.Intake.getButton())
+                    intakeCommand.setIntakeState(IntakeState.Defense);
+            break;
 
-        //     case Grab:
-        //         if(DriverControlButtons.Intake.getRisingEdge())
-        //             armCommand.setArmState(ArmState.Hold);
-        //     break;
+            case Hold:
+                if(armStatus.EnabledState.IsEnabled)
+                    break;
+                if(DriverControlButtons.Intake.getRisingEdge())
+                    intakeCommand.setIntakeState(IntakeState.Release);
+            break;
+            
+            case Release:
+                if(armStatus.EnabledState.IsEnabled)
+                        break;
+                if(!DriverControlButtons.Intake.getButton())
+                    intakeCommand.setIntakeState(IntakeState.Defense);
+            break;
+        }
+        intake.setCommand(intakeCommand);
 
-        //     case Hold:
-        //         if(DriverControlButtons.Intake.getRisingEdge())
-        //                 armCommand.setArmState(ArmState.Align);
-        //     break;
+        ArmCommand armCommand = new ArmCommand();
+        switch(ArmStatus.getInstance().getArmState())
+        {
+            case Defense:
+                
+            break;
+
+            case IdentifyPiece:
+                if(DriverControlButtons.Intake.getRisingEdge())
+                    armCommand.setArmState(ArmState.Grab);
+            break;
+
+            case Grab:
+                if(DriverControlButtons.Intake.getRisingEdge())
+                    armCommand.setArmState(ArmState.Hold);
+            break;
+
+            case Hold:
+                if(DriverControlButtons.Intake.getRisingEdge())
+                    armCommand.setArmState(ArmState.Align);
+            break;
             
-        //     case Align:
-        //         if(DriverControlButtons.Intake.getRisingEdge())
-        //                 armCommand.setArmState(ArmState.Extend);
-        //     break;
+            case Align:
+                if(DriverControlButtons.Intake.getRisingEdge())
+                    armCommand.setArmState(ArmState.Extend);
+            break;
             
-        //     case Extend:
-        //         if(DriverControlButtons.Intake.getRisingEdge())
-        //                 armCommand.setArmState(ArmState.Adjust);
-        //     break;
+            case Extend:
+                if(DriverControlButtons.Intake.getRisingEdge())
+                    armCommand.setArmState(ArmState.Adjust);
+            break;
             
-        //     case Adjust:
-        //         if(DriverControlButtons.Intake.getRisingEdge())
-        //                 armCommand.setArmState(ArmState.Release);
-        //     break;
+            case Adjust:
+                if(DriverControlButtons.Intake.getRisingEdge())
+                    armCommand.setArmState(ArmState.Release);
+            break;
             
-        //     case Release:
-        //     break;
-        // }
-        
-        // arm.setCommand(armCommand);
-        intake.setCommand(intakeCommand); 
+            case Release:
+            break;
+        }
+        arm.setCommand(armCommand);
     }
 
     @Override public void Disabled() {}
