@@ -142,14 +142,22 @@ public class ArmHAL {
     }
 
     public double getTurretRelative(){
-        return turretMotor != null ? turretMotor.getSelectedSensorPosition(kRelativePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
+        return turretMotor != null ? turretMotor.getSelectedSensorPosition(kRelativePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0;
     }
     public double getTurretAbsolute(){
-        return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
+        return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0;
     }
 
-    public void setShoulderMotorVoltage(double volts) {if (shoulderMotor != null) { shoulderMotor.set(ControlMode.PercentOutput, volts/12.0); }}
-    public void setElbowMotorVoltage(double volts) {if (elbowMotor != null) { elbowMotor.set(ControlMode.PercentOutput, volts/12.0); }}
+    public ArmHAL setShoulderMotor(double power) {
+        if (shoulderMotor != null)
+            shoulderMotor.set(ControlMode.PercentOutput, power);
+        return this;
+    }
+    public ArmHAL setElbowMotor(double power) {
+        if (elbowMotor != null)
+            elbowMotor.set(ControlMode.PercentOutput, power);
+        return this;
+    }
     
     public PotAndEncoder getShoulderPotEncoder() {return shoulderPotEncoder;}
     public PotAndEncoder getElbowPotEncoder() {return elbowPotEncoder;}

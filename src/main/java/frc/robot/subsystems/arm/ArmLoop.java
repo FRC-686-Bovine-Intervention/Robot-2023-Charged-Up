@@ -34,7 +34,6 @@ public class ArmLoop extends LoopBase {
     private static ArmLoop instance;
     public static ArmLoop getInstance(){if(instance == null) instance = new ArmLoop(); return instance;}
 
-    private final ArmHAL hal = ArmHAL.getInstance();
     private final ArmStatus status = ArmStatus.getInstance();
     private final Intake intake = Intake.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
@@ -45,7 +44,14 @@ public class ArmLoop extends LoopBase {
     private final ProfiledPIDController turretPID = new ProfiledPIDController(0.08, 0, 0, turretPIDConstraints);
 
 
-    private double stateStartTimestamp;
+    private static final double kDistalZeroPower = 0.08;
+    private static final double kTurretZeroPower = 0.08;
+    private static final double kProximalZeroPower = 0.08;
+
+    private static final double kDistalZeroErrorThreshold = 2.5;
+    private static final double kTurretZeroErrorThreshold = 2.5;
+    private static final double kProximalZeroErrorThreshold = 2.5;
+
     private ArmState prevState;
 
     static final String configFilename = "arm_config.json";
@@ -58,8 +64,8 @@ public class ArmLoop extends LoopBase {
     private final ArmDynamics dynamics;    
     
     private final ArmTrajectory[][] armTrajectories = new ArmTrajectory[ArmPose.Preset.values().length+1][ArmPose.Preset.values().length+1];
-    private ArmTrajectory currentTrajectory = null;
-    private Timer trajectoryTimer = new Timer();
+    // private ArmTrajectory currentTrajectory = null;
+    private final Timer trajectoryTimer = new Timer();
 
     private Matrix<N2,N3> finalTrajectoryState = null;
     private Matrix<N2,N3> setpointState = null;       
@@ -93,6 +99,19 @@ public class ArmLoop extends LoopBase {
     private final double manualMaxSpeedMetersPerSec = Units.inchesToMeters(manualMaxSpeedInchesPerSec);
     private final double manualMaxSpeedDegreesPerSec = 10.0;  // speed the turret is allowed to manually spin
     
+    public double getStartingShoulderAngleRad(ArmPose.Preset preset) {
+        int startIdx = preset.getFileIdx();
+        var traj = armTrajectories[startIdx][startIdx];
+        var state = traj.getFinalState();
+        return state.get(0,0);
+    }
+    public double getStartingElbowAngleRad(ArmPose.Preset preset) {
+        int startIdx = preset.getFileIdx();
+        var traj = armTrajectories[startIdx][startIdx];
+        var state = traj.getFinalState();
+        return state.get(1,0);
+    }
+
     private ArmLoop() {
         Subsystem = Arm.getInstance();
     
@@ -137,15 +156,18 @@ public class ArmLoop extends LoopBase {
          xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches());
          finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
          setpointState = finalTrajectoryState;
-    } 
+    }
 
+    private final Timer stateTimer = new Timer();
+    
     @Override
     protected void Enabled() {
         ArmCommand newCommand = status.getCommand();
-        double currentTimestamp = Timer.getFPGATimestamp();
 
         if(newCommand.getArmState() != null)
             status.setArmState(newCommand.getArmState());
+
+        stateTimer.start();
         // Get measured positions
         double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
         double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
@@ -153,29 +175,27 @@ public class ArmLoop extends LoopBase {
         // if internally disabled, set the setpoint to the current position (don't move when enabling)
         if (internalDisable) {
             setpointState = ArmTrajectory.getFixedState(shoulderAngleRad, elbowAngleRad);
-            currentTrajectory = null;
+            status.setCurrentArmTrajectory(null);
         }
 
         // check if current trajectory is finished
-        if (currentTrajectory != null && trajectoryTimer.hasElapsed(currentTrajectory.getTotalTime()))
+        if (status.getCurrentArmTrajectory() != null && trajectoryTimer.hasElapsed(status.getCurrentArmTrajectory().getTotalTime()))
         {
-            trajectoryTimer.stop();
-            trajectoryTimer.reset();
-            currentTrajectory = null;
+            status.setCurrentArmTrajectory(null);
             xAdjustment = 0.0;
             zAdjustment = 0.0;
         }
 
         // move arm!
         Matrix<N2,N3> currentState = setpointState;
-        if (currentTrajectory != null) {
+        if (status.getCurrentArmTrajectory() != null) {
             // follow trajectory
             trajectoryTimer.start();                            // multiple calls to start will not restart timer
-            finalTrajectoryState = currentTrajectory.getFinalState();
+            finalTrajectoryState = status.getCurrentArmTrajectory().getFinalState();
             setpointState = finalTrajectoryState;               // if the trajectory is interrupted, go to the last setpoint
 
             // interpolate state from trajectory
-            currentState = currentTrajectory.sample(trajectoryTimer.get());
+            currentState = status.getCurrentArmTrajectory().sample(trajectoryTimer.get());
 
         } else {
             // make manual adjustments to final XZ pose
@@ -218,8 +238,8 @@ public class ArmLoop extends LoopBase {
         double elbowPidFeedback = elbowFeedback.calculate(elbowAngleRad, elbowAngleSetpoint) ;
         
         // set motors to achieve the currentState
-        hal.setShoulderMotorVoltage(voltages.get(0,0) + shoulderPidFeedback);
-        hal.setElbowMotorVoltage(voltages.get(1,0) + elbowPidFeedback);
+        status.setShoulderPower((voltages.get(0,0) + shoulderPidFeedback) / 12)
+              .setElbowPower((voltages.get(1,0) + elbowPidFeedback) / 12);
         
 
         // trigger emergency stop if necessary
@@ -246,7 +266,7 @@ public class ArmLoop extends LoopBase {
             internalDisable = false;
         }
         if(prevState != status.getArmState())
-            stateStartTimestamp = currentTimestamp;
+            stateTimer.reset();
 
         prevState = status.getArmState();
 
@@ -254,8 +274,31 @@ public class ArmLoop extends LoopBase {
 
         switch(status.getArmState())
         {
+            case ZeroDistal:
+                if(status.getElbowStatus().calibrated)
+                {
+                    status.setElbowPower(kDistalZeroPower * Math.signum(getStartingElbowAngleRad(ArmPose.Preset.DEFENSE) - elbowAngleRad));
+                    if(Math.abs(elbowAngleRad - getStartingElbowAngleRad(ArmPose.Preset.DEFENSE)) <= kDistalZeroErrorThreshold)
+                        status.setArmState(ArmState.ZeroTurret);
+                }
+                break;
+            
+            case ZeroTurret:
+                status.setElbowPower(kTurretZeroPower * Math.signum(-status.getTurretPosition()));
+                if(Math.abs(status.getTurretPosition()) <= kTurretZeroErrorThreshold)
+                    status.setArmState(ArmState.ZeroProximal);
+            break;
+            
+            case ZeroProximal:
+                if(status.getShoulderStatus().calibrated)
+                {
+                    status.setShoulderPower(kProximalZeroPower * Math.signum(getStartingShoulderAngleRad(ArmPose.Preset.DEFENSE) - shoulderAngleRad));
+                    if(Math.abs(shoulderAngleRad - getStartingShoulderAngleRad(ArmPose.Preset.DEFENSE)) <= kProximalZeroErrorThreshold)
+                        status.setArmState(ArmState.Defense);
+                }
+            break;
+
             case Defense:
-                // Set arm pos to defense
                 if(intakeStatus.getIntakeState() == IntakeState.Hold)
                     status.setArmState(ArmState.IdentifyPiece);
             break;
@@ -266,14 +309,25 @@ public class ArmLoop extends LoopBase {
             
             case Grab:
                 // Move turret to target pos
+                turretPID.setGoal(status.getTargetTurretAngle());
+                if(stateTimer.get() == 0)
+                    turretPID.reset(status.getTurretPosition());
+                
                 // Extend arm to grab piece
-                // Grab piece
-                // Set intake to release
-                if(currentTimestamp - stateStartTimestamp >= 2)
-                    intake.setCommand(new IntakeCommand(IntakeState.Release));
-                // Jump to Hold
-                if(currentTimestamp - stateStartTimestamp >= 3)
-                    status.setArmState(ArmState.Hold);
+                if(turretPID.atGoal())
+                {
+                    status.setTargetArmPose(ArmPose.Preset.INTAKE);
+                    if(status.getCurrentArmTrajectory() == null)
+                    {
+                        // Grab piece
+                        status.setClawGrabbing(true);
+                        // Set intake to release
+                        intake.setCommand(new IntakeCommand(IntakeState.Release));
+                        // Jump to Hold
+                        if(trajectoryTimer.hasElapsed(status.getCurrentArmTrajectory().getTotalTime() + 0.5))
+                            status.setArmState(ArmState.Hold);
+                    }
+                }
             break;
 
             case Hold:
@@ -300,11 +354,25 @@ public class ArmLoop extends LoopBase {
 
             case Release:
                 // Outtake piece
+                status.setClawGrabbing(false);
                 // Wait a bit then jump to Defense
-                if(currentTimestamp - stateStartTimestamp >= 1)
+                if(stateTimer.hasElapsed(1))
+                    status.setArmState(ArmState.Defense);
+            break;
+
+            case SubstationExtend:
+                status.setTargetArmPose(ArmPose.Preset.DOUBLE_SUBSTATION);
+            break;
+
+            case SubstationGrab:
+                status.setClawGrabbing(true);
+                if(stateTimer.hasElapsed(1))
                     status.setArmState(ArmState.Defense);
             break;
         }
+
+        if(status.getCurrentArmPose() != null && status.getTargetArmPose() != status.getCurrentArmPose())
+            startTrajectory(status.getCurrentArmPose(), status.getTargetArmPose());
     }
 
 
@@ -332,15 +400,17 @@ public class ArmLoop extends LoopBase {
         // throw error if selected trajectory is no where near the current position
         if (!baseTrajectory.startIsNear(shoulderAngleRad, elbowAngleRad, internalDisableMaxError)) {
             internalDisable = true;
-            currentTrajectory = null;
+            status.setCurrentArmTrajectory(null);
             return;
         }
 
         // any errors in the starting position (in particular due to manual XZ adjustments)
         // will be linearly intepolated into the trajectory
         // to smoothly remove these adjustments without needing a separate path
-        currentTrajectory = baseTrajectory;
-        currentTrajectory.interpolateEndPoints(Double.valueOf(shoulderAngleRad), Double.valueOf(elbowAngleRad), null, null);
+        status.setCurrentArmTrajectory(baseTrajectory);
+        status.getCurrentArmTrajectory().interpolateEndPoints(Double.valueOf(shoulderAngleRad), Double.valueOf(elbowAngleRad), null, null);
+
+        trajectoryTimer.reset();
     }
 
     public void manualAdjustment(double xThrottle, double yThrottle, double zThrottle) {
@@ -351,5 +421,4 @@ public class ArmLoop extends LoopBase {
         // TODO: adjust turret angle target
         // yAdjustmentInches += yThrottle * manualMaxSpeedDegreesPerSec * Constants.loopPeriodSecs;
     }
-    
 }

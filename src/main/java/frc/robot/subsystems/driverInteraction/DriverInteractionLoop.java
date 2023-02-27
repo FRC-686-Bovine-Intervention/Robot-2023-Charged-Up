@@ -102,7 +102,8 @@ public class DriverInteractionLoop extends LoopBase {
         switch(ArmStatus.getInstance().getArmState())
         {
             case Defense:
-                
+                if(DriverControlButtons.Substation.getRisingEdge())
+                    armCommand.setArmState(ArmState.SubstationExtend);
             break;
 
             case IdentifyPiece:
@@ -134,9 +135,13 @@ public class DriverInteractionLoop extends LoopBase {
                 if(DriverControlButtons.Intake.getRisingEdge())
                     armCommand.setArmState(ArmState.Release);
             break;
-            
-            case Release:
+
+            case SubstationExtend:
+                if(DriverControlButtons.Substation.getRisingEdge())
+                    armCommand.setArmState(ArmState.SubstationGrab);
             break;
+
+            default: break;
         }
         arm.setCommand(armCommand);
     }
