@@ -201,26 +201,14 @@ public class ArmDynamics {
         0,
         0,
         proximal.mass() * Math.pow(proximal.cgRadius(), 2.0)
-            + distal.mass() * (Math.pow(proximal.length(), 2.0) + Math.pow(distal.cgRadius(), 2.0))
-            + proximal.moi()
-            + distal.moi()
-            + 2
-                * distal.mass()
-                * proximal.length()
-                * distal.cgRadius()
-                * Math.cos(position.get(1, 0)));
+            + distal.mass() * Math.pow(proximal.length(), 2.0)
+            + proximal.moi();
     M.set(
         1,
         0,
-        distal.mass() * Math.pow(distal.cgRadius(), 2.0)
-            + distal.moi()
-            + distal.mass() * proximal.length() * distal.cgRadius() * Math.cos(position.get(1, 0)));
-    M.set(
-        0,
-        1,
-        distal.mass() * Math.pow(distal.cgRadius(), 2.0)
-            + distal.moi()
-            + distal.mass() * proximal.length() * distal.cgRadius() * Math.cos(position.get(1, 0)));
+        distal.mass() * proximal.length() * distal.cgRadius()
+            * Math.cos(position.get(0, 0) - position.get(1,0)));
+    M.set(0, 1, M.get(1,0));
     M.set(1, 1, distal.mass() * Math.pow(distal.cgRadius(), 2.0) + distal.moi());
     return M;
   }
@@ -230,10 +218,10 @@ public class ArmDynamics {
     C.set(
         0,
         0,
-        -distal.mass()
+        distal.mass()
             * proximal.length()
             * distal.cgRadius()
-            * Math.sin(position.get(1, 0))
+            * Math.sin(position.get(1, 0) - position.get(0,0))
             * velocity.get(1, 0));
     C.set(
         1,
@@ -241,16 +229,17 @@ public class ArmDynamics {
         distal.mass()
             * proximal.length()
             * distal.cgRadius()
-            * Math.sin(position.get(1, 0))
-            * velocity.get(0, 0));
+            * Math.sin(position.get(1, 0) - position.get(0,0))
+            * (velocity.get(1, 0) - velocity.get(0,0)));
+    C.set(0,1,C.get(1,0));
     C.set(
-        0,
-        1,
-        -distal.mass()
-            * proximal.length()
-            * distal.cgRadius()
-            * Math.sin(position.get(1, 0))
-            * (velocity.get(0, 0) + velocity.get(1, 0)));
+      1,
+      1,
+      distal.mass()
+          * proximal.length()
+          * distal.cgRadius()
+          * Math.sin(position.get(1, 0) - position.get(0,0))
+          * velocity.get(0, 0));            
     return C;
   }
 
@@ -261,15 +250,11 @@ public class ArmDynamics {
         0,
         (proximal.mass() * proximal.cgRadius() + distal.mass() * proximal.length())
                 * g
-                * Math.cos(position.get(0, 0))
-            + distal.mass()
-                * distal.cgRadius()
-                * g
-                * Math.cos(position.get(0, 0) + position.get(1, 0)));
+                * Math.cos(position.get(0, 0)));
     Tg.set(
         1,
         0,
-        distal.mass() * distal.cgRadius() * g * Math.cos(position.get(0, 0) + position.get(1, 0)));
+        distal.mass() * distal.cgRadius() * g * Math.cos(position.get(1, 0)));
     return Tg;
   }
 }

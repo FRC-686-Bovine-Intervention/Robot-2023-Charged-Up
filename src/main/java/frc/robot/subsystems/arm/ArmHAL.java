@@ -28,8 +28,8 @@ public class ArmHAL {
 
     private final WPI_TalonFX shoulderMotor, elbowMotor;
 
-    public static final TalonFXInvertType kShoulderMotorInverted    = TalonFXInvertType.Clockwise;          // TODO: UPDATE!!!
-    public static final TalonFXInvertType kElbowMotorInverted       = TalonFXInvertType.CounterClockwise;   // TODO: UPDATE!!!
+    public static final TalonFXInvertType kShoulderMotorInverted    = TalonFXInvertType.Clockwise;          
+    public static final TalonFXInvertType kElbowMotorInverted       = TalonFXInvertType.CounterClockwise;   
 
     public static final double kArmCurrentLimit = 25;
     public static final double kArmTriggerThresholdCurrent = 20;
@@ -71,8 +71,8 @@ public class ArmHAL {
         if(RobotBase.isReal())
         {
             turretMotor = new TalonSRX(Constants.kTurretMotorID);
-            shoulderMotor = null;//ARMDEBUGnew WPI_TalonFX(Constants.kShoulderMotorID);
-            elbowMotor    = null;//ARMDEBUGnew WPI_TalonFX(Constants.kElbowMotorID);    
+            shoulderMotor = new WPI_TalonFX(Constants.kShoulderMotorID);
+            elbowMotor    = new WPI_TalonFX(Constants.kElbowMotorID);    
             shoulderPotAndEncoderHAL = new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, kShoulderPotentiometerNTurns, 
                                                              kShoulderPotentiometerGearRatio, kShoulderPotNormalizedVoltageAtCalib, kShoulderAngleAtCalibration, 
                                                              kShoulderPotInverted, kShoulderEncInverted);            
@@ -117,7 +117,7 @@ public class ArmHAL {
             
             // Set up the encoders
             shoulderMotor.setInverted(kShoulderMotorInverted);           
-            shoulderMotor.setSensorPhase(true);
+            shoulderMotor.setSensorPhase(false);
             shoulderMotor.setNeutralMode(NeutralMode.Brake);
             shoulderMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, kArmCurrentLimit, kArmTriggerThresholdCurrent, kArmTriggerThresholdTime));
         }  
@@ -128,7 +128,7 @@ public class ArmHAL {
             
             // Set up the encoders
             elbowMotor.setInverted(kElbowMotorInverted);           
-            elbowMotor.setSensorPhase(true);
+            elbowMotor.setSensorPhase(false);
             elbowMotor.setNeutralMode(NeutralMode.Brake);
             elbowMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, kArmCurrentLimit, kArmTriggerThresholdCurrent, kArmTriggerThresholdTime));
        }

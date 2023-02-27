@@ -12,8 +12,8 @@ public record ArmPathsJson(
   String startPos,
   String finalPos,
   double totalTime,                 // total path time
-  List<Double> theta1,      // angle of proximal arm in radians
-  List<Double> theta2)      // angle of distal arm in radians
+  List<Double> theta1,      // angle of shoulder in radians
+  List<Double> theta2)      // angle of elbow in radians
   {     
   
   public static final String jsonFilename = "paths/arm_path_%d_%d.json";

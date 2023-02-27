@@ -3,6 +3,12 @@ package frc.robot.subsystems.arm;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.numbers.N3;
+import frc.robot.AdvantageUtil;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -48,47 +54,116 @@ public class ArmStatus extends StatusBase {
     protected ArmStatus setTurretPower(double turretPower)  {this.turretPower = turretPower; return this;}
 
     // Shoulder
-    private PotAndEncoder.Reading   shoulderReading = new PotAndEncoder.Reading(0,0,0);
-    private ArmStatus               setShoulderReading(PotAndEncoder.Reading shoulderReading)   {this.shoulderReading = shoulderReading; return this;}
+    private PotAndEncoder.Reading   shoulderPotEncoderReading = new PotAndEncoder.Reading(0,0,0);
+    private ArmStatus               setShoulderPotEncoderReading(PotAndEncoder.Reading shoulderReading)   {this.shoulderPotEncoderReading = shoulderReading; return this;}
     
-    private PotAndEncoder.Status    shoulderStatus;
-    public PotAndEncoder.Status     getShoulderStatus()                                     {return shoulderStatus;}
-    private ArmStatus               setShoulderStatus(PotAndEncoder.Status shoulderStatus)  {this.shoulderStatus = shoulderStatus; return this;}
+    private PotAndEncoder.Status    shoulderPotEncoderStatus;
+    public PotAndEncoder.Status     getShoulderPotEncoderStatus()                                     {return shoulderPotEncoderStatus;}
+    private ArmStatus               setShoulderPotEncoderStatus(PotAndEncoder.Status shoulderStatus)  {this.shoulderPotEncoderStatus = shoulderStatus; return this;}
     
-    // Elbow
-    private PotAndEncoder.Reading   elbowReading = new PotAndEncoder.Reading(0,0,0);
-    private ArmStatus               setElbowReading(PotAndEncoder.Reading elbowReading) {this.elbowReading = elbowReading; return this;}
 
-    private PotAndEncoder.Status    elbowStatus;
-    public PotAndEncoder.Status     getElbowStatus()                                    {return elbowStatus;}
-    private ArmStatus               setElbowStatus(PotAndEncoder.Status elbowStatus)    {this.elbowStatus = elbowStatus; return this;}
+    // Elbow
+    private PotAndEncoder.Reading   elbowPotEncoderReading = new PotAndEncoder.Reading(0,0,0);
+    private ArmStatus               setElbowPotEncoderReading(PotAndEncoder.Reading elbowReading) {this.elbowPotEncoderReading = elbowReading; return this;}
+
+    private PotAndEncoder.Status    elbowPotEncoderStatus;
+    public PotAndEncoder.Status     getElbowPotEncoderStatus()                                    {return elbowPotEncoderStatus;}
+    private ArmStatus               setElbowPotEncoderStatus(PotAndEncoder.Status elbowStatus)    {this.elbowPotEncoderStatus = elbowStatus; return this;}
+
+
+    private double shoulderAngle;
+    private double elbowAngle;
+    private double shoulderAngleSetpoint;
+    private double elbowAngleSetpoint;
+    private double shoulderFeedforward;
+    private double elbowFeedforward;
+    private double shoulderPidFeedback;
+    private double elbowPidFeedback;
+    
+    public double getShoulderAngle() {
+        return shoulderAngle;
+    }
+    public void setShoulderAngle(double shoulderAngle) {
+        this.shoulderAngle = shoulderAngle;
+    }
+    public double getElbowAngle() {
+        return elbowAngle;
+    }
+    public void setElbowAngle(double elbowAngle) {
+        this.elbowAngle = elbowAngle;
+    }
+    public double getShoulderAngleSetpoint() {
+        return shoulderAngleSetpoint;
+    }
+    public void setShoulderAngleSetpoint(double shoulderAngleSetpoint) {
+        this.shoulderAngleSetpoint = shoulderAngleSetpoint;
+    }
+    public double getElbowAngleSetpoint() {
+        return elbowAngleSetpoint;
+    }
+    public void setElbowAngleSetpoint(double elbowAngleSetpoint) {
+        this.elbowAngleSetpoint = elbowAngleSetpoint;
+    }
+    public double getShoulderFeedforward() {
+        return shoulderFeedforward;
+    }
+    public void setShoulderFeedforward(double shoulderFeedforward) {
+        this.shoulderFeedforward = shoulderFeedforward;
+    }
+    public double getElbowFeedforward() {
+        return elbowFeedforward;
+    }
+    public void setElbowFeedforward(double elbowFeedforward) {
+        this.elbowFeedforward = elbowFeedforward;
+    }
+    public double getShoulderPidFeedback() {
+        return shoulderPidFeedback;
+    }
+    public void setShoulderPidFeedback(double shoulderPidFeedback) {
+        this.shoulderPidFeedback = shoulderPidFeedback;
+    }
+    public double getElbowPidFeedback() {
+        return elbowPidFeedback;
+    }
+    public void setElbowPidFeedback(double elbowPidFeedback) {
+        this.elbowPidFeedback = elbowPidFeedback;
+    }
+
+    private Matrix<N2,N3>   currentTrajState = new MatBuilder<>(Nat.N2(),Nat.N3()).fill(0,0,0,0,0,0);
+    public Matrix<N2,N3> getCurrentTrajState() {return currentTrajState;}
+    public void setCurrentTrajState(Matrix<N2, N3> currentTrajState) {this.currentTrajState = currentTrajState;}
+
+    private Matrix<N2,N3>   setpointTrajState = new MatBuilder<>(Nat.N2(),Nat.N3()).fill(0,0,0,0,0,0);
+    public Matrix<N2,N3> getSetpointTrajState() {return setpointTrajState;}
+    public void setSetpointTrajState(Matrix<N2, N3> setpointTrajState) {this.setpointTrajState = setpointTrajState;}
+
 
     @Override
     public void updateInputs() {
         setCommand(arm.getCommand());
         setTurretPosition(HAL.getTurretRelative());
-        setShoulderReading(HAL.getShoulderPotEncoder().getReading());
-        setElbowReading(HAL.getElbowPotEncoder().getReading());
+        setShoulderPotEncoderReading(HAL.getShoulderPotEncoder().getReading());
+        setElbowPotEncoderReading(HAL.getElbowPotEncoder().getReading());
     }
 
     @Override
     public void exportToTable(LogTable table) {
         table.put("Turret Position", getTurretPosition());
-        shoulderReading.exportToTable(table, "Shoulder Reading/");
-        elbowReading.exportToTable(table, "Elbow Reading/");
+        shoulderPotEncoderReading.exportToTable(table, "Shoulder Reading/");
+        elbowPotEncoderReading.exportToTable(table, "Elbow Reading/");
     }
     
     @Override
     public void importFromTable(LogTable table) {
         setTurretPosition(table.getDouble("Turret Position", turretPosition));
-        setShoulderReading(shoulderReading.importFromTable(table, "Shoulder Reading/"));
-        setElbowReading(elbowReading.importFromTable(table, "Elbow Reading/"));
+        setShoulderPotEncoderReading(shoulderPotEncoderReading.importFromTable(table, "Shoulder Reading/"));
+        setElbowPotEncoderReading(elbowPotEncoderReading.importFromTable(table, "Elbow Reading/"));
     }
 
     @Override
     public void processTable() {
-        setShoulderStatus(HAL.getShoulderPotEncoder().update(shoulderReading));
-        setElbowStatus(HAL.getElbowPotEncoder().update(elbowReading));
+        setShoulderPotEncoderStatus(HAL.getShoulderPotEncoder().update(shoulderPotEncoderReading));
+        setElbowPotEncoderStatus(HAL.getElbowPotEncoder().update(elbowPotEncoderReading));
     }
 
     @Override
@@ -99,12 +174,26 @@ public class ArmStatus extends StatusBase {
 
         logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
 
+        logger.recordOutput(prefix + "Shoulder/Angle", getShoulderAngle());
+        logger.recordOutput(prefix + "Shoulder/Setpoint", getShoulderAngleSetpoint());
+        logger.recordOutput(prefix + "Shoulder/Feedforward", getShoulderFeedforward());
+        logger.recordOutput(prefix + "Shoulder/PID Feedback", getShoulderPidFeedback());
+        logger.recordOutput(prefix + "Elbow/Angle", getElbowAngle());
+        logger.recordOutput(prefix + "Elbow/Setpoint", getElbowAngleSetpoint());
+        logger.recordOutput(prefix + "Elbow/Feedforward", getElbowFeedforward());
+        logger.recordOutput(prefix + "Elbow/PID Feedback", getElbowPidFeedback());
+        
+        // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Current Traj State/Theta1/", getCurrentTrajState().extractRowVector(0));
+        // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Current Traj State/Theta2/", getCurrentTrajState().extractRowVector(1));
+        // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Setpoint Traj State/Theta1/", getSetpointTrajState().extractRowVector(0));
+        // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Setpoint Traj State/Theta2/", getSetpointTrajState().extractRowVector(1));
+
         logger.recordOutput(prefix + "Turret/Power", getTurretPower());
         logger.recordOutput(prefix + "Turret/Relative Position", getTurretPosition());
         logger.recordOutput(prefix + "Turret/Absolute Position", HAL.getTurretAbsolute());
         logger.recordOutput(prefix + "Turret/Target Angle", getTargetTurretAngle());
 
-        shoulderStatus.recordOutputs(logger, prefix + "Shoulder Encoder/");
-        elbowStatus.recordOutputs(logger, prefix + "Elbow Encoder/");
+        shoulderPotEncoderStatus.recordOutputs(logger, prefix + "Shoulder Encoder/");
+        elbowPotEncoderStatus.recordOutputs(logger, prefix + "Elbow Encoder/");
     }
 }

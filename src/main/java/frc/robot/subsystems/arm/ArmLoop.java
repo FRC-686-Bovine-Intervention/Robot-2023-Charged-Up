@@ -64,8 +64,8 @@ public class ArmLoop extends LoopBase {
     private Matrix<N2,N3> finalTrajectoryState = null;
     private Matrix<N2,N3> setpointState = null;       
   
-    private PIDController shoulderFeedback = new PIDController(0.0, 0.0, 0.0, Constants.loopPeriodSecs);
-    private PIDController elbowFeedback    = new PIDController(0.0, 0.0, 0.0, Constants.loopPeriodSecs);    
+    private PIDController shoulderFeedback = new PIDController(10.0, 0.0, 0.0, Constants.loopPeriodSecs);
+    private PIDController elbowFeedback    = new PIDController(10.0, 0.0, 0.0, Constants.loopPeriodSecs);    
 
     private boolean internalDisable = false;
     private Timer internalDisableTimer = new Timer();
@@ -139,16 +139,23 @@ public class ArmLoop extends LoopBase {
          setpointState = finalTrajectoryState;
     } 
 
+    Matrix<N2,N3> currentState = null;
+    double xStart = 0.0;
+    double zStart = 0.0;
+    double xOffset = 0.0;
+    double zOffset = 0.0;
+
     @Override
     protected void Enabled() {
+
         ArmCommand newCommand = status.getCommand();
         double currentTimestamp = Timer.getFPGATimestamp();
 
         if(newCommand.getArmState() != null)
             status.setArmState(newCommand.getArmState());
         // Get measured positions
-        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
+        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderAngle());
+        double elbowAngleRad = Units.degreesToRadians(status.getElbowAngle());
 
         // if internally disabled, set the setpoint to the current position (don't move when enabling)
         if (internalDisable) {
@@ -305,6 +312,16 @@ public class ArmLoop extends LoopBase {
                     status.setArmState(ArmState.Defense);
             break;
         }
+        
+
+        status.setShoulderAngle(shoulderAngleRad);
+        status.setElbowAngle(elbowAngleRad);
+        status.setShoulderAngleSetpoint(shoulderAngleSetpoint);
+        status.setElbowAngleSetpoint(elbowAngleSetpoint);
+        status.setShoulderFeedforward(voltages.get(0,0));
+        status.setElbowFeedforward(voltages.get(1,0));
+        status.setShoulderPidFeedback(shoulderPidFeedback);
+        status.setElbowPidFeedback(elbowPidFeedback);
     }
 
 
@@ -326,8 +343,8 @@ public class ArmLoop extends LoopBase {
         ArmTrajectory baseTrajectory = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
 
         // get current arm positions
-        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
+        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderPotEncoderStatus().positionDeg);
+        double elbowAngleRad = Units.degreesToRadians(status.getElbowPotEncoderStatus().positionDeg);
 
         // throw error if selected trajectory is no where near the current position
         if (!baseTrajectory.startIsNear(shoulderAngleRad, elbowAngleRad, internalDisableMaxError)) {

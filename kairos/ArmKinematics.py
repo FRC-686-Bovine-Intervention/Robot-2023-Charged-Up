@@ -29,8 +29,8 @@ class ArmKinematics:
             x1[k] = x0 + r1 * math.cos(theta1)
             y1[k] = y0 + r1 * math.sin(theta1)
 
-            x2[k] = x1[k] + r2 * math.cos(theta1+theta2)    # theta2 is relative to first arm
-            y2[k] = y1[k] + r2 * math.sin(theta1+theta2)
+            x2[k] = x1[k] + r2 * math.cos(theta2)
+            y2[k] = y1[k] + r2 * math.sin(theta2)
 
         return [x1, y1], [x2, y2]
 
@@ -86,7 +86,7 @@ class ArmKinematics:
 
                 # calculate joint angles
                 theta1.append(math.atan2(y1[k]-y0, x1[k]-x0))
-                theta2.append(math.atan2(y2[k]-y1[k], x2[k]-x1[k]) - theta1[k])     # make theta2 relative to first arm
+                theta2.append(math.atan2(y2[k]-y1[k], x2[k]-x1[k]))
                 valid.append(1)
 
         return theta1, theta2, valid
