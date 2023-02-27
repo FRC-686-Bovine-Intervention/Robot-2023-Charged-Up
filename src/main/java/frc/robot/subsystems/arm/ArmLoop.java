@@ -168,6 +168,9 @@ public class ArmLoop extends LoopBase {
             status.setArmState(newCommand.getArmState());
 
         stateTimer.start();
+
+        // ================= Trajectory Logic =================
+        
         // Get measured positions
         double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
         double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
@@ -265,6 +268,9 @@ public class ArmLoop extends LoopBase {
         if (disableSupplier.get()) {
             internalDisable = false;
         }
+
+        // ================= State Logic =================
+
         if(prevState != status.getArmState())
             stateTimer.reset();
 
