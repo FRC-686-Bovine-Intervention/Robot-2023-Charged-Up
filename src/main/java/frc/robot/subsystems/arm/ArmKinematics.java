@@ -45,11 +45,9 @@ public class ArmKinematics {
   }
 
   /** Converts joint angles to the end effector position. */
-  public Translation2d forward(double theta1, double theta21) {
+  public Translation2d forward(double theta1, double theta2) {
     // theta1 is shoulder angle, relative to horizontal
-    // theta21 is elbow angle, relative to shoulder angle
-    double theta2  = theta1 + theta21;         // elbow angle, relative to horizontal
-
+    // theta2 is elbow angle, relative to horizontal
     return shoulder.plus( new Translation2d(l1 * Math.cos(theta1) + l2 * Math.cos(theta2),
                                             l1 * Math.sin(theta1) + l2 * Math.sin(theta2)));
   }
@@ -117,6 +115,6 @@ public class ArmKinematics {
       return Optional.empty();
     }
 
-    return Optional.of(VecBuilder.fill(theta1, theta21));
+    return Optional.of(VecBuilder.fill(theta1, theta2));
   }
 }

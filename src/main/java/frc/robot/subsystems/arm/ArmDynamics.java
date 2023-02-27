@@ -202,7 +202,7 @@ public class ArmDynamics {
         0,
         proximal.mass() * Math.pow(proximal.cgRadius(), 2.0)
             + distal.mass() * Math.pow(proximal.length(), 2.0)
-            + proximal.moi();
+            + proximal.moi());
     M.set(
         1,
         0,
