@@ -105,6 +105,12 @@ public class ArmLoop extends LoopBase {
          File configFile = new File(Filesystem.getDeployDirectory(), ArmConfigJson.jsonFilename);
          config = ArmConfigJson.loadJson(configFile);
  
+         hal.setShoulderMinAngleRad(config.shoulder().minAngle());
+         hal.setShoulderMaxAngleRad(config.shoulder().maxAngle());
+         hal.setElbowMinAngleRad(config.elbow().minAngle());
+         hal.setElbowMaxAngleRad(config.elbow().maxAngle());
+
+
          // Get paths from JSON
          // also create trajectories for each path
          for (ArmPose.Preset startPos : ArmPose.Preset.values()) {
@@ -153,9 +159,10 @@ public class ArmLoop extends LoopBase {
 
         if(newCommand.getArmState() != null)
             status.setArmState(newCommand.getArmState());
+
         // Get measured positions
-        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderAngle());
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowAngle());
+        double shoulderAngleRad = status.getShoulderAngleRad();
+        double elbowAngleRad = status.getElbowAngleRad();
 
         // if internally disabled, set the setpoint to the current position (don't move when enabling)
         if (internalDisable) {
@@ -314,10 +321,8 @@ public class ArmLoop extends LoopBase {
         }
         
 
-        status.setShoulderAngle(shoulderAngleRad);
-        status.setElbowAngle(elbowAngleRad);
-        status.setShoulderAngleSetpoint(shoulderAngleSetpoint);
-        status.setElbowAngleSetpoint(elbowAngleSetpoint);
+        status.setShoulderAngleRadSetpoint(shoulderAngleSetpoint);
+        status.setElbowAngleRadSetpoint(elbowAngleSetpoint);
         status.setShoulderFeedforward(voltages.get(0,0));
         status.setElbowFeedforward(voltages.get(1,0));
         status.setShoulderPidFeedback(shoulderPidFeedback);
@@ -343,8 +348,8 @@ public class ArmLoop extends LoopBase {
         ArmTrajectory baseTrajectory = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
 
         // get current arm positions
-        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderPotEncoderStatus().positionDeg);
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowPotEncoderStatus().positionDeg);
+        double shoulderAngleRad = status.getShoulderAngleRad();
+        double elbowAngleRad = status.getElbowAngleRad();
 
         // throw error if selected trajectory is no where near the current position
         if (!baseTrajectory.startIsNear(shoulderAngleRad, elbowAngleRad, internalDisableMaxError)) {

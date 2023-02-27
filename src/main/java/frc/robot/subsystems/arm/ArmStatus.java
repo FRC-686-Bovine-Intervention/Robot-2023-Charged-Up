@@ -59,7 +59,12 @@ public class ArmStatus extends StatusBase {
     
     private PotAndEncoder.Status    shoulderPotEncoderStatus;
     public PotAndEncoder.Status     getShoulderPotEncoderStatus()                                     {return shoulderPotEncoderStatus;}
-    private ArmStatus               setShoulderPotEncoderStatus(PotAndEncoder.Status shoulderStatus)  {this.shoulderPotEncoderStatus = shoulderStatus; return this;}
+    private ArmStatus               setShoulderPotEncoderStatus(PotAndEncoder.Status shoulderStatus)  {
+        this.shoulderPotEncoderStatus = shoulderStatus;
+        setShoulderAngleRad(Math.toRadians(shoulderStatus.positionDeg));
+        setShoulderCalibrated(shoulderStatus.calibrated);
+        return this;
+    }
     
 
     // Elbow
@@ -68,41 +73,48 @@ public class ArmStatus extends StatusBase {
 
     private PotAndEncoder.Status    elbowPotEncoderStatus;
     public PotAndEncoder.Status     getElbowPotEncoderStatus()                                    {return elbowPotEncoderStatus;}
-    private ArmStatus               setElbowPotEncoderStatus(PotAndEncoder.Status elbowStatus)    {this.elbowPotEncoderStatus = elbowStatus; return this;}
+    private ArmStatus               setElbowPotEncoderStatus(PotAndEncoder.Status elbowStatus)    {
+        this.elbowPotEncoderStatus = elbowStatus; 
+        setElbowAngleRad(Math.toRadians(elbowStatus.positionDeg));
+        setShoulderCalibrated(elbowStatus.calibrated);
+        return this;
+    }
 
 
-    private double shoulderAngle;
-    private double elbowAngle;
-    private double shoulderAngleSetpoint;
-    private double elbowAngleSetpoint;
+    private double shoulderAngleRad;
+    private double elbowAngleRad;
+    private double shoulderAngleRadSetpoint;
+    private double elbowAngleRadSetpoint;
     private double shoulderFeedforward;
     private double elbowFeedforward;
     private double shoulderPidFeedback;
     private double elbowPidFeedback;
+    private boolean shoulderCalibrated;
+    private boolean elbowCalibrated;
     
-    public double getShoulderAngle() {
-        return shoulderAngle;
+    public double getShoulderAngleRad() {
+        return shoulderAngleRad;
     }
-    public void setShoulderAngle(double shoulderAngle) {
-        this.shoulderAngle = shoulderAngle;
+    public void setShoulderAngleRad(double shoulderAngle) {
+        this.shoulderAngleRad = shoulderAngle;
     }
-    public double getElbowAngle() {
-        return elbowAngle;
+    public double getElbowAngleRad() {
+        return elbowAngleRad;
     }
-    public void setElbowAngle(double elbowAngle) {
-        this.elbowAngle = elbowAngle;
+    public void setElbowAngleRad(double elbowAngle) {
+        this.elbowAngleRad = elbowAngle;
     }
-    public double getShoulderAngleSetpoint() {
-        return shoulderAngleSetpoint;
+    public double getShoulderAngleRadSetpoint() {
+        return shoulderAngleRadSetpoint;
     }
-    public void setShoulderAngleSetpoint(double shoulderAngleSetpoint) {
-        this.shoulderAngleSetpoint = shoulderAngleSetpoint;
+    public void setShoulderAngleRadSetpoint(double shoulderAngleSetpoint) {
+        this.shoulderAngleRadSetpoint = shoulderAngleSetpoint;
     }
-    public double getElbowAngleSetpoint() {
-        return elbowAngleSetpoint;
+    public double getElbowAngleRadSetpoint() {
+        return elbowAngleRadSetpoint;
     }
-    public void setElbowAngleSetpoint(double elbowAngleSetpoint) {
-        this.elbowAngleSetpoint = elbowAngleSetpoint;
+    public void setElbowAngleRadSetpoint(double elbowAngleSetpoint) {
+        this.elbowAngleRadSetpoint = elbowAngleSetpoint;
     }
     public double getShoulderFeedforward() {
         return shoulderFeedforward;
@@ -127,6 +139,18 @@ public class ArmStatus extends StatusBase {
     }
     public void setElbowPidFeedback(double elbowPidFeedback) {
         this.elbowPidFeedback = elbowPidFeedback;
+    }
+    public boolean getShoulderCalibrated() {
+        return shoulderCalibrated;
+    }
+    public void setShoulderCalibrated(boolean shoulderCalibrated) {
+        this.shoulderCalibrated = shoulderCalibrated;
+    }
+    public boolean getElbowCalibrated() {
+        return elbowCalibrated;
+    }
+    public void setElbowCalibrated(boolean elbowCalibrated) {
+        this.elbowCalibrated = elbowCalibrated;
     }
 
     private Matrix<N2,N3>   currentTrajState = new MatBuilder<>(Nat.N2(),Nat.N3()).fill(0,0,0,0,0,0);
@@ -174,12 +198,12 @@ public class ArmStatus extends StatusBase {
 
         logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
 
-        logger.recordOutput(prefix + "Shoulder/Angle", getShoulderAngle());
-        logger.recordOutput(prefix + "Shoulder/Setpoint", getShoulderAngleSetpoint());
+        logger.recordOutput(prefix + "Shoulder/Angle", getShoulderAngleRad());
+        logger.recordOutput(prefix + "Shoulder/Setpoint", getShoulderAngleRadSetpoint());
         logger.recordOutput(prefix + "Shoulder/Feedforward", getShoulderFeedforward());
         logger.recordOutput(prefix + "Shoulder/PID Feedback", getShoulderPidFeedback());
-        logger.recordOutput(prefix + "Elbow/Angle", getElbowAngle());
-        logger.recordOutput(prefix + "Elbow/Setpoint", getElbowAngleSetpoint());
+        logger.recordOutput(prefix + "Elbow/Angle", getElbowAngleRad());
+        logger.recordOutput(prefix + "Elbow/Setpoint", getElbowAngleRadSetpoint());
         logger.recordOutput(prefix + "Elbow/Feedforward", getElbowFeedforward());
         logger.recordOutput(prefix + "Elbow/PID Feedback", getElbowPidFeedback());
         

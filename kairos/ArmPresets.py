@@ -25,7 +25,7 @@ class ArmPresetPoses:
 
         # preset = [None] * ((ArmPresetEnum.SCORE_HIGH_CONE).value+1)
         preset = {
-            "defense":           {"fileIdx": ArmPresetEnum.DEFENSE, "xy": np.array([ 0.0, 25.0]).tolist()},
+            "defense":           {"fileIdx": ArmPresetEnum.DEFENSE, "xy": np.array([ 6.0, 25.0]).tolist()},
             "intake":            {"fileIdx": ArmPresetEnum.INTAKE, "xy": np.array([14, 15.0]).tolist()},
             "double_substation": {"fileIdx": ArmPresetEnum.DOUBLE_SUBSTATION, "xy": (np.array([bumper_width_inches/2 + dbl_substation_shelf_depth/2, 37.3])).tolist()},
             "score_hybrid":      {"fileIdx": ArmPresetEnum.SCORE_HYBRID, "xy": (np.array([bumper_width_inches/2 + shelf_depth/2, 0]) + np.array([0, scoring_margin])).tolist()},
