@@ -2,15 +2,15 @@
   "defense": {
     "fileIdx": 0,
     "xy": [
-      0.0,
+      6.0,
       25.0
     ]
   },
   "intake": {
     "fileIdx": 1,
     "xy": [
-      16.3,
-      11.0
+      14.0,
+      15.0
     ]
   },
   "double_substation": {

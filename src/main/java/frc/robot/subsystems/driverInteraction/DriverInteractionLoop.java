@@ -56,16 +56,16 @@ public class DriverInteractionLoop extends LoopBase {
 
     @Override
     public void Enabled() {
-        if(!DriverStation.isTeleop()) return;
+        // if(!DriverStation.isTeleop()) return;
 
         if(DriverControlButtons.InvertControls.getRisingEdge())
             invertDriveControls = !invertDriveControls;
         drive.setDriveCommand(generateDriveCommand());
 
-        DriverAssistCommand assistCommand = new DriverAssistCommand();
-        if(DriverControlButtons.AutoBalance.getButton())
-            assistCommand.setDriverAssistState(DriverAssistState.AutoBalance);
-        driverAssist.setCommand(assistCommand);
+        // DriverAssistCommand assistCommand = new DriverAssistCommand();
+        // if(DriverControlButtons.AutoBalance.getButton())
+        //     assistCommand.setDriverAssistState(DriverAssistState.AutoBalance);
+        // driverAssist.setCommand(assistCommand);
 
         IntakeCommand intakeCommand = new IntakeCommand();
         switch(intakeStatus.getIntakeState())
@@ -111,10 +111,10 @@ public class DriverInteractionLoop extends LoopBase {
                     armCommand.setArmState(ArmState.Grab);
             break;
 
-            case Grab:
-                if(DriverControlButtons.Intake.getRisingEdge())
-                    armCommand.setArmState(ArmState.Hold);
-            break;
+        //     case Grab:
+        //         if(DriverControlButtons.Intake.getRisingEdge())
+        //             armCommand.setArmState(ArmState.Hold);
+        //     break;
 
             case Hold:
                 if(DriverControlButtons.Intake.getRisingEdge())

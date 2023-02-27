@@ -37,69 +37,49 @@ class ArmFeedforward:
 
         M[0][0] = (
             self._shoulder.mass * (self._shoulder.cgRadius**2.0)
-            + self._elbow.mass
-            * ((self._shoulder.length**2.0) + (self._elbow.cgRadius**2.0))
+            + self._elbow.mass * (self._shoulder.length**2.0)
             + self._shoulder.moi
-            + self._elbow.moi
-            + 2
-            * self._elbow.mass
-            * self._shoulder.length
-            * self._elbow.cgRadius
-            * cos(position[1])
         )
         M[1][0] = (
-            self._elbow.mass * (self._elbow.cgRadius**2)
-            + self._elbow.moi
-            + self._elbow.mass
-            * self._shoulder.length
-            * self._elbow.cgRadius
-            * cos(position[1])
+            self._elbow.mass * self._shoulder.length * self._elbow.cgRadius
+            * cos(position[0] - position[1])
         )
-        M[0][1] = (
-            self._elbow.mass * (self._elbow.cgRadius**2)
-            + self._elbow.moi
-            + self._elbow.mass
-            * self._shoulder.length
-            * self._elbow.cgRadius
-            * cos(position[1])
-        )
+        M[0][1] = M[1][0]
         M[1][1] = self._elbow.mass * (self._elbow.cgRadius**2) + self._elbow.moi
 
         C[0][0] = (
-            -self._elbow.mass
+            self._elbow.mass
             * self._shoulder.length
             * self._elbow.cgRadius
-            * sin(position[1])
+            * sin(position[0] - position[1])
             * velocity[1]
         )
         C[1][0] = (
             self._elbow.mass
             * self._shoulder.length
             * self._elbow.cgRadius
-            * sin(position[1])
-            * velocity[0]
+            * sin(position[0] - position[1])
+            * (velocity[1] - velocity[0])
         )
-        C[0][1] = (
-            -self._elbow.mass
+        C[0][1] = C[1][0]
+        C[1][1] = (
+            self._elbow.mass
             * self._shoulder.length
             * self._elbow.cgRadius
-            * sin(position[1])
-            * (velocity[0] + velocity[1])
+            * sin(position[0] - position[1])
+            * velocity[0]
         )
 
         Tg[0] = (
             self._shoulder.mass * self._shoulder.cgRadius
             + self._elbow.mass * self._shoulder.length
-        ) * self._g * cos(
-            position[0]
-        ) + self._elbow.mass * self._elbow.cgRadius * self._g * cos(
-            position[0] + position[1]
+        ) * self._g * cos(position[0]
         )
         Tg[1] = (
             self._elbow.mass
             * self._elbow.cgRadius
             * self._g
-            * cos(position[0] + position[1])
+            * cos(position[1])
         )
 
         M_times_acceleration = (

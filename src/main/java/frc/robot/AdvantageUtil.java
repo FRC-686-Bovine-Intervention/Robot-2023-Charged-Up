@@ -5,6 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.DoubleStream;
 
+import org.littletonrobotics.junction.Logger;
+
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
@@ -12,6 +15,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 
 public class AdvantageUtil {
     public static double[] deconstruct(Pose3d pose)
@@ -70,5 +75,11 @@ public class AdvantageUtil {
                              new Rotation2d(array[2+i])));
         }
         return r;
+    }
+
+    public static void recordTrajectoryVector(Logger logger, String prefix, Matrix<N1,N3> matrix) {
+        logger.recordOutput(prefix + "position", matrix.get(0,0));
+        logger.recordOutput(prefix + "velocity", matrix.get(0,1));
+        logger.recordOutput(prefix + "acceleration", matrix.get(0,2));
     }
 }

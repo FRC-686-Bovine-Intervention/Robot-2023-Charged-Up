@@ -28,12 +28,21 @@ public class ArmHAL {
 
     private final WPI_TalonFX shoulderMotor, elbowMotor;
 
-    public static final TalonFXInvertType kShoulderMotorInverted    = TalonFXInvertType.Clockwise;          // TODO: UPDATE!!!
-    public static final TalonFXInvertType kElbowMotorInverted       = TalonFXInvertType.CounterClockwise;   // TODO: UPDATE!!!
+    public static final TalonFXInvertType kShoulderMotorInverted    = TalonFXInvertType.Clockwise;          
+    public static final TalonFXInvertType kElbowMotorInverted       = TalonFXInvertType.CounterClockwise;   
 
-    public static final double kArmCurrentLimit = 25;
-    public static final double kArmTriggerThresholdCurrent = 20;
+    public static final double kArmCurrentLimit = 100;
+    public static final double kArmTriggerThresholdCurrent = 40;
     public static final double kArmTriggerThresholdTime = 0.5;
+
+    private double shoulderMaxAngleRad;
+    private double shoulderMinAngleRad;
+    private double elbowMaxAngleRad;
+    private double elbowMinAngleRad;
+    private double kRelativeMaxAngleRad = Math.toRadians(170.0);    // don't let grabber smash into proximal arm
+    private double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
+   
+
 
 	// Constant import
 	public static final int kTalonTimeoutMs = 5;
@@ -61,6 +70,13 @@ public class ArmHAL {
     private final static boolean kElbowPotInverted                        = true;
     private final static boolean kElbowEncInverted                        = true;
 
+    private static final double kShoulderEncoderUnitsPerRev = 2048.0 * kShoulderEncoderGearRatio;
+    private static final double kShoulderEncoderUnitsPerRad = kShoulderEncoderUnitsPerRev / (2*Math.PI);
+
+    private static final double kElbowEncoderUnitsPerRev = 2048.0 * kElbowEncoderGearRatio;
+    private static final double kElbowEncoderUnitsPerRad = kElbowEncoderUnitsPerRev / (2*Math.PI);
+    
+
     private final PotAndEncoder elbowPotEncoder;
     private final PotAndEncoder.Config elbowPotAndEncoderConfig;
     private final PotAndEncoder.HAL elbowPotAndEncoderHAL;
@@ -71,8 +87,8 @@ public class ArmHAL {
         if(RobotBase.isReal())
         {
             turretMotor = new TalonSRX(Constants.kTurretMotorID);
-            shoulderMotor = null;//ARMDEBUGnew WPI_TalonFX(Constants.kShoulderMotorID);
-            elbowMotor    = null;//ARMDEBUGnew WPI_TalonFX(Constants.kElbowMotorID);    
+            shoulderMotor = new WPI_TalonFX(Constants.kShoulderMotorID);
+            elbowMotor    = new WPI_TalonFX(Constants.kElbowMotorID);    
             shoulderPotAndEncoderHAL = new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, kShoulderPotentiometerNTurns, 
                                                              kShoulderPotentiometerGearRatio, kShoulderPotNormalizedVoltageAtCalib, kShoulderAngleAtCalibration, 
                                                              kShoulderPotInverted, kShoulderEncInverted);            
@@ -117,7 +133,7 @@ public class ArmHAL {
             
             // Set up the encoders
             shoulderMotor.setInverted(kShoulderMotorInverted);           
-            shoulderMotor.setSensorPhase(true);
+            shoulderMotor.setSensorPhase(false);
             shoulderMotor.setNeutralMode(NeutralMode.Brake);
             shoulderMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, kArmCurrentLimit, kArmTriggerThresholdCurrent, kArmTriggerThresholdTime));
         }  
@@ -128,7 +144,7 @@ public class ArmHAL {
             
             // Set up the encoders
             elbowMotor.setInverted(kElbowMotorInverted);           
-            elbowMotor.setSensorPhase(true);
+            elbowMotor.setSensorPhase(false);
             elbowMotor.setNeutralMode(NeutralMode.Brake);
             elbowMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, kArmCurrentLimit, kArmTriggerThresholdCurrent, kArmTriggerThresholdTime));
        }
@@ -147,19 +163,86 @@ public class ArmHAL {
     public double getTurretAbsolute(){
         return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0;
     }
-
-    public ArmHAL setShoulderMotor(double power) {
-        if (shoulderMotor != null)
-            shoulderMotor.set(ControlMode.PercentOutput, power);
-        return this;
-    }
-    public ArmHAL setElbowMotor(double power) {
-        if (elbowMotor != null)
-            elbowMotor.set(ControlMode.PercentOutput, power);
-        return this;
-    }
     
     public PotAndEncoder getShoulderPotEncoder() {return shoulderPotEncoder;}
-    public PotAndEncoder getElbowPotEncoder() {return elbowPotEncoder;}
+    public PotAndEncoder getElbowPotEncoder() {return elbowPotEncoder;}   
+
+    public void setShoulderMaxAngleRad(double kShoulderMaxAngleRad) {        this.shoulderMaxAngleRad = kShoulderMaxAngleRad;    }
+    public void setShoulderMinAngleRad(double kShoulderMinAngleRad) {        this.shoulderMinAngleRad = kShoulderMinAngleRad;    }
+    public void setElbowMaxAngleRad(double kElbowMaxAngleRad) {        this.elbowMaxAngleRad = kElbowMaxAngleRad;    }
+    public void setElbowMinAngleRad(double kElbowMinAngleRad) {        this.elbowMinAngleRad = kElbowMinAngleRad;    }
+
+    public boolean isGoodArmAngle() {
+        ArmStatus status = ArmStatus.getInstance();
+        double relativeAngle = status.getShoulderAngleRad() - status.getElbowAngleRad();
+
+        return ((status.getShoulderAngleRad() >= shoulderMinAngleRad) && (status.getShoulderAngleRad() <= shoulderMaxAngleRad) &&
+                (status.getElbowAngleRad() >= elbowMinAngleRad) && (status.getElbowAngleRad() <= elbowMaxAngleRad) &&
+                (relativeAngle >= kRelativeMinAngleRad) && (relativeAngle <= kRelativeMaxAngleRad));
+    }
+
+    public void setShoulderMotorVoltage(double volts) {
+        if (shoulderMotor != null) { 
+            if (isGoodArmAngle()) {
+                shoulderMotor.set(ControlMode.PercentOutput, volts/12.0);
+            } else {
+                shoulderMotor.set(ControlMode.PercentOutput, 0.0);
+            }
+        }
+    }
+
+    public void setElbowMotorVoltage(double volts) {
+        if (elbowMotor != null) { 
+            if (isGoodArmAngle()) {
+                elbowMotor.set(ControlMode.PercentOutput, volts/12.0);
+            } else {
+                elbowMotor.set(ControlMode.PercentOutput, 0.0);
+            }
+        }
+    }
+
+    boolean shoulderSoftLimitSet = false;
+    boolean elbowSoftLimitSet = false;
+
+    // call this every update cycle
+    public void setArmMotorSoftLimits() {
+        if (!shoulderSoftLimitSet) {
+            ArmStatus status = ArmStatus.getInstance();
+
+            if (status.getShoulderPotEncoderStatus().calibrated) {
+                double shoulderAngleRad = status.getShoulderAngleRad();
+                double revOffset = shoulderAngleRad - shoulderMinAngleRad;
+                double fwdOffset = shoulderMaxAngleRad - shoulderAngleRad;
+                
+                double currentPosInSensorUnits = shoulderMotor.getSelectedSensorPosition();
+                shoulderMotor.configForwardSoftLimitThreshold(currentPosInSensorUnits + shoulderRadiansToSensorUnits(fwdOffset));
+                shoulderMotor.configReverseSoftLimitThreshold(currentPosInSensorUnits - shoulderRadiansToSensorUnits(revOffset));
+                shoulderMotor.configForwardSoftLimitEnable(true);
+                shoulderMotor.configReverseSoftLimitEnable(true);
+
+                shoulderSoftLimitSet = true;
+            }
+        }
+        if (!elbowSoftLimitSet) {
+            ArmStatus status = ArmStatus.getInstance();
+
+            if (status.getElbowPotEncoderStatus().calibrated) {
+                double elbowAngleRad = status.getElbowAngleRad();
+                double revOffset = elbowAngleRad - elbowMinAngleRad;
+                double fwdOffset = elbowMaxAngleRad - elbowAngleRad;
+                
+                double currentPosInSensorUnits = elbowMotor.getSelectedSensorPosition();
+                elbowMotor.configForwardSoftLimitThreshold(currentPosInSensorUnits + elbowRadiansToSensorUnits(fwdOffset));
+                elbowMotor.configReverseSoftLimitThreshold(currentPosInSensorUnits - elbowRadiansToSensorUnits(revOffset));
+                elbowMotor.configForwardSoftLimitEnable(true);
+                elbowMotor.configReverseSoftLimitEnable(true);
+
+                elbowSoftLimitSet = true;
+            }
+        }
+    }
+
+    public static double shoulderRadiansToSensorUnits(double _radians) { return _radians * kShoulderEncoderUnitsPerRad; }
+    public static double elbowRadiansToSensorUnits(double _radians) { return _radians * kElbowEncoderUnitsPerRad; }
 }
 

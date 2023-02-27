@@ -138,14 +138,12 @@ class Solver:
                 x = (
                         arm_config["origin"][0]
                         + arm_config["shoulder"]["length"] * cos(current_theta[0])
-                        + arm_config["elbow"]["length"]
-                        * cos(current_theta[0] + current_theta[1])
+                        + arm_config["elbow"]["length"] * cos(current_theta[1])
                 )
                 y = (
                         arm_config["origin"][1]
                         + arm_config["shoulder"]["length"] * sin(current_theta[0])
-                        + arm_config["elbow"]["length"]
-                        * sin(current_theta[0] + current_theta[1])
+                        + arm_config["elbow"]["length"] * sin(current_theta[1])
                 )
 
                 for (constraint_key, constraint) in constraints.items():
@@ -259,22 +257,22 @@ class Solver:
         start_x = (
                 self._arm_config["origin"][0]
                 + self._arm_config["shoulder"]["length"] * cos(inital_theta[0])
-                + self._arm_config["elbow"]["length"] * cos(inital_theta[0] + inital_theta[1])
+                + self._arm_config["elbow"]["length"] * cos(inital_theta[1])
         )
         start_y = (
                 self._arm_config["origin"][1]
                 + self._arm_config["shoulder"]["length"] * sin(inital_theta[0])
-                + self._arm_config["elbow"]["length"] * sin(inital_theta[0] + inital_theta[1])
+                + self._arm_config["elbow"]["length"] * sin(inital_theta[1])
         )
         final_x = (
                 self._arm_config["origin"][0]
                 + self._arm_config["shoulder"]["length"] * cos(final_theta[0])
-                + self._arm_config["elbow"]["length"] * cos(final_theta[0] + final_theta[1])
+                + self._arm_config["elbow"]["length"] * cos(final_theta[1])
         )
         final_y = (
                 self._arm_config["origin"][1]
                 + self._arm_config["shoulder"]["length"] * sin(final_theta[0])
-                + self._arm_config["elbow"]["length"] * sin(final_theta[0] + final_theta[1])
+                + self._arm_config["elbow"]["length"] * sin(final_theta[1])
         )
         for (
             constraint_key,

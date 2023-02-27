@@ -24,8 +24,8 @@ import edu.wpi.first.math.numbers.N3;
  * Represents a trajectory of arm states that can be generated asynchronously.
  */
 public class ArmTrajectory {
-  private final String startPos;    // starting position in XZ coordinates
-  private final String finalPos;    // final position in XZ coordinates
+  private final String startPos;    // starting position
+  private final String finalPos;    // final position
   private double totalTime = 0.0;   // total trajectory time
   private List<Vector<N2>> points = new ArrayList<>(); // rough trajectory of theta1, theta2 at equally spaced times across totalTime
   Matrix<N2, N3> finalState;
