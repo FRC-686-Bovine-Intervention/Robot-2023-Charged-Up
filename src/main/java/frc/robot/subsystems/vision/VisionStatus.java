@@ -10,6 +10,7 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import frc.robot.AdvantageUtil;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -72,13 +73,13 @@ public class VisionStatus extends StatusBase {
     public LimelightPipeline    getTargetPipeline()                                 {return targetPipeline;}
     public VisionStatus         setTargetPipeline(LimelightPipeline targetPipeline) {this.targetPipeline = targetPipeline; return this;}
 
-    private Transform3d         robotToCamera1 = new Transform3d(); //TODO
-    public Transform3d          getRobotToCamera1()                                 {return robotToCamera1;};
-    public VisionStatus         setRobotToCamera1(Transform3d transform)             {robotToCamera1 = transform; return this;};
+    private Transform3d robotToCamera1 = new Transform3d(); //TODO
+    public Transform3d  getRobotToCamera1()                         {return robotToCamera1;};
+    public VisionStatus setRobotToCamera1(Transform3d transform)    {robotToCamera1 = transform; return this;};
     
-    private Transform3d         robotToCamera2 = new Transform3d(); //TODO
-    public Transform3d          getRobotToCamera2()                                 {return robotToCamera2;};
-    public VisionStatus         setRobotToCamera2(Transform3d transform)             {robotToCamera2 = transform; return this;};
+    private Transform3d robotToCamera2 = new Transform3d(); //TODO
+    public Transform3d  getRobotToCamera2()                         {return robotToCamera2;};
+    public VisionStatus setRobotToCamera2(Transform3d transform)    {robotToCamera2 = transform; return this;};
 
     private double          targetXAngle;
     protected double        getTargetXAngle()                       {return targetXAngle;}
@@ -135,9 +136,9 @@ public class VisionStatus extends StatusBase {
         for(AprilTag target : HAL.getVisibleTags())
             visiblePoses.add(target.pose);
 
-        table.put("AprilTag Poses", AdvantageUtil.deconstructPose3ds(tagPoses));
-        table.put("AprilTag IDs", tagIDs);
-        table.put("Visible Tag Poses", AdvantageUtil.deconstructPose3ds(visiblePoses));
+        table.put("AprilTags/AprilTag Poses", AdvantageUtil.deconstructPose3ds(tagPoses));
+        table.put("AprilTags/AprilTag IDs", tagIDs);
+        table.put("AprilTags/Visible Tag Poses", AdvantageUtil.deconstructPose3ds(visiblePoses));
 
         table.put("Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null");
         table.put("Limelight/Target X Angle (Deg)", targetXAngle);
