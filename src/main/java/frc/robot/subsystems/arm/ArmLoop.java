@@ -60,8 +60,7 @@ public class ArmLoop extends LoopBase {
 
     private ArmState prevState;
 
-    static final String configFilename = "arm_config.json";
-    final String presetFilename = "arm_preset_poses.json";
+    private static final double kDisabledTimerThreshold = 5;
 
     // private final String configJson;
     private final ArmPresetsJson presets;
@@ -91,7 +90,7 @@ public class ArmLoop extends LoopBase {
         );    
 
     private boolean internalDisable = false;
-    private Timer internalDisableTimer = new Timer();
+    private final Timer internalDisableTimer = new Timer();
     public static final double internalDisableMaxError = Units.degreesToRadians(10.0);    
     public static final double internalDisableMaxErrorTime = 0.5;
     public static final double internalDisableBeyondLimitThreshold = Units.degreesToRadians(5.0);
@@ -132,45 +131,45 @@ public class ArmLoop extends LoopBase {
     private ArmLoop() {
         Subsystem = arm;
     
-         // Get presets from JSON
-         File presetFile = new File(Filesystem.getDeployDirectory(), ArmPresetsJson.jsonFilename);
-         presets = ArmPresetsJson.loadJson(presetFile);   
-         ArmPose.Preset.writePresets(presets);
-         
-         // Get config from JSON
-         ArmConfigJson config = arm.getConfig();
-         // Get paths from JSON
-         // also create trajectories for each path
-         for (ArmPose.Preset startPos : ArmPose.Preset.values()) {
-             for (ArmPose.Preset finalPos : ArmPose.Preset.values()) {
-                 int startIdx = startPos.getFileIdx();
-                 int finalIdx = finalPos.getFileIdx();
- 
-                    String pathFilename = String.format(ArmPathsJson.jsonFilename, startIdx, finalIdx);
-                    
-                    File pathFile = new File(Filesystem.getDeployDirectory(), pathFilename);
-                    var path = ArmPathsJson.loadJson(pathFile);
+        // Get presets from JSON
+        File presetFile = new File(Filesystem.getDeployDirectory(), ArmPresetsJson.jsonFilename);
+        presets = ArmPresetsJson.loadJson(presetFile);   
+        ArmPose.Preset.writePresets(presets);
+        
+        // Get config from JSON
+        ArmConfigJson config = arm.getConfig();
+        // Get paths from JSON
+        // also create trajectories for each path
+        for (ArmPose.Preset startPos : ArmPose.Preset.values()) {
+            for (ArmPose.Preset finalPos : ArmPose.Preset.values()) {
+                int startIdx = startPos.getFileIdx();
+                int finalIdx = finalPos.getFileIdx();
 
-                    // create trajectory for each path
-                    List<Vector<N2>> points = new ArrayList<>();
-                    for (int k=0; k<path.theta1().size(); k++) {
-                        points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
-                    }
+                String pathFilename = String.format(ArmPathsJson.jsonFilename, startIdx, finalIdx);
+                
+                File pathFile = new File(Filesystem.getDeployDirectory(), pathFilename);
+                var path = ArmPathsJson.loadJson(pathFile);
 
-                    armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), points);
-             }
-         }
- 
-         kinematics = new ArmKinematics(new Translation2d(config.origin().getX(), config.origin().getY()),
-                                         config.shoulder().length(), config.elbow().length(),
-                                         config.shoulder().minAngle(), config.shoulder().maxAngle(), 
-                                         config.elbow().minAngle(), config.elbow().maxAngle());
-         
-         dynamics = new ArmDynamics(config.shoulder(), ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist()));
+                // create trajectory for each path
+                List<Vector<N2>> points = new ArrayList<>();
+                for (int k=0; k<path.theta1().size(); k++) {
+                    points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
+                }
 
-         xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches());
-         finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
-         setpointState = finalTrajectoryState;
+                armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), points);
+            }
+        }
+
+        kinematics = new ArmKinematics(new Translation2d(config.origin().getX(), config.origin().getY()),
+                                        config.shoulder().length(), config.elbow().length(),
+                                        config.shoulder().minAngle(), config.shoulder().maxAngle(), 
+                                        config.elbow().minAngle(), config.elbow().maxAngle());
+        
+        dynamics = new ArmDynamics(config.shoulder(), ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist()));
+
+        xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches());
+        finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
+        setpointState = finalTrajectoryState;
     }
 
     private final Timer stateTimer = new Timer();
@@ -410,11 +409,19 @@ public class ArmLoop extends LoopBase {
     }
 
 
+    private final Timer disabledTimer = new Timer();
+
     @Override
     protected void Disabled() {
+        disabledTimer.start();
+        if(status.EnabledState.IsInitState)
+            disabledTimer.reset();
         status.setTurretPower(0.0);
-        status.setArmState(ArmState.Defense); //TODO: Add disable time threshold
-        internalDisableTimer.reset();        
+        if(disabledTimer.hasElapsed(kDisabledTimerThreshold))
+        {
+            status.setArmState(ArmState.Defense); //TODO: Add disable time threshold
+        }
+        internalDisableTimer.reset();
     }
 
 

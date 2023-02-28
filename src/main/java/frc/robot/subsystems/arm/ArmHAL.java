@@ -9,7 +9,9 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Solenoid;
 import frc.robot.Constants;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
 import frc.robot.subsystems.arm.json.ArmConfigJson;
@@ -21,6 +23,10 @@ public class ArmHAL {
     private final ArmStatus status = ArmStatus.getInstance();
 
     private final TalonSRX turretMotor;
+    private final WPI_TalonFX shoulderMotor, elbowMotor;
+    private final Solenoid clawSolenoid;
+
+    private static final boolean kClawSolenoidInverted = false;
 
     private static final double kEncoderUnitsToDegrees = 360.0 / 4096.0;
     private static final double kTurretGearRatio = 1; // Gear ratio is 1:1 because of worm gear
@@ -28,8 +34,6 @@ public class ArmHAL {
     private static final boolean kTurretEncoderInverted = true;
     private static final int kRelativePIDId = 0;
     private static final int kAbsolutePIDId = 1;
-
-    private final WPI_TalonFX shoulderMotor, elbowMotor;
 
     public static final TalonFXInvertType kShoulderMotorInverted    = TalonFXInvertType.Clockwise;          
     public static final TalonFXInvertType kElbowMotorInverted       = TalonFXInvertType.CounterClockwise;   
@@ -45,8 +49,6 @@ public class ArmHAL {
     private static final double kRelativeMaxAngleRad = Math.toRadians(170.0);    // don't let grabber smash into proximal arm
     private static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
    
-
-
 	// Constant import
 	public static final int kTalonTimeoutMs = 5;
 	public static final int kTalonPidIdx = 0;  
@@ -102,6 +104,7 @@ public class ArmHAL {
             elbowPotAndEncoderHAL    = new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, kElbowPotentiometerNTurns, 
                                                             kElbowPotentiometerGearRatio, kElbowPotNormalizedVoltageAtCalib, kElbowAngleAtCalibration, 
                                                             kElbowPotInverted, kElbowEncInverted); 
+            clawSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.kClawSolenoidID);
         }
         else
         {
@@ -114,6 +117,7 @@ public class ArmHAL {
             elbowPotAndEncoderHAL    = new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, kElbowPotentiometerNTurns, 
                                                             kElbowPotentiometerGearRatio, kElbowPotNormalizedVoltageAtCalib, kElbowAngleAtCalibration, 
                                                             kElbowPotInverted, kElbowEncInverted); 
+            clawSolenoid = null;
         }
 
         if (turretMotor != null) {
@@ -125,6 +129,7 @@ public class ArmHAL {
             turretMotor.setSensorPhase(kTurretEncoderInverted);
             turretMotor.setInverted(kTurretMotorInverted);
         }
+        
         shoulderPotAndEncoderConfig = new PotAndEncoder.Config(kShoulderPotentiometerGearRatio, kShoulderEncoderGearRatio, kShoulderPotentiometerNTurns, 
                                                                 kShoulderAngleAtCalibration, kShoulderPotNormalizedVoltageAtCalib, kShoulderAbsoluteEncoderAngleDegAtCalib, 
                                                                 kShoulderPotInverted, kShoulderEncInverted, shoulderPotAndEncoderHAL);
@@ -157,6 +162,7 @@ public class ArmHAL {
        }
     }
 
+    // Turret
     public ArmHAL setTurretPower(double power){
         if (turretMotor != null) {
             turretMotor.set(ControlMode.PercentOutput, power);
@@ -164,16 +170,10 @@ public class ArmHAL {
         return this;
     }
 
-    public double getTurretRelative(){
-        return turretMotor != null ? turretMotor.getSelectedSensorPosition(kRelativePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0;
-    }
-    public double getTurretAbsolute(){
-        return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0;
-    }
-    
-    public PotAndEncoder getShoulderPotEncoder() {return shoulderPotEncoder;}
-    public PotAndEncoder getElbowPotEncoder() {return elbowPotEncoder;}   
+    public double getTurretRelative()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kRelativePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0;}
+    public double getTurretAbsolute()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0;}
 
+    // Arm
     public boolean isGoodArmAngle() {
         double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
         double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
@@ -182,16 +182,6 @@ public class ArmHAL {
         return ((shoulderAngleRad >= shoulderMinAngleRad) && (shoulderAngleRad <= shoulderMaxAngleRad) &&
                 (elbowAngleRad >= elbowMinAngleRad) && (elbowAngleRad <= elbowMaxAngleRad) &&
                 (relativeAngle >= kRelativeMinAngleRad) && (relativeAngle <= kRelativeMaxAngleRad));
-    }
-
-    public void setShoulderMotorPower(double power) {
-        if (shoulderMotor != null)
-            shoulderMotor.set(ControlMode.PercentOutput, isGoodArmAngle() ? power : 0);
-    }
-
-    public void setElbowMotorPower(double power) {
-        if (elbowMotor != null)
-            elbowMotor.set(ControlMode.PercentOutput, isGoodArmAngle() ? power : 0);
     }
 
     boolean shoulderSoftLimitSet = false;
@@ -230,8 +220,32 @@ public class ArmHAL {
             }
         }
     }
+    
+    // Shoulder
+    public PotAndEncoder getShoulderPotEncoder()    {return shoulderPotEncoder;}
+    
+    public void setShoulderMotorPower(double power) {
+        if (shoulderMotor != null)
+            shoulderMotor.set(ControlMode.PercentOutput, isGoodArmAngle() ? power : 0);
+    }
 
     public static double shoulderRadiansToSensorUnits(double _radians) { return _radians * kShoulderEncoderUnitsPerRad; }
+
+    // Elbow
+    public PotAndEncoder getElbowPotEncoder()       {return elbowPotEncoder;}   
+
+    public void setElbowMotorPower(double power) {
+        if (elbowMotor != null)
+            elbowMotor.set(ControlMode.PercentOutput, isGoodArmAngle() ? power : 0);
+    }
+
     public static double elbowRadiansToSensorUnits(double _radians) { return _radians * kElbowEncoderUnitsPerRad; }
+
+    // Claw
+    public ArmHAL setClawGrabbing(boolean clawGrabbing) {
+        if(clawSolenoid != null)
+            clawSolenoid.set(clawGrabbing ^ kClawSolenoidInverted); 
+        return this;
+    }
 }
 
