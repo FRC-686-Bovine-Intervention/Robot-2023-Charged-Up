@@ -118,19 +118,7 @@ public class ArmLoop extends LoopBase {
     private final double manualMaxSpeedInchesPerSec = 6.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
     private final double manualMaxSpeedMetersPerSec = Units.inchesToMeters(manualMaxSpeedInchesPerSec);
     private final double manualMaxSpeedDegreesPerSec = 10.0;  // speed the turret is allowed to manually spin
-    
-    public double getStartingShoulderAngleRad(ArmPose.Preset preset) {
-        int startIdx = preset.getFileIdx();
-        var traj = armTrajectories[startIdx][startIdx];
-        var state = traj.getFinalState();
-        return state.get(0,0);
-    }
-    public double getStartingElbowAngleRad(ArmPose.Preset preset) {
-        int startIdx = preset.getFileIdx();
-        var traj = armTrajectories[startIdx][startIdx];
-        var state = traj.getFinalState();
-        return state.get(1,0);
-    }
+
 
     private ArmLoop() {
         Subsystem = arm;
@@ -224,9 +212,9 @@ public class ArmLoop extends LoopBase {
             case ZeroProximal:
                 if(status.getShoulderStatus().calibrated)
                 {
-                    status.setElbowPower(kProximalZeroPower * Math.signum(getStartingShoulderAngleRad(ArmPose.Preset.DEFENSE) - shoulderAngleRad) * ArmHAL.kElbowMotorGearRatio / ArmHAL.kShoulderMotorGearRatio);
-                    status.setShoulderPower(kProximalZeroPower * Math.signum(getStartingShoulderAngleRad(ArmPose.Preset.DEFENSE) - shoulderAngleRad));
-                    if(Math.abs(shoulderAngleRad - getStartingShoulderAngleRad(ArmPose.Preset.DEFENSE)) <= kProximalZeroErrorThreshold)
+                    status.setElbowPower(kProximalZeroPower * Math.signum(ArmPose.Preset.DEFENSE.getShoulderAngleRad() - shoulderAngleRad) * ArmHAL.kElbowMotorGearRatio / ArmHAL.kShoulderMotorGearRatio);
+                    status.setShoulderPower(kProximalZeroPower * Math.signum(ArmPose.Preset.DEFENSE.getShoulderAngleRad() - shoulderAngleRad));
+                    if(Math.abs(shoulderAngleRad - ArmPose.Preset.DEFENSE.getShoulderAngleRad()) <= kProximalZeroErrorThreshold)
                         status.setArmState(ArmState.ZeroTurret);
                 }
             break;
@@ -243,8 +231,8 @@ public class ArmLoop extends LoopBase {
                 status.setShoulderPower(0);
                 if(status.getElbowStatus().calibrated)
                 {
-                    status.setElbowPower(kDistalZeroPower * Math.signum(getStartingElbowAngleRad(ArmPose.Preset.DEFENSE) - elbowAngleRad));
-                    if(Math.abs(elbowAngleRad - getStartingElbowAngleRad(ArmPose.Preset.DEFENSE)) <= kDistalZeroErrorThreshold)
+                    status.setElbowPower(kDistalZeroPower * Math.signum(ArmPose.Preset.DEFENSE.getElbowAngleRad() - elbowAngleRad));
+                    if(Math.abs(elbowAngleRad - ArmPose.Preset.DEFENSE.getElbowAngleRad()) <= kDistalZeroErrorThreshold)
                     {
                         status.setArmState(ArmState.Defense);
                         status.setCurrentArmPose(ArmPose.Preset.DEFENSE);
