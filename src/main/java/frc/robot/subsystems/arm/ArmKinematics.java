@@ -23,17 +23,21 @@ public class ArmKinematics {
   private final double l2;          // distal arm length
   private final double minTheta1;   // min allowable shoulder angle
   private final double maxTheta1;   // max allowable shoulder angle
+  private final double minTheta2;  // min allowable elbow angle, relative to horizontal
+  private final double maxTheta2;  // max allowable elbow angle, relative to horizontal
   private final double minTheta21;  // min allowable elbow angle, relative to shoulder angle
   private final double maxTheta21;  // max allowable elbow angle, relative to shoulder angle
 
   
   public ArmKinematics(Translation2d shoulder, double l1, double l2, double minTheta1, double maxTheta1,
-      double minTheta21, double maxTheta21) {
+      double minTheta2, double maxTheta2, double minTheta21, double maxTheta21) {
     this.shoulder = shoulder;
     this.l1 = l1;
     this.l2 = l2;
     this.minTheta1 = minTheta1;
     this.maxTheta1 = maxTheta1;
+    this.minTheta2 = minTheta2;
+    this.maxTheta2 = maxTheta2;    
     this.minTheta21 = minTheta21;
     this.maxTheta21 = maxTheta21;
   }
@@ -111,8 +115,9 @@ public class ArmKinematics {
 
     // Exit if outside valid ranges for the joints
     if (theta1 < minTheta1 || theta1 > maxTheta1 ||
+        theta2 < minTheta2 || theta2 > maxTheta2 ||
         theta21 < minTheta21 || theta21 > maxTheta21) {
-      return Optional.empty();
+        return Optional.empty();
     }
 
     return Optional.of(VecBuilder.fill(theta1, theta2));

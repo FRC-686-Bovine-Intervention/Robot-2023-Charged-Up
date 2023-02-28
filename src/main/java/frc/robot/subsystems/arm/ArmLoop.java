@@ -134,14 +134,23 @@ public class ArmLoop extends LoopBase {
 
     private ArmLoop() {
         Subsystem = arm;
-    
+
+        // Get config from JSON
+        ArmConfigJson config = arm.getConfig();
+
+        kinematics = new ArmKinematics(new Translation2d(config.origin().getX(), config.origin().getY()),
+                                        config.shoulder().length(), config.elbow().length(),
+                                        config.shoulder().minAngle(), config.shoulder().maxAngle(), 
+                                        config.elbow().minAngle(), config.elbow().maxAngle(),
+                                        ArmHAL.kRelativeMinAngleRad, ArmHAL.kRelativeMaxAngleRad);
+
+        dynamics = new ArmDynamics(config.shoulder(), ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist()));
+        
         // Get presets from JSON
         File presetFile = new File(Filesystem.getDeployDirectory(), ArmPresetsJson.jsonFilename);
         presets = ArmPresetsJson.loadJson(presetFile);   
-        ArmPose.Preset.writePresets(presets);
+        ArmPose.Preset.writePresets(presets, kinematics);
         
-        // Get config from JSON
-        ArmConfigJson config = arm.getConfig();
         // Get paths from JSON
         // also create trajectories for each path
         for (ArmPose.Preset startPos : ArmPose.Preset.values()) {
@@ -164,12 +173,7 @@ public class ArmLoop extends LoopBase {
             }
         }
 
-        kinematics = new ArmKinematics(new Translation2d(config.origin().getX(), config.origin().getY()),
-                                        config.shoulder().length(), config.elbow().length(),
-                                        config.shoulder().minAngle(), config.shoulder().maxAngle(), 
-                                        config.elbow().minAngle(), config.elbow().maxAngle());
-        
-        dynamics = new ArmDynamics(config.shoulder(), ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist()));
+
 
         xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches());
         finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
@@ -188,112 +192,14 @@ public class ArmLoop extends LoopBase {
         stateTimer.start();
 
         // ================= Trajectory Logic =================
-               
-        // check if current trajectory is finished
-        if (status.getCurrentArmTrajectory() != null && trajectoryTimer.hasElapsed(status.getCurrentArmTrajectory().getTotalTime()))
-        {
-            status.setCurrentArmTrajectory(null);
-            xAdjustment = 0.0;
-            zAdjustment = 0.0;
-        }
+
+        runTrajectory();
+
+        // ================= State Logic =================
 
         // Get measured positions
         double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
         double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
-        
-        prevSetpointState = setpointState;
-        double shoulderAngleSetpoint = prevSetpointState.get(0,0);
-        double elbowAngleSetpoint = prevSetpointState.get(1,0);            
-
-        Vector<N2> voltages = VecBuilder.fill(0,0);
-        double shoulderPIDOutput = 0;
-        double elbowPIDOutput = 0;
-
-
-        // if internally disabled, set the setpoint to the current position (don't move when enabling)
-        if (internalDisable) {
-            setpointState = ArmTrajectory.getFixedState(shoulderAngleRad, elbowAngleRad);
-            prevSetpointState = setpointState;
-            status.setCurrentArmTrajectory(null);
-        } else {
-            // move arm!
-            if (status.getCurrentArmTrajectory() != null) {
-                // follow trajectory
-                trajectoryTimer.start();                            // multiple calls to start will not restart timer
-                finalTrajectoryState = status.getCurrentArmTrajectory().getFinalState();
-
-                // get setpoint from current trajectory
-                setpointState = status.getCurrentArmTrajectory().sample(trajectoryTimer.get());
-
-            } else {
-                // make manual adjustments to final XZ pose
-                Vector<N2> thetaFinalTrajectory = new Vector<>(finalTrajectoryState.extractColumnVector(0));
-                Translation2d xzFinalTrajectory = kinematics.forward(thetaFinalTrajectory);
-                double xFinalTrajectory = xzFinalTrajectory.getX();
-                double zfinalTrajectory = xzFinalTrajectory.getY(); // note: Translation2d assumes XY plane, but we are using it in the XZ plane
-
-                // update manual adjustments
-                // xThrottle and zThrottle are assumed to be joystick inputs in the range [-1, +1]
-                xAdjustment += xThrottle * manualMaxSpeedMetersPerSec * Constants.loopPeriodSecs;
-                zAdjustment += zThrottle * manualMaxSpeedMetersPerSec * Constants.loopPeriodSecs;
-
-                // clamp manual adjustments
-                xAdjustment = MathUtil.clamp(xAdjustment, -xAdjustmentMaxRange, +xAdjustmentMaxRange);
-                zAdjustment = MathUtil.clamp(zAdjustment, -zAdjustmentMaxRange, +zAdjustmentMaxRange);
-
-                // verify frame perimeter
-                double xSetpoint = MathUtil.clamp(xFinalTrajectory + xAdjustment, xMinSetpoint, xMaxSetpoint);
-                double zSetpoint = MathUtil.clamp(zfinalTrajectory + zAdjustment, zMinSetpoint, zMaxSetpoint);
-
-                // calcualate current manual adjustment after clamping
-                xAdjustment = xSetpoint - xFinalTrajectory;
-                zAdjustment = zSetpoint - zfinalTrajectory;
-
-                // find new setpoint
-                Optional<Vector<N2>> optTheta = kinematics.inverse(xSetpoint, zSetpoint);
-                if (optTheta.isPresent()) {
-                    Vector<N2> setpointTheta = optTheta.get();
-                    setpointState = ArmTrajectory.getFixedState(setpointTheta);
-                }
-            }
-
-            // calculate feedforward voltages
-            voltages = dynamics.feedforward(setpointState);
-
-            // calculate feedback voltages (current location compared to where we wanted to go to last cycle)
-            shoulderPIDOutput = shoulderPID.calculate(shoulderAngleRad, shoulderAngleSetpoint);
-            elbowPIDOutput = elbowPID.calculate(elbowAngleRad, elbowAngleSetpoint) ;
-            
-            // set motors to achieve the setpointState
-            status.setShoulderVoltage(voltages.get(0,0) + shoulderPIDOutput)
-                  .setElbowVoltage   (voltages.get(1,0) + elbowPIDOutput);
-        }
-
-        // trigger emergency stop if necessary
-        internalDisableTimer.start();
-        if (internalDisable){
-            internalDisableTimer.reset();
-        } else {
-            if ((Math.abs(shoulderAngleRad - shoulderAngleSetpoint) < internalDisableMaxError) &&
-                (Math.abs(elbowAngleRad - elbowAngleSetpoint) < internalDisableMaxError)) {
-                internalDisableTimer.reset();
-            } else if (internalDisableTimer.hasElapsed(internalDisableMaxErrorTime)) {
-                internalDisable = true;
-            }
-
-            // Check if beyond limits
-            if ((!dynamics.isGoodShoulderAngle(shoulderAngleRad, internalDisableBeyondLimitThreshold)) ||
-                (!dynamics.isGoodElbowAngle(elbowAngleRad, internalDisableBeyondLimitThreshold))) {
-                internalDisable = true;
-            }
-        }
-
-        // Reset internal emergency stop when override is active
-        if (disableSupplier.get()) {
-            internalDisable = false;
-        }
-
-        // ================= State Logic =================
 
         if(prevState != status.getArmState())
             stateTimer.reset();
@@ -423,13 +329,123 @@ public class ArmLoop extends LoopBase {
         if(status.getCurrentArmPose() != null && status.getTargetArmPose() != status.getCurrentArmPose())
             startTrajectory(status.getCurrentArmPose(), status.getTargetArmPose());
 
+
+    }
+
+    public void runTrajectory() {
+               
+        // check if current trajectory is finished
+        if (status.getCurrentArmTrajectory() != null && trajectoryTimer.hasElapsed(status.getCurrentArmTrajectory().getTotalTime()))
+        {
+            status.setCurrentArmTrajectory(null);
+            xAdjustment = 0.0;
+            zAdjustment = 0.0;
+        }
+
+        // Get measured positions
+        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
+        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
+        
+        prevSetpointState = setpointState;
+        double shoulderAngleSetpoint = prevSetpointState.get(0,0);
+        double elbowAngleSetpoint = prevSetpointState.get(1,0);            
+
+        Vector<N2> voltages = VecBuilder.fill(0,0);
+        double shoulderPIDOutput = 0;
+        double elbowPIDOutput = 0;
+
+
+        // if internally disabled, set the setpoint to the current position (don't move when enabling)
+        if (internalDisable) {
+            setpointState = ArmTrajectory.getFixedState(shoulderAngleRad, elbowAngleRad);
+            prevSetpointState = setpointState;
+            status.setCurrentArmTrajectory(null);
+        } else {
+            // move arm!
+            if (status.getCurrentArmTrajectory() != null) {
+                // follow trajectory
+                trajectoryTimer.start();                            // multiple calls to start will not restart timer
+                finalTrajectoryState = status.getCurrentArmTrajectory().getFinalState();
+
+                // get setpoint from current trajectory
+                setpointState = status.getCurrentArmTrajectory().sample(trajectoryTimer.get());
+
+            } else {
+                // make manual adjustments to final XZ pose
+                Vector<N2> thetaFinalTrajectory = new Vector<>(finalTrajectoryState.extractColumnVector(0));
+                Translation2d xzFinalTrajectory = kinematics.forward(thetaFinalTrajectory);
+                double xFinalTrajectory = xzFinalTrajectory.getX();
+                double zfinalTrajectory = xzFinalTrajectory.getY(); // note: Translation2d assumes XY plane, but we are using it in the XZ plane
+
+                // update manual adjustments
+                // xThrottle and zThrottle are assumed to be joystick inputs in the range [-1, +1]
+                xAdjustment += xThrottle * manualMaxSpeedMetersPerSec * Constants.loopPeriodSecs;
+                zAdjustment += zThrottle * manualMaxSpeedMetersPerSec * Constants.loopPeriodSecs;
+
+                // clamp manual adjustments
+                xAdjustment = MathUtil.clamp(xAdjustment, -xAdjustmentMaxRange, +xAdjustmentMaxRange);
+                zAdjustment = MathUtil.clamp(zAdjustment, -zAdjustmentMaxRange, +zAdjustmentMaxRange);
+
+                // verify frame perimeter
+                double xSetpoint = MathUtil.clamp(xFinalTrajectory + xAdjustment, xMinSetpoint, xMaxSetpoint);
+                double zSetpoint = MathUtil.clamp(zfinalTrajectory + zAdjustment, zMinSetpoint, zMaxSetpoint);
+
+                // calcualate current manual adjustment after clamping
+                xAdjustment = xSetpoint - xFinalTrajectory;
+                zAdjustment = zSetpoint - zfinalTrajectory;
+
+                // find new setpoint
+                Optional<Vector<N2>> optTheta = kinematics.inverse(xSetpoint, zSetpoint);
+                if (optTheta.isPresent()) {
+                    Vector<N2> setpointTheta = optTheta.get();
+                    setpointState = ArmTrajectory.getFixedState(setpointTheta);
+                }
+            }
+
+            // calculate feedforward voltages
+            voltages = dynamics.feedforward(setpointState);
+
+            // calculate feedback voltages (current location compared to where we wanted to go to last cycle)
+            shoulderPIDOutput = shoulderPID.calculate(shoulderAngleRad, shoulderAngleSetpoint);
+            elbowPIDOutput = elbowPID.calculate(elbowAngleRad, elbowAngleSetpoint) ;
+            
+            // set motors to achieve the setpoint
+            status.setShoulderVoltage(voltages.get(0,0) + shoulderPIDOutput)
+                  .setElbowVoltage   (voltages.get(1,0) + elbowPIDOutput);
+        }
+
+        // trigger emergency stop if necessary
+        internalDisableTimer.start();
+        if (internalDisable){
+            internalDisableTimer.reset();
+        } else {
+            if ((Math.abs(shoulderAngleRad - shoulderAngleSetpoint) < internalDisableMaxError) &&
+                (Math.abs(elbowAngleRad - elbowAngleSetpoint) < internalDisableMaxError)) {
+                internalDisableTimer.reset();
+            } else if (internalDisableTimer.hasElapsed(internalDisableMaxErrorTime)) {
+                internalDisable = true;
+            }
+
+            // Check if beyond limits
+            if ((!dynamics.isGoodShoulderAngle(shoulderAngleRad, internalDisableBeyondLimitThreshold)) ||
+                (!dynamics.isGoodElbowAngle(elbowAngleRad, internalDisableBeyondLimitThreshold))) {
+                internalDisable = true;
+            }
+        }
+
+        // Reset internal emergency stop when override is active
+        if (disableSupplier.get()) {
+            internalDisable = false;
+        }
+
         status.setShoulderAngleRadSetpoint(shoulderAngleSetpoint);
         status.setElbowAngleRadSetpoint(elbowAngleSetpoint);
         status.setShoulderFeedforward(voltages.get(0,0));
         status.setElbowFeedforward(voltages.get(1,0));
         status.setShoulderPIDOutput(shoulderPIDOutput);
-        status.setElbowPIDOutput(elbowPIDOutput);
+        status.setElbowPIDOutput(elbowPIDOutput);        
     }
+
 
 
     private final Timer disabledTimer = new Timer();
