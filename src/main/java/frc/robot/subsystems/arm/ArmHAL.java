@@ -33,6 +33,8 @@ public class ArmHAL {
     private static final int kRelativePIDId = 0;
     private static final int kAbsolutePIDId = 1;
 
+    public static final double kArmMotorFullVoltage = 10.0;  // voltage compensation          
+
     public static final TalonFXInvertType kShoulderMotorInverted    = TalonFXInvertType.Clockwise;          
     public static final TalonFXInvertType kElbowMotorInverted       = TalonFXInvertType.CounterClockwise;   
 
@@ -150,6 +152,8 @@ public class ArmHAL {
             shoulderMotor.setSensorPhase(true);
             shoulderMotor.setNeutralMode(NeutralMode.Brake);
             shoulderMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, kArmCurrentLimit, kArmTriggerThresholdCurrent, kArmTriggerThresholdTime));
+            shoulderMotor.configVoltageCompSaturation(kArmMotorFullVoltage);
+            shoulderMotor.enableVoltageCompensation(true);
         }  
 
         if(elbowMotor != null)
@@ -161,7 +165,8 @@ public class ArmHAL {
             elbowMotor.setSensorPhase(false);
             elbowMotor.setNeutralMode(NeutralMode.Brake);
             elbowMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, kArmCurrentLimit, kArmTriggerThresholdCurrent, kArmTriggerThresholdTime));
-       }
+            elbowMotor.configVoltageCompSaturation(kArmMotorFullVoltage);
+            elbowMotor.enableVoltageCompensation(true);       }
     }
 
     // Turret
