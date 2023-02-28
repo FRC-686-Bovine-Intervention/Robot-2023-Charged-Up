@@ -210,7 +210,7 @@ public class ArmStatus extends StatusBase {
         // Shoulder
         shoulderStatus.recordOutputs(logger, prefix + "Arm/Shoulder Status");
         logger.recordOutput(prefix + "Arm/Shoulder/Power",          shoulderPower);
-        logger.recordOutput(prefix + "Arm/Shoulder/Angle",          Units.degreesToRadians(shoulderStatus.positionDeg));
+        logger.recordOutput(prefix + "Arm/Shoulder/Angle (Rad)",    Units.degreesToRadians(shoulderStatus.positionDeg));
         logger.recordOutput(prefix + "Arm/Shoulder/Setpoint",       getShoulderAngleRadSetpoint());
         logger.recordOutput(prefix + "Arm/Shoulder/Feedforward",    getShoulderFeedforward());
         logger.recordOutput(prefix + "Arm/Shoulder/PID Output",     getShoulderPIDOutput());
@@ -218,7 +218,7 @@ public class ArmStatus extends StatusBase {
         // Elbow
         elbowStatus.recordOutputs(logger, prefix + "Arm/Elbow Status");
         logger.recordOutput(prefix + "Arm/Elbow/Power",         elbowPower);
-        logger.recordOutput(prefix + "Arm/Elbow/Angle",         Units.degreesToRadians(elbowStatus.positionDeg));
+        logger.recordOutput(prefix + "Arm/Elbow/Angle (Rad)",   Units.degreesToRadians(elbowStatus.positionDeg));
         logger.recordOutput(prefix + "Arm/Elbow/Setpoint",      getElbowAngleRadSetpoint());
         logger.recordOutput(prefix + "Arm/Elbow/Feedforward",   getElbowFeedforward());
         logger.recordOutput(prefix + "Arm/Elbow/PID Output",    getElbowPIDOutput());
