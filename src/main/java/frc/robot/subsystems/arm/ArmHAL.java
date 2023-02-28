@@ -176,17 +176,6 @@ public class ArmHAL {
     public double getTurretAbsolute()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0;}
 
     // Arm
-    private boolean isGoodArmAngle() {
-        ArmStatus status = ArmStatus.getInstance();
-        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
-        double relativeAngle = elbowAngleRad - shoulderAngleRad;
-
-        return ((shoulderAngleRad >= shoulderMinAngleRad) && (shoulderAngleRad <= shoulderMaxAngleRad) &&
-                (elbowAngleRad >= elbowMinAngleRad) && (elbowAngleRad <= elbowMaxAngleRad) &&
-                (relativeAngle >= kRelativeMinAngleRad) && (relativeAngle <= kRelativeMaxAngleRad));
-    }
-
     boolean shoulderSoftLimitSet = false;
     boolean elbowSoftLimitSet = false;
 
@@ -227,10 +216,39 @@ public class ArmHAL {
     
     // Shoulder
     public PotAndEncoder getShoulderPotEncoder()    {return shoulderPotEncoder;}
+
+    private boolean isGoodArmAngle() {
+        ArmStatus status = ArmStatus.getInstance();
+        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
+        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
+        double relativeAngle = elbowAngleRad - shoulderAngleRad;
+
+        return ((shoulderAngleRad >= shoulderMinAngleRad) && (shoulderAngleRad <= shoulderMaxAngleRad) &&
+                (elbowAngleRad >= elbowMinAngleRad) && (elbowAngleRad <= elbowMaxAngleRad) &&
+                (relativeAngle >= kRelativeMinAngleRad) && (relativeAngle <= kRelativeMaxAngleRad));
+    }
+
     
-    public void setShoulderMotorPower(double power) {
+    public void setShoulderMotorPower(double _power) {
+        double power = _power;
+
         if (shoulderMotor != null)
-            shoulderMotor.set(ControlMode.PercentOutput, isGoodArmAngle() ? power : 0);
+        {
+            ArmStatus status = ArmStatus.getInstance();
+            double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
+            double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
+            double relativeAngle = elbowAngleRad - shoulderAngleRad;
+    
+            // check forward limits
+            if ((shoulderAngleRad > shoulderMaxAngleRad) || (relativeAngle > kRelativeMaxAngleRad)) {
+                power = Math.max(power, 0.0);   // still allow movement in reverse direction
+            }
+            // check reverse limits
+            if ((shoulderAngleRad < shoulderMinAngleRad) || (relativeAngle < kRelativeMinAngleRad)) {
+                power = Math.min(power, 0.0);   // still allow movement in forward direction
+            }
+        }
+        shoulderMotor.set(power);
     }
 
     public static double shoulderRadiansToSensorUnits(double _radians) { return _radians * kShoulderEncoderUnitsPerRad; }
@@ -238,9 +256,26 @@ public class ArmHAL {
     // Elbow
     public PotAndEncoder getElbowPotEncoder()       {return elbowPotEncoder;}   
 
-    public void setElbowMotorPower(double power) {
+    public void setElbowMotorPower(double _power) {
+        double power = _power;
+
         if (elbowMotor != null)
-            elbowMotor.set(ControlMode.PercentOutput, isGoodArmAngle() ? power : 0);
+        {
+            ArmStatus status = ArmStatus.getInstance();
+            double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
+            double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
+            double relativeAngle = elbowAngleRad - shoulderAngleRad;
+
+            // check forward limits
+            if ((elbowAngleRad > elbowMaxAngleRad) || (relativeAngle > kRelativeMaxAngleRad)) {
+                power = Math.max(power, 0.0);   // still allow movement in reverse direction
+            }
+            // check reverse limits
+            if ((elbowAngleRad < elbowMinAngleRad) || (relativeAngle < kRelativeMinAngleRad)) {
+                power = Math.min(power, 0.0);   // still allow movement in forward direction
+            }
+            elbowMotor.set(power);
+        }
     }
 
     public static double elbowRadiansToSensorUnits(double _radians) { return _radians * kElbowEncoderUnitsPerRad; }
