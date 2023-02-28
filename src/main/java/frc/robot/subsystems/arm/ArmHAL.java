@@ -8,14 +8,17 @@ import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.Constants;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
+import frc.robot.subsystems.arm.json.ArmConfigJson;
 
 public class ArmHAL {
-
     private static ArmHAL instance;
     public static ArmHAL getInstance() {if(instance == null){instance = new ArmHAL();}return instance;}
+
+    private final ArmStatus status = ArmStatus.getInstance();
 
     private final TalonSRX turretMotor;
 
@@ -35,12 +38,12 @@ public class ArmHAL {
     public static final double kArmTriggerThresholdCurrent = 40;
     public static final double kArmTriggerThresholdTime = 0.5;
 
-    private double shoulderMaxAngleRad;
-    private double shoulderMinAngleRad;
-    private double elbowMaxAngleRad;
-    private double elbowMinAngleRad;
-    private double kRelativeMaxAngleRad = Math.toRadians(170.0);    // don't let grabber smash into proximal arm
-    private double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
+    private final double shoulderMaxAngleRad;
+    private final double shoulderMinAngleRad;
+    private final double elbowMaxAngleRad;
+    private final double elbowMinAngleRad;
+    private static final double kRelativeMaxAngleRad = Math.toRadians(170.0);    // don't let grabber smash into proximal arm
+    private static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
    
 
 
@@ -76,14 +79,18 @@ public class ArmHAL {
     private static final double kElbowEncoderUnitsPerRev = 2048.0 * kElbowEncoderGearRatio;
     private static final double kElbowEncoderUnitsPerRad = kElbowEncoderUnitsPerRev / (2*Math.PI);
     
-
     private final PotAndEncoder elbowPotEncoder;
     private final PotAndEncoder.Config elbowPotAndEncoderConfig;
     private final PotAndEncoder.HAL elbowPotAndEncoderHAL;
-
         
     private ArmHAL()
     {
+        ArmConfigJson config = Arm.getInstance().getConfig();
+        shoulderMinAngleRad = config.shoulder().minAngle();
+        shoulderMaxAngleRad = config.shoulder().maxAngle();
+        elbowMinAngleRad = config.elbow().minAngle();
+        elbowMaxAngleRad = config.elbow().maxAngle();
+
         if(RobotBase.isReal())
         {
             turretMotor = new TalonSRX(Constants.kTurretMotorID);
@@ -167,38 +174,24 @@ public class ArmHAL {
     public PotAndEncoder getShoulderPotEncoder() {return shoulderPotEncoder;}
     public PotAndEncoder getElbowPotEncoder() {return elbowPotEncoder;}   
 
-    public void setShoulderMaxAngleRad(double kShoulderMaxAngleRad) {        this.shoulderMaxAngleRad = kShoulderMaxAngleRad;    }
-    public void setShoulderMinAngleRad(double kShoulderMinAngleRad) {        this.shoulderMinAngleRad = kShoulderMinAngleRad;    }
-    public void setElbowMaxAngleRad(double kElbowMaxAngleRad) {        this.elbowMaxAngleRad = kElbowMaxAngleRad;    }
-    public void setElbowMinAngleRad(double kElbowMinAngleRad) {        this.elbowMinAngleRad = kElbowMinAngleRad;    }
-
     public boolean isGoodArmAngle() {
-        ArmStatus status = ArmStatus.getInstance();
-        double relativeAngle = status.getShoulderAngleRad() - status.getElbowAngleRad();
+        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
+        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
+        double relativeAngle = shoulderAngleRad - elbowAngleRad;
 
-        return ((status.getShoulderAngleRad() >= shoulderMinAngleRad) && (status.getShoulderAngleRad() <= shoulderMaxAngleRad) &&
-                (status.getElbowAngleRad() >= elbowMinAngleRad) && (status.getElbowAngleRad() <= elbowMaxAngleRad) &&
+        return ((shoulderAngleRad >= shoulderMinAngleRad) && (shoulderAngleRad <= shoulderMaxAngleRad) &&
+                (elbowAngleRad >= elbowMinAngleRad) && (elbowAngleRad <= elbowMaxAngleRad) &&
                 (relativeAngle >= kRelativeMinAngleRad) && (relativeAngle <= kRelativeMaxAngleRad));
     }
 
-    public void setShoulderMotorVoltage(double volts) {
-        if (shoulderMotor != null) { 
-            if (isGoodArmAngle()) {
-                shoulderMotor.set(ControlMode.PercentOutput, volts/12.0);
-            } else {
-                shoulderMotor.set(ControlMode.PercentOutput, 0.0);
-            }
-        }
+    public void setShoulderMotorPower(double power) {
+        if (shoulderMotor != null)
+            shoulderMotor.set(ControlMode.PercentOutput, isGoodArmAngle() ? power : 0);
     }
 
-    public void setElbowMotorVoltage(double volts) {
-        if (elbowMotor != null) { 
-            if (isGoodArmAngle()) {
-                elbowMotor.set(ControlMode.PercentOutput, volts/12.0);
-            } else {
-                elbowMotor.set(ControlMode.PercentOutput, 0.0);
-            }
-        }
+    public void setElbowMotorPower(double power) {
+        if (elbowMotor != null)
+            elbowMotor.set(ControlMode.PercentOutput, isGoodArmAngle() ? power : 0);
     }
 
     boolean shoulderSoftLimitSet = false;
@@ -207,10 +200,8 @@ public class ArmHAL {
     // call this every update cycle
     public void setArmMotorSoftLimits() {
         if (!shoulderSoftLimitSet) {
-            ArmStatus status = ArmStatus.getInstance();
-
-            if (status.getShoulderPotEncoderStatus().calibrated) {
-                double shoulderAngleRad = status.getShoulderAngleRad();
+            if (status.getShoulderStatus().calibrated) {
+                double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
                 double revOffset = shoulderAngleRad - shoulderMinAngleRad;
                 double fwdOffset = shoulderMaxAngleRad - shoulderAngleRad;
                 
@@ -224,10 +215,8 @@ public class ArmHAL {
             }
         }
         if (!elbowSoftLimitSet) {
-            ArmStatus status = ArmStatus.getInstance();
-
-            if (status.getElbowPotEncoderStatus().calibrated) {
-                double elbowAngleRad = status.getElbowAngleRad();
+            if (status.getElbowStatus().calibrated) {
+                double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
                 double revOffset = elbowAngleRad - elbowMinAngleRad;
                 double fwdOffset = elbowMaxAngleRad - elbowAngleRad;
                 
