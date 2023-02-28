@@ -72,6 +72,14 @@ public class VisionStatus extends StatusBase {
     public LimelightPipeline    getTargetPipeline()                                 {return targetPipeline;}
     public VisionStatus         setTargetPipeline(LimelightPipeline targetPipeline) {this.targetPipeline = targetPipeline; return this;}
 
+    private Transform3d         robotToCamera1 = new Transform3d(); //TODO
+    public Transform3d          getRobotToCamera1()                                 {return robotToCamera1;};
+    public VisionStatus         setRobotToCamera1(Transform3d transform)             {robotToCamera1 = transform; return this;};
+    
+    private Transform3d         robotToCamera2 = new Transform3d(); //TODO
+    public Transform3d          getRobotToCamera2()                                 {return robotToCamera2;};
+    public VisionStatus         setRobotToCamera2(Transform3d transform)             {robotToCamera2 = transform; return this;};
+
     private double          targetXAngle;
     protected double        getTargetXAngle()                       {return targetXAngle;}
     private VisionStatus    setTargetXAngle(double targetXAngle)    {this.targetXAngle = targetXAngle; return this;}

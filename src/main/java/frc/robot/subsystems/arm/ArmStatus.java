@@ -9,6 +9,8 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -54,6 +56,10 @@ public class ArmStatus extends StatusBase {
     private double      targetTurretAngle;
     public double       getTargetTurretAngle()              {return targetTurretAngle;}
     protected ArmStatus setTargetTurretAngle(double angle)  {targetTurretAngle = angle; return this;}
+
+    private Pose3d      turretPose;
+    public Pose3d       getTurretPose()                     {return turretPose;};
+    protected ArmStatus setTurretPose(Pose3d pose)          {turretPose = pose; return this;};
 
     private double      turretPower;
     public double       getTurretPower()                    {return turretPower;}
@@ -141,6 +147,7 @@ public class ArmStatus extends StatusBase {
     public void updateInputs() {
         setCommand(arm.getCommand());
         setTurretPosition(HAL.getTurretRelative());
+        setTurretPose(new Pose3d(ArmHAL.robotToTurret, new Rotation3d(0, 0, getTurretPosition())));
         setShoulderReading(HAL.getShoulderPotEncoder().getReading());
         setElbowReading(HAL.getElbowPotEncoder().getReading());
     }
