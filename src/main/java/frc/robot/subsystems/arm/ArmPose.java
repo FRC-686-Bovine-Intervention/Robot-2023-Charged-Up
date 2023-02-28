@@ -1,11 +1,6 @@
 package frc.robot.subsystems.arm;
 
-import java.util.Optional;
-
-import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.numbers.N2;
-import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.arm.json.ArmPresetsJson;
 
 /** Represents a target position for the arm. */
@@ -59,68 +54,40 @@ public record ArmPose(
     }
 
 
-    public static void writePresets(ArmPresetsJson jsonPresets, ArmKinematics kinematics) {
+    public static void writePresets(ArmPresetsJson jsonPresets) {
       // write JSON file contents to ArmPose.Presets record
 
-      Translation2d xz;
-      Optional<Vector<N2>> theta;
-      double shoulderAngleRad, elbowAngleRad;
-
-      xz = new Translation2d(Units.inchesToMeters(jsonPresets.defense().getX()), Units.inchesToMeters(jsonPresets.defense().getY()));
-      theta = kinematics.inverse(xz.getX(), xz.getY());
-      shoulderAngleRad = theta.get().get(0,0);
-      elbowAngleRad = theta.get().get(1,0);
       DEFENSE.fileIdx = jsonPresets.defense().getFileIdx();
-      DEFENSE.pose = new ArmPose(xz, shoulderAngleRad, elbowAngleRad);
+      DEFENSE.pose = new ArmPose(new Translation2d(jsonPresets.defense().getX(), jsonPresets.defense().getY()),
+                                  jsonPresets.defense().getTheta1(), jsonPresets.defense().getTheta2());
 
-      xz = new Translation2d(Units.inchesToMeters(jsonPresets.intake().getX()), Units.inchesToMeters(jsonPresets.intake().getY()));
-      theta = kinematics.inverse(xz.getX(), xz.getY());
-      shoulderAngleRad = theta.get().get(0,0);
-      elbowAngleRad = theta.get().get(1,0);
       INTAKE.fileIdx = jsonPresets.intake().getFileIdx();
-      INTAKE.pose = new ArmPose(xz, shoulderAngleRad, elbowAngleRad);
+      INTAKE.pose = new ArmPose(new Translation2d(jsonPresets.intake().getX(), jsonPresets.intake().getY()),
+                                jsonPresets.intake().getTheta1(), jsonPresets.intake().getTheta2());
 
-      xz = new Translation2d(Units.inchesToMeters(jsonPresets.double_substation().getX()), Units.inchesToMeters(jsonPresets.double_substation().getY()));
-      theta = kinematics.inverse(xz.getX(), xz.getY());
-      shoulderAngleRad = theta.get().get(0,0);
-      elbowAngleRad = theta.get().get(1,0);
       DOUBLE_SUBSTATION.fileIdx = jsonPresets.double_substation().getFileIdx();
-      DOUBLE_SUBSTATION.pose = new ArmPose(xz, shoulderAngleRad, elbowAngleRad);
+      DOUBLE_SUBSTATION.pose = new ArmPose(new Translation2d(jsonPresets.double_substation().getX(), jsonPresets.double_substation().getY()),
+                                          jsonPresets.double_substation().getTheta1(), jsonPresets.double_substation().getTheta2());
 
-      xz = new Translation2d(Units.inchesToMeters(jsonPresets.score_hybrid().getX()), Units.inchesToMeters(jsonPresets.score_hybrid().getY()));
-      theta = kinematics.inverse(xz.getX(), xz.getY());
-      shoulderAngleRad = theta.get().get(0,0);
-      elbowAngleRad = theta.get().get(1,0);
       SCORE_HYBRID.fileIdx = jsonPresets.score_hybrid().getFileIdx();
-      SCORE_HYBRID.pose = new ArmPose(xz, shoulderAngleRad, elbowAngleRad);
+      SCORE_HYBRID.pose = new ArmPose(new Translation2d(jsonPresets.score_hybrid().getX(), jsonPresets.score_hybrid().getY()),
+                                      jsonPresets.score_hybrid().getTheta1(), jsonPresets.score_hybrid().getTheta2());
 
-      xz = new Translation2d(Units.inchesToMeters(jsonPresets.score_mid_cube().getX()), Units.inchesToMeters(jsonPresets.score_mid_cube().getY()));
-      theta = kinematics.inverse(xz.getX(), xz.getY());
-      shoulderAngleRad = theta.get().get(0,0);
-      elbowAngleRad = theta.get().get(1,0);
       SCORE_MID_CUBE.fileIdx = jsonPresets.score_mid_cube().getFileIdx();
-      SCORE_MID_CUBE.pose = new ArmPose(xz, shoulderAngleRad, elbowAngleRad);
+      SCORE_MID_CUBE.pose = new ArmPose(new Translation2d(jsonPresets.score_mid_cube().getX(), jsonPresets.score_mid_cube().getY()),
+                                        jsonPresets.score_mid_cube().getTheta1(), jsonPresets.score_mid_cube().getTheta2());
 
-      xz = new Translation2d(Units.inchesToMeters(jsonPresets.score_high_cube().getX()), Units.inchesToMeters(jsonPresets.score_high_cube().getY()));
-      theta = kinematics.inverse(xz.getX(), xz.getY());
-      shoulderAngleRad = theta.get().get(0,0);
-      elbowAngleRad = theta.get().get(1,0);
       SCORE_HIGH_CUBE.fileIdx = jsonPresets.score_high_cube().getFileIdx();
-      SCORE_HIGH_CUBE.pose = new ArmPose(xz, shoulderAngleRad, elbowAngleRad);
+      SCORE_HIGH_CUBE.pose = new ArmPose(new Translation2d(jsonPresets.score_high_cube().getX(), jsonPresets.score_high_cube().getY()),
+                                          jsonPresets.score_high_cube().getTheta1(), jsonPresets.score_high_cube().getTheta2());
 
-      xz = new Translation2d(Units.inchesToMeters(jsonPresets.score_mid_cone().getX()), Units.inchesToMeters(jsonPresets.score_mid_cone().getY()));
-      theta = kinematics.inverse(xz.getX(), xz.getY());
-      shoulderAngleRad = theta.get().get(0,0);
-      elbowAngleRad = theta.get().get(1,0);
       SCORE_MID_CONE.fileIdx = jsonPresets.score_mid_cone().getFileIdx();
-      SCORE_MID_CONE.pose = new ArmPose(xz, shoulderAngleRad, elbowAngleRad);
+      SCORE_MID_CONE.pose = new ArmPose(new Translation2d(jsonPresets.score_mid_cone().getX(), jsonPresets.score_mid_cone().getY()),
+                                        jsonPresets.score_mid_cone().getTheta1(), jsonPresets.score_mid_cone().getTheta2());
 
-      xz = new Translation2d(Units.inchesToMeters(jsonPresets.score_high_cone().getX()), Units.inchesToMeters(jsonPresets.score_high_cone().getY()));
-      theta = kinematics.inverse(xz.getX(), xz.getY());
-      shoulderAngleRad = theta.get().get(0,0);
-      elbowAngleRad = theta.get().get(1,0);
       SCORE_HIGH_CONE.fileIdx = jsonPresets.score_high_cone().getFileIdx();
-      SCORE_HIGH_CONE.pose = new ArmPose(xz, shoulderAngleRad, elbowAngleRad);
+      SCORE_HIGH_CONE.pose = new ArmPose(new Translation2d(jsonPresets.score_high_cone().getX(), jsonPresets.score_high_cone().getY()),
+                                          jsonPresets.score_high_cone().getTheta1(), jsonPresets.score_high_cone().getTheta2());
 
     }
   }

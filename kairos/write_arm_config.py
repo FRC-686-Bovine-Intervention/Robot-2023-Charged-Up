@@ -16,7 +16,7 @@ if __name__ == "__main__":
                       "motor": {
                           "type": "falcon",
                           "count": 1,
-                          "reduction": 5.0 * 5.0 * 72.0 / 16.0
+                          "reduction": 4.0 * 4.0 * 72.0 / 16.0
                       }
                   },
                   "elbow": {
@@ -29,7 +29,7 @@ if __name__ == "__main__":
                       "motor": {
                           "type": "falcon",
                           "count": 1,
-                          "reduction": 5.0 * 5.0 * 64.0 / 16.0
+                          "reduction": 4.0 * 4.0 * 64.0 / 16.0
                       }
                   },
                   "wrist": {

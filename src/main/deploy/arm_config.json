@@ -15,7 +15,7 @@
     "motor": {
       "type": "falcon",
       "count": 1,
-      "reduction": 112.5
+      "reduction": 72.0
     }
   },
   "elbow": {
@@ -28,7 +28,7 @@
     "motor": {
       "type": "falcon",
       "count": 1,
-      "reduction": 100.0
+      "reduction": 64.0
     }
   },
   "wrist": {

@@ -101,10 +101,10 @@ public class ArmLoop extends LoopBase {
     
     private Supplier<Boolean> disableSupplier = () -> false;
 
-    private final double xMinSetpoint =  0.0; 
-    private final double xMaxSetpoint;          // calculated
-    private final double zMinSetpoint =  0.0; 
-    private final double zMaxSetpoint = 72.0; 
+    private final double xMinSetpoint = Units.inchesToMeters( 0.0);
+    private final double xMaxSetpoint;  // calculated
+    private final double zMinSetpoint = Units.inchesToMeters( 0.0);
+    private final double zMaxSetpoint = Units.inchesToMeters(72.0); 
 
     private double xThrottle = 0.0;
     private double zThrottle = 0.0;
@@ -149,7 +149,7 @@ public class ArmLoop extends LoopBase {
         // Get presets from JSON
         File presetFile = new File(Filesystem.getDeployDirectory(), ArmPresetsJson.jsonFilename);
         presets = ArmPresetsJson.loadJson(presetFile);   
-        ArmPose.Preset.writePresets(presets, kinematics);
+        ArmPose.Preset.writePresets(presets);
         
         // Get paths from JSON
         // also create trajectories for each path
@@ -175,7 +175,7 @@ public class ArmLoop extends LoopBase {
 
 
 
-        xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches());
+        xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches() + 48.0);
         finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
         setpointState = finalTrajectoryState;
     }

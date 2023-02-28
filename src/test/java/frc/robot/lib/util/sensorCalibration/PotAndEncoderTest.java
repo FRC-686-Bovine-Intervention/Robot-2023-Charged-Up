@@ -51,7 +51,7 @@ public class PotAndEncoderTest {
 
     double mockGetPotAngleFromVoltage(double voltage) {
         double potScale = potInverted ? -potentiometerNTurns*360.0 : potentiometerNTurns*360.0;
-        double potOffset = potentiometerNTurns*outputAngleDegAtCalibration - potScale*potentiometerNormalizedVoltageAtCalib;
+        double potOffset = potentiometerGearRatio*outputAngleDegAtCalibration - potScale*potentiometerNormalizedVoltageAtCalib;
         return potScale*voltage + potOffset;
     }
 
@@ -141,7 +141,7 @@ public class PotAndEncoderTest {
 
     @Test
     public void TestCalibration() {
-        // run a series of dwells, where we move for a while then sit still for long enought to (re-)calculate the offset
+        // run a series of dwells, where we move for a while then sit still for long enough to (re-)calculate the offset
         // check the final results for accuracy
         
         when(hal.getPotAngleFromVoltage(potentiometerNormalizedVoltageAtCalib)).thenReturn(mockGetPotAngleFromVoltage(potentiometerNormalizedVoltageAtCalib));
@@ -193,24 +193,11 @@ public class PotAndEncoderTest {
             }
             assertFalse(status.moving);
             assertTrue(status.calibrated);
-
-            // PotAndEncoderDebug debug = calib.getDebug();
-            // System.out.printf("outAngleDeg = %.3f\n", calib.outputAngleDeg);
-            // System.out.printf("potAngleDeg = %.3f\n", calib.getPotAngleDeg());
-            // System.out.printf("absAngleDeg = %.3f\n", calib.getAbsAngleDeg());
-            // System.out.printf("relAngleDeg = %.3f\n", calib.getRelAngleDeg());
-            // System.out.printf("averageAbsRelDifference = %.3f\n", debug.getAverageAbsRelDifference());
-            // System.out.printf("averagePotDifference = %.3f\n", debug.getAveragePotDifference());
-            // System.out.printf("absAngleDegEstimate = %.3f\n", debug.getAbsAngleDegEstimate());
-            // System.out.printf("absAngleDegEstimateAtCalib = %.3f\n", debug.getAbsAngleDegEstimateAtCalib());
-            // System.out.printf("absAngleNumRotationsSinceCalib = %.3f\n", debug.getAbsAngleNumRotationsSinceCalib());
-            // System.out.printf("offset = %.3f\n", debug.getOffset());
-            // System.out.printf("dwell=%2d, actual=%.3f, calc=%.3f\n", dwellCnt, dwellList[dwellCnt], calib.getPosition());
         
             assertEquals(outputAngleDeg, status.positionDeg, kEps);
         }
 
         // final output angle is at the calibration angle
-        assertEquals(outputAngleDeg, outputAngleDegAtCalibration, kEps);        
+        assertEquals(outputAngleDegAtCalibration, status.positionDeg, kEps);        
     }
 }

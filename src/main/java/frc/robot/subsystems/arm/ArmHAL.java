@@ -55,8 +55,8 @@ public class ArmHAL {
     private final double shoulderMinAngleRad;
     private final double elbowMaxAngleRad;
     private final double elbowMinAngleRad;
-    private static final double kRelativeMaxAngleRad = Math.toRadians(160.0);    // don't let grabber smash into proximal arm
-    private static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
+    public static final double kRelativeMaxAngleRad = Math.toRadians(160.0);    // don't let grabber smash into proximal arm
+    public static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
    
 	// Constant import
 	public static final int kTalonTimeoutMs = 5;

@@ -28,8 +28,10 @@ public class ArmKinematicsTest {
         double maxTheta1 = +Math.PI;
         double minTheta2 = -Math.PI;
         double maxTheta2 = +Math.PI;
+        double minTheta21 = -Math.PI;
+        double maxTheta21 = +Math.PI;
 
-        ArmKinematics kinematics = new ArmKinematics(shoulder, l1, l2, minTheta1, maxTheta1, minTheta2, maxTheta2);
+        ArmKinematics kinematics = new ArmKinematics(shoulder, l1, l2, minTheta1, maxTheta1, minTheta2, maxTheta2, minTheta21, maxTheta21);
 
         double theta1 = -0.3;
         double theta2 = +1.0;
