@@ -83,14 +83,15 @@ public class ArmStatus extends StatusBase {
 
     private double shoulderAngleRad;
     private double elbowAngleRad;
+    private boolean shoulderCalibrated;
+    private boolean elbowCalibrated;
+
     private double shoulderAngleRadSetpoint;
     private double elbowAngleRadSetpoint;
     private double shoulderFeedforward;
     private double elbowFeedforward;
     private double shoulderPidFeedback;
     private double elbowPidFeedback;
-    private boolean shoulderCalibrated;
-    private boolean elbowCalibrated;
     
     public double getShoulderAngleRad() {
         return shoulderAngleRad;
@@ -185,9 +186,10 @@ public class ArmStatus extends StatusBase {
     }
 
     @Override
-    public void processTable() {
+    public void processTable() {       
         setShoulderPotEncoderStatus(HAL.getShoulderPotEncoder().update(shoulderPotEncoderReading));
         setElbowPotEncoderStatus(HAL.getElbowPotEncoder().update(elbowPotEncoderReading));
+        HAL.setArmMotorSoftLimits(); 
     }
 
     @Override

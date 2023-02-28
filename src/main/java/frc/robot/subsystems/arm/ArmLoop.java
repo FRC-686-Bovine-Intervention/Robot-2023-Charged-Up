@@ -64,8 +64,8 @@ public class ArmLoop extends LoopBase {
     private Matrix<N2,N3> finalTrajectoryState = null;
     private Matrix<N2,N3> setpointState = null;       
   
-    private PIDController shoulderFeedback = new PIDController(10.0, 0.0, 0.0, Constants.loopPeriodSecs);
-    private PIDController elbowFeedback    = new PIDController(10.0, 0.0, 0.0, Constants.loopPeriodSecs);    
+    private PIDController shoulderFeedback = new PIDController(0.0, 0.0, 0.0, Constants.loopPeriodSecs);
+    private PIDController elbowFeedback    = new PIDController(0.0, 0.0, 0.0, Constants.loopPeriodSecs);    
 
     private boolean internalDisable = false;
     private Timer internalDisableTimer = new Timer();
@@ -340,6 +340,7 @@ public class ArmLoop extends LoopBase {
 
     @Override
     protected void Update() {
+
     }
 
 
