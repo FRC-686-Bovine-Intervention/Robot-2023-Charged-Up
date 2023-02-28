@@ -20,8 +20,6 @@ public class ArmHAL {
     private static ArmHAL instance;
     public static ArmHAL getInstance() {if(instance == null){instance = new ArmHAL();}return instance;}
 
-    private final ArmStatus status = ArmStatus.getInstance();
-
     private final TalonSRX turretMotor;
     private final WPI_TalonFX shoulderMotor, elbowMotor;
     private final Solenoid clawSolenoid;
@@ -38,8 +36,8 @@ public class ArmHAL {
     public static final TalonFXInvertType kShoulderMotorInverted    = TalonFXInvertType.Clockwise;          
     public static final TalonFXInvertType kElbowMotorInverted       = TalonFXInvertType.CounterClockwise;   
 
-    private final static double kShoulderMotorGearRatio = 4.0 * 4.0 * 72.0/16.0;
-    private final static double kElbowMotorGearRatio = 4.0 * 4.0 * 64.0/16.0;
+    protected final static double kShoulderMotorGearRatio = 4.0 * 4.0 * 72.0/16.0;
+    protected final static double kElbowMotorGearRatio = 4.0 * 4.0 * 64.0/16.0;
 
     private static final double kShoulderEncoderUnitsPerRev = 2048.0 * kShoulderMotorGearRatio;
     private static final double kShoulderEncoderUnitsPerRad = kShoulderEncoderUnitsPerRev / (2*Math.PI);
@@ -55,7 +53,7 @@ public class ArmHAL {
     private final double shoulderMinAngleRad;
     private final double elbowMaxAngleRad;
     private final double elbowMinAngleRad;
-    private static final double kRelativeMaxAngleRad = Math.toRadians(170.0);    // don't let grabber smash into proximal arm
+    private static final double kRelativeMaxAngleRad = Math.toRadians(160.0);    // don't let grabber smash into proximal arm
     private static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
    
 	// Constant import
@@ -99,7 +97,7 @@ public class ArmHAL {
 
         if(RobotBase.isReal())
         {
-            turretMotor = new TalonSRX(Constants.kTurretMotorID);
+            turretMotor = null;//new TalonSRX(Constants.kTurretMotorID);
             shoulderMotor = new WPI_TalonFX(Constants.kShoulderMotorID);
             elbowMotor    = new WPI_TalonFX(Constants.kElbowMotorID);    
             shoulderPotAndEncoderHAL = new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, kShoulderPotentiometerNTurns, 
@@ -108,7 +106,7 @@ public class ArmHAL {
             elbowPotAndEncoderHAL    = new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, kElbowPotentiometerNTurns, 
                                                             kElbowPotentiometerGearRatio, kElbowPotNormalizedVoltageAtCalib, kElbowAngleAtCalibration, 
                                                             kElbowPotInverted, kElbowEncInverted); 
-            clawSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.kClawSolenoidID);
+            clawSolenoid = null;//new Solenoid(PneumaticsModuleType.CTREPCM, Constants.kClawSolenoidID);
         }
         else
         {
@@ -178,10 +176,11 @@ public class ArmHAL {
     public double getTurretAbsolute()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0;}
 
     // Arm
-    public boolean isGoodArmAngle() {
+    private boolean isGoodArmAngle() {
+        ArmStatus status = ArmStatus.getInstance();
         double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
         double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
-        double relativeAngle = shoulderAngleRad - elbowAngleRad;
+        double relativeAngle = elbowAngleRad - shoulderAngleRad;
 
         return ((shoulderAngleRad >= shoulderMinAngleRad) && (shoulderAngleRad <= shoulderMaxAngleRad) &&
                 (elbowAngleRad >= elbowMinAngleRad) && (elbowAngleRad <= elbowMaxAngleRad) &&
@@ -193,6 +192,7 @@ public class ArmHAL {
 
     // call this every update cycle
     public void setArmMotorSoftLimits() {
+        ArmStatus status = ArmStatus.getInstance();
         if (!shoulderSoftLimitSet) {
             if (status.getShoulderStatus().calibrated) {
                 double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);

@@ -50,13 +50,15 @@ public class ArmLoop extends LoopBase {
             turretPIDConstraints
         );
 
-    private static final double kDistalZeroPower = 0.08;
+    private static final double kDistalZeroPower = 0.1;
     private static final double kTurretZeroPower = 0.08;
-    private static final double kProximalZeroPower = 0.08;
+    private static final double kProximalZeroPower = 0.1;
 
-    private static final double kDistalZeroErrorThreshold = 2.5;
-    private static final double kTurretZeroErrorThreshold = 2.5;
-    private static final double kProximalZeroErrorThreshold = 2.5;
+    private static final double kDistalZeroErrorThreshold = Units.degreesToRadians(2.5);
+    private static final double kTurretZeroErrorThreshold = Units.degreesToRadians(2.5);
+    private static final double kProximalZeroErrorThreshold = Units.degreesToRadians(2.5);
+
+    private static final double kDistalZeroRadUp = Math.PI/2;
 
     private ArmState prevState;
 
@@ -76,14 +78,14 @@ public class ArmLoop extends LoopBase {
   
     private final PIDController shoulderPID = 
         new PIDController(
-            10.0, 
+            0.0, 
             0.0, 
             0.0, 
             Constants.loopPeriodSecs
         );
     private final PIDController elbowPID = 
         new PIDController(
-            10.0, 
+            0.0, 
             0.0, 
             0.0, 
             Constants.loopPeriodSecs
@@ -300,27 +302,44 @@ public class ArmLoop extends LoopBase {
 
         switch(status.getArmState())
         {
-            case ZeroDistal:
-                if(status.getElbowStatus().calibrated)
+            case ZeroDistalUp:
+                status.setShoulderPower(0);
+                if(status.getElbowStatus().calibrated && status.getShoulderStatus().calibrated)
                 {
-                    status.setElbowPower(kDistalZeroPower * Math.signum(getStartingElbowAngleRad(ArmPose.Preset.DEFENSE) - elbowAngleRad));
-                    if(Math.abs(elbowAngleRad - getStartingElbowAngleRad(ArmPose.Preset.DEFENSE)) <= kDistalZeroErrorThreshold)
-                        status.setArmState(ArmState.ZeroTurret);
+                    status.setElbowPower(kDistalZeroPower * Math.signum(shoulderAngleRad + kDistalZeroRadUp - elbowAngleRad));
+                    if(Math.abs(shoulderAngleRad + kDistalZeroRadUp - elbowAngleRad) <= kDistalZeroErrorThreshold)
+                        status.setArmState(ArmState.ZeroProximal);
                 }
-                break;
-            
-            case ZeroTurret:
-                status.setElbowPower(kTurretZeroPower * Math.signum(-status.getTurretPosition()));
-                if(Math.abs(status.getTurretPosition()) <= kTurretZeroErrorThreshold)
-                    status.setArmState(ArmState.ZeroProximal);
             break;
             
             case ZeroProximal:
                 if(status.getShoulderStatus().calibrated)
                 {
+                    status.setElbowPower(kProximalZeroPower * Math.signum(getStartingShoulderAngleRad(ArmPose.Preset.DEFENSE) - shoulderAngleRad) * ArmHAL.kElbowMotorGearRatio / ArmHAL.kShoulderMotorGearRatio);
                     status.setShoulderPower(kProximalZeroPower * Math.signum(getStartingShoulderAngleRad(ArmPose.Preset.DEFENSE) - shoulderAngleRad));
                     if(Math.abs(shoulderAngleRad - getStartingShoulderAngleRad(ArmPose.Preset.DEFENSE)) <= kProximalZeroErrorThreshold)
+                        status.setArmState(ArmState.ZeroTurret);
+                }
+            break;
+
+            case ZeroTurret:
+                status.setShoulderPower(0);
+                status.setElbowPower(0);
+                status.setTurretPower(kTurretZeroPower * Math.signum(-status.getTurretPosition()));
+                if(Math.abs(status.getTurretPosition()) <= kTurretZeroErrorThreshold)
+                    status.setArmState(ArmState.ZeroDistal);
+            break;
+
+            case ZeroDistal:
+                status.setShoulderPower(0);
+                if(status.getElbowStatus().calibrated)
+                {
+                    status.setElbowPower(kDistalZeroPower * Math.signum(getStartingElbowAngleRad(ArmPose.Preset.DEFENSE) - elbowAngleRad));
+                    if(Math.abs(elbowAngleRad - getStartingElbowAngleRad(ArmPose.Preset.DEFENSE)) <= kDistalZeroErrorThreshold)
+                    {
                         status.setArmState(ArmState.Defense);
+                        status.setCurrentArmPose(ArmPose.Preset.DEFENSE);
+                    }
                 }
             break;
 
@@ -419,7 +438,7 @@ public class ArmLoop extends LoopBase {
         status.setTurretPower(0.0);
         if(disabledTimer.hasElapsed(kDisabledTimerThreshold))
         {
-            status.setArmState(ArmState.Defense); //TODO: Add disable time threshold
+            status.setArmState(ArmState.DEFAULT); //TODO: Add disable time threshold
         }
         internalDisableTimer.reset();
     }

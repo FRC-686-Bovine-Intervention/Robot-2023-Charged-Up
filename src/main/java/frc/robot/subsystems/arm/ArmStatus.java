@@ -24,9 +24,10 @@ public class ArmStatus extends StatusBase {
     private final ArmHAL HAL = ArmHAL.getInstance();
 
     public enum ArmState {
+        ZeroDistalUp,       // =============================================================================
+        ZeroTurret,         // If arm isn't where it's supposed to be on enable,
+        ZeroProximal,       // move arm to proper position
         ZeroDistal,         // =============================================================================
-        ZeroTurret,         // If arm isn't where it's supposed to be on enable, move arm to proper position
-        ZeroProximal,       // =============================================================================
         Defense,            // Arm is idling, retracted fully and waiting for the intake to do something
         IdentifyPiece,      // Arm is identifying the piece in the intake
         Grab,               // Arm has identified the location of the piece and arm is grabbing the piece from the intake
@@ -36,7 +37,9 @@ public class ArmStatus extends StatusBase {
         Adjust,             // Driver and limelight are fudging the position of the turret to align piece on the node
         Release,            // Driver has decided the piece will score on the node and tells the arm to release the piece
         SubstationExtend,   // Driver has decided to grab a piece from the substation
-        SubstationGrab      // Driver is ready to grab piece from the substation
+        SubstationGrab;     // Driver is ready to grab piece from the substation
+
+        public static final ArmState DEFAULT = ZeroDistalUp;
     }
 
     private ArmStatus() {Subsystem = arm;}
@@ -46,7 +49,7 @@ public class ArmStatus extends StatusBase {
     protected ArmCommand    getCommand()                    {return command;}
     private ArmStatus       setCommand(ArmCommand command)  {this.command = command; return this;}
 
-    private ArmState    armState = ArmState.Defense;
+    private ArmState    armState = ArmState.DEFAULT;
     public ArmState     getArmState()                   {return armState;}
     protected ArmStatus setArmState(ArmState armState)  {this.armState = armState; return this;}
 
@@ -208,6 +211,7 @@ public class ArmStatus extends StatusBase {
         // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Setpoint Traj State/Theta2/", getSetpointTrajState().extractRowVector(1));
 
         // Shoulder
+        HAL.setShoulderMotorPower(shoulderPower);
         shoulderStatus.recordOutputs(logger, prefix + "Arm/Shoulder Status");
         logger.recordOutput(prefix + "Arm/Shoulder/Power",          shoulderPower);
         logger.recordOutput(prefix + "Arm/Shoulder/Angle (Rad)",    Units.degreesToRadians(shoulderStatus.positionDeg));
@@ -216,6 +220,7 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Arm/Shoulder/PID Output",     getShoulderPIDOutput());
         
         // Elbow
+        HAL.setElbowMotorPower(elbowPower);
         elbowStatus.recordOutputs(logger, prefix + "Arm/Elbow Status");
         logger.recordOutput(prefix + "Arm/Elbow/Power",         elbowPower);
         logger.recordOutput(prefix + "Arm/Elbow/Angle (Rad)",   Units.degreesToRadians(elbowStatus.positionDeg));
