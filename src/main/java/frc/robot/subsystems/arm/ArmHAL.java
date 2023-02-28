@@ -38,6 +38,15 @@ public class ArmHAL {
     public static final TalonFXInvertType kShoulderMotorInverted    = TalonFXInvertType.Clockwise;          
     public static final TalonFXInvertType kElbowMotorInverted       = TalonFXInvertType.CounterClockwise;   
 
+    private final static double kShoulderMotorGearRatio = 4.0 * 4.0 * 72.0/16.0;
+    private final static double kElbowMotorGearRatio = 4.0 * 4.0 * 64.0/16.0;
+
+    private static final double kShoulderEncoderUnitsPerRev = 2048.0 * kShoulderMotorGearRatio;
+    private static final double kShoulderEncoderUnitsPerRad = kShoulderEncoderUnitsPerRev / (2*Math.PI);
+
+    private static final double kElbowEncoderUnitsPerRev = 2048.0 * kElbowMotorGearRatio;
+    private static final double kElbowEncoderUnitsPerRad = kElbowEncoderUnitsPerRev / (2*Math.PI);    
+
     public static final double kArmCurrentLimit = 100;
     public static final double kArmTriggerThresholdCurrent = 40;
     public static final double kArmTriggerThresholdTime = 0.5;
@@ -57,8 +66,8 @@ public class ArmHAL {
     private final static double kShoulderEncoderGearRatio                 = 72.0/16.0;
     private final static double kShoulderPotentiometerNTurns              = 5.0;    
     private final static double kShoulderAngleAtCalibration               = -90.0;      // calibrated 2/23 (straight down)
-    private final static double kShoulderPotNormalizedVoltageAtCalib      = 0.4955;     // calibrated 2/23
-    private final static double kShoulderAbsoluteEncoderAngleDegAtCalib   =  85.08;     // calibrated 2/23
+    private final static double kShoulderPotNormalizedVoltageAtCalib      = 0.5135;     // calibrated 2/23
+    private final static double kShoulderAbsoluteEncoderAngleDegAtCalib   =  81.37;     // calibrated 2/23
     private final static boolean kShoulderPotInverted                     = false;
     private final static boolean kShoulderEncInverted                     = false;
 
@@ -70,16 +79,11 @@ public class ArmHAL {
     private final static double kElbowEncoderGearRatio                    = 64.0/16.0;
     private final static double kElbowPotentiometerNTurns                 = 5.0;
     private final static double kElbowAngleAtCalibration                  = 0.0;       // calibrated 2/23 (straight out)
-    private final static double kElbowPotNormalizedVoltageAtCalib         = 0.4931;    // calibrated 2/23
-    private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 125.15;    // calibrated 2/23
+    private final static double kElbowPotNormalizedVoltageAtCalib         = 0.4845;    // calibrated 2/23
+    private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 109.25;    // calibrated 2/23
     private final static boolean kElbowPotInverted                        = true;
     private final static boolean kElbowEncInverted                        = true;
 
-    private static final double kShoulderEncoderUnitsPerRev = 2048.0 * kShoulderEncoderGearRatio;
-    private static final double kShoulderEncoderUnitsPerRad = kShoulderEncoderUnitsPerRev / (2*Math.PI);
-
-    private static final double kElbowEncoderUnitsPerRev = 2048.0 * kElbowEncoderGearRatio;
-    private static final double kElbowEncoderUnitsPerRad = kElbowEncoderUnitsPerRev / (2*Math.PI);
     
     private final PotAndEncoder elbowPotEncoder;
     private final PotAndEncoder.Config elbowPotAndEncoderConfig;
@@ -145,7 +149,7 @@ public class ArmHAL {
             
             // Set up the encoders
             shoulderMotor.setInverted(kShoulderMotorInverted);           
-            shoulderMotor.setSensorPhase(false);
+            shoulderMotor.setSensorPhase(true);
             shoulderMotor.setNeutralMode(NeutralMode.Brake);
             shoulderMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, kArmCurrentLimit, kArmTriggerThresholdCurrent, kArmTriggerThresholdTime));
         }  

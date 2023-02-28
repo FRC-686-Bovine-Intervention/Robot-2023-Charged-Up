@@ -182,6 +182,7 @@ public class ArmStatus extends StatusBase {
     public void processTable() {
         setShoulderStatus(HAL.getShoulderPotEncoder().update(shoulderReading));
         setElbowStatus(HAL.getElbowPotEncoder().update(elbowReading));
+        HAL.setArmMotorSoftLimits(); 
     }
 
     @Override
