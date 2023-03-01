@@ -41,7 +41,6 @@ classdef arm_dynamics < handle
             c1 = cos(position(obj.SHOULDER));
 
             m2 = obj.elbow.mass;
-            l2 = obj.elbow.length;
             r2 = obj.elbow.cgRadius;
             I2 = obj.elbow.moi;
             c2 = cos(position(obj.ELBOW));
@@ -63,7 +62,7 @@ classdef arm_dynamics < handle
             C(2,1) = C(1,2);
             C(2,2) = +m2*l1*r2*sx*velocity(obj.SHOULDER);
 
-            Tg(1,1) = (m1*r1 + m2*l1)*g*c1;
+            Tg(1,1) = (m1*r1 + m2*l1)*g*c1 + m2*r2*g*c2;
             Tg(2,1) = m2*r2*g*c2;
         end
 

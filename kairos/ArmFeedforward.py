@@ -71,15 +71,11 @@ class ArmFeedforward:
         )
 
         Tg[0] = (
-            self._shoulder.mass * self._shoulder.cgRadius
-            + self._elbow.mass * self._shoulder.length
-        ) * self._g * cos(position[0]
+            (self._shoulder.mass * self._shoulder.cgRadius + self._elbow.mass * self._shoulder.length) * self._g * cos(position[0])
+            + self._elbow.mass * self._elbow.cgRadius * self._g * cos(position[1])
         )
         Tg[1] = (
-            self._elbow.mass
-            * self._elbow.cgRadius
-            * self._g
-            * cos(position[1])
+            self._elbow.mass * self._elbow.cgRadius * self._g * cos(position[1])
         )
 
         M_times_acceleration = (

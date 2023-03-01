@@ -34,7 +34,7 @@ public class ArmTest {
     private static final double kEps = 1e-6;
 
     /** Workaround for deploy directory being returned incorrectly during JUnit test */
-    public void setDeployDirectoryDuringTest() {
+    public static void setDeployDirectoryDuringTest() {
         File deployDir = Filesystem.getDeployDirectory();
 
         // remove everything starting at /build
@@ -94,7 +94,6 @@ public class ArmTest {
         // Get presets from JSON
         File presetFile = new File(Filesystem.getDeployDirectory(), ArmPresetsJson.jsonFilename);
         ArmPresetsJson presets = ArmPresetsJson.loadJson(presetFile);
-
         ArmPose.Preset.writePresets(presets);
 
         final ArmPathsJson paths[][] = new ArmPathsJson[ArmPose.Preset.values().length+1][ArmPose.Preset.values().length+1];

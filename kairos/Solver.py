@@ -86,6 +86,11 @@ class Solver:
                     arm_config["elbow"]["minAngle"], theta_1, arm_config["elbow"]["maxAngle"]
                 )
             )
+            opti.subject_to(
+                opti.bounded(
+                    -135.0/180.0*3.14159, theta_1 - theta_0, 160.0/180.0*3.14159
+                )
+            )
             theta_points.append([theta_0, theta_1])
         theta_points.append([opti.parameter(), opti.parameter()])
 
