@@ -21,8 +21,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.Constants;
-import frc.robot.subsystems.arm.ArmHAL;
 import frc.robot.subsystems.arm.ArmKinematics;
+import frc.robot.subsystems.arm.ArmLoop;
 import frc.robot.subsystems.arm.ArmPose;
 import frc.robot.subsystems.arm.ArmTrajectory;
 import frc.robot.subsystems.arm.json.ArmConfigJson;
@@ -204,7 +204,7 @@ public class ArmTest {
         config.shoulder().length(), config.elbow().length(),
         config.shoulder().minAngle(), config.shoulder().maxAngle(), 
         config.elbow().minAngle(), config.elbow().maxAngle(),
-        ArmHAL.kRelativeMinAngleRad, ArmHAL.kRelativeMaxAngleRad);
+        ArmLoop.kRelativeMinAngleRad, ArmLoop.kRelativeMaxAngleRad);
 
         xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches() + 48.0);
 
