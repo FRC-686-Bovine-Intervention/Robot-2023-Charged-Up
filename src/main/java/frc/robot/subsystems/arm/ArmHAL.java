@@ -33,7 +33,7 @@ public class ArmHAL {
     private static final int kRelativePIDId = 0;
     private static final int kAbsolutePIDId = 1;
 
-    public static final double kArmMotorFullVoltage = 10.0;  // voltage compensation          
+    public static final double kArmMotorFullVoltage = 10.0;  // voltage compensation     
 
     public static final TalonFXInvertType kShoulderMotorInverted    = TalonFXInvertType.Clockwise;          
     public static final TalonFXInvertType kElbowMotorInverted       = TalonFXInvertType.CounterClockwise;   
@@ -187,7 +187,7 @@ public class ArmHAL {
     // call this every update cycle
     public void setArmMotorSoftLimits() {
         ArmStatus status = ArmStatus.getInstance();
-        if (!shoulderSoftLimitSet) {
+        if (!shoulderSoftLimitSet && shoulderMotor != null) {
             if (status.getShoulderStatus().calibrated) {
                 double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
                 double revOffset = shoulderAngleRad - shoulderMinAngleRad;
@@ -202,7 +202,7 @@ public class ArmHAL {
                 shoulderSoftLimitSet = true;
             }
         }
-        if (!elbowSoftLimitSet) {
+        if (!elbowSoftLimitSet && elbowMotor != null) {
             if (status.getElbowStatus().calibrated) {
                 double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
                 double revOffset = elbowAngleRad - elbowMinAngleRad;
@@ -252,8 +252,8 @@ public class ArmHAL {
             if ((shoulderAngleRad < shoulderMinAngleRad) || (relativeAngle < kRelativeMinAngleRad)) {
                 power = Math.min(power, 0.0);   // still allow movement in forward direction
             }
+            shoulderMotor.set(power);
         }
-        shoulderMotor.set(power);
     }
 
     public static double shoulderRadiansToSensorUnits(double _radians) { return _radians * kShoulderEncoderUnitsPerRad; }

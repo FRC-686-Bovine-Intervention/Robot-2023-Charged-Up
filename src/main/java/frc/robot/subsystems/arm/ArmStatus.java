@@ -39,7 +39,7 @@ public class ArmStatus extends StatusBase {
         SubstationExtend,   // Driver has decided to grab a piece from the substation
         SubstationGrab;     // Driver is ready to grab piece from the substation
 
-        public static final ArmState DEFAULT = ZeroDistalUp;
+        public static final ArmState DEFAULT = Defense;
     }
 
     private ArmStatus() {Subsystem = arm;}
@@ -101,6 +101,10 @@ public class ArmStatus extends StatusBase {
     private Matrix<N2,N3>   setpointTrajState = new MatBuilder<>(Nat.N2(),Nat.N3()).fill(0,0,0,0,0,0);
     public Matrix<N2,N3>    getSetpointTrajState()                                  {return setpointTrajState;}
     protected ArmStatus     setSetpointTrajState(Matrix<N2, N3> setpointTrajState)  {this.setpointTrajState = setpointTrajState; return this;}
+
+    private boolean         internalDisable = false;
+    public boolean          getInternalDisable()                        {return internalDisable;}
+    protected ArmStatus     setInternalDisable(boolean internalDisable) {/*this.internalDisable = internalDisable;*/ return this;}
 
     // Shoulder
     private PotAndEncoder.Reading   shoulderReading = new PotAndEncoder.Reading(0,0,0);
@@ -202,8 +206,9 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Turret/Target Angle", getTargetTurretAngle());
 
         // Arm
-        logger.recordOutput(prefix + "Arm/Target Pose",     targetArmPose != null ? targetArmPose.name() : "null");
-        logger.recordOutput(prefix + "Arm/Current Pose",    currentArmPose != null ? currentArmPose.name() : "null");
+        logger.recordOutput(prefix + "Arm/Target Pose",         targetArmPose != null ? targetArmPose.name() : "null");
+        logger.recordOutput(prefix + "Arm/Current Pose",        currentArmPose != null ? currentArmPose.name() : "null");
+        logger.recordOutput(prefix + "Arm/Internal Disable",    internalDisable);
         // logger.recordOutput(prefix + "Arm/Current Trajectory", currentArmTrajectory != null ? currentArmTrajectory.name() : "null");
         // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Current Traj State/Theta1/", getCurrentTrajState().extractRowVector(0));
         // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Current Traj State/Theta2/", getCurrentTrajState().extractRowVector(1));

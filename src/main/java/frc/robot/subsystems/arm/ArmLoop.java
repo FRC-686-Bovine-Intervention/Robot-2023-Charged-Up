@@ -17,8 +17,12 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.Constants;
 import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.arm.json.ArmConfigJson;
@@ -50,9 +54,9 @@ public class ArmLoop extends LoopBase {
             turretPIDConstraints
         );
 
-    private static final double kDistalZeroPower = 0.1;
-    private static final double kTurretZeroPower = 0.08;
-    private static final double kProximalZeroPower = 0.1;
+    private static final double kDistalZeroPower =      0.1;
+    private static final double kProximalZeroPower =    0.1;
+    private static final double kTurretZeroPower =      0.08;
 
     private static final double kDistalZeroErrorThreshold = Units.degreesToRadians(2.5);
     private static final double kTurretZeroErrorThreshold = Units.degreesToRadians(2.5);
@@ -93,7 +97,6 @@ public class ArmLoop extends LoopBase {
             Constants.loopPeriodSecs
         );    
 
-    private boolean internalDisable = false;
     private final Timer internalDisableTimer = new Timer();
     public static final double internalDisableMaxError = Units.degreesToRadians(10.0);    
     public static final double internalDisableMaxErrorTime = 0.5;
@@ -179,6 +182,10 @@ public class ArmLoop extends LoopBase {
 
         stateTimer.start();
 
+        status.setTurretPower(0.0)
+              .setShoulderPower(0)
+              .setElbowPower(0);
+
         // ================= Trajectory Logic =================
 
         runTrajectory();
@@ -194,17 +201,15 @@ public class ArmLoop extends LoopBase {
 
         prevState = status.getArmState();
 
-        status.setTurretPower(0.0);
-
         switch(status.getArmState())
         {
             case ZeroDistalUp:
-                internalDisable = true;     // disable PID during zeroing
+                status.setInternalDisable(true);     // disable PID during zeroing
                 status.setShoulderPower(0);
                 if(status.getElbowStatus().calibrated && status.getShoulderStatus().calibrated)
                 {
                     status.setElbowPower(kDistalZeroPower * Math.signum(shoulderAngleRad + kDistalZeroRadUp - elbowAngleRad));
-                    if(Math.abs(shoulderAngleRad + kDistalZeroRadUp - elbowAngleRad) <= kDistalZeroErrorThreshold)
+                    if(Math.abs(shoulderAngleRad + kDistalZeroRadUp - elbowAngleRad) <= kDistalZeroErrorThreshold || Math.abs(shoulderAngleRad - ArmPose.Preset.DEFENSE.getShoulderAngleRad()) <= kProximalZeroErrorThreshold)
                         status.setArmState(ArmState.ZeroProximal);
                 }
             break;
@@ -236,7 +241,7 @@ public class ArmLoop extends LoopBase {
                     {
                         status.setArmState(ArmState.Defense);
                         status.setCurrentArmPose(ArmPose.Preset.DEFENSE);
-                        internalDisable = false;     // enable arm trajectories
+                        status.setInternalDisable(false);     // enable arm trajectories
                     }
                 }
             break;
@@ -344,13 +349,14 @@ public class ArmLoop extends LoopBase {
 
 
         // if internally disabled, set the setpoint to the current position (don't move when enabling)
-        if (internalDisable) {
+        if (status.getInternalDisable()) {
             setpointState = ArmTrajectory.getFixedState(shoulderAngleRad, elbowAngleRad);
             prevSetpointState = setpointState;
             status.setCurrentArmTrajectory(null);
         } else {
             // move arm!
             if (status.getCurrentArmTrajectory() != null) {
+                status.setCurrentArmPose(null);
                 // follow trajectory
                 trajectoryTimer.start();                            // multiple calls to start will not restart timer
                 finalTrajectoryState = status.getCurrentArmTrajectory().getFinalState();
@@ -398,40 +404,40 @@ public class ArmLoop extends LoopBase {
             elbowPIDOutput = elbowPID.calculate(elbowAngleRad, elbowAngleSetpoint) ;
             
             // set motors to achieve the setpoint
-            status.setShoulderVoltage(voltages.get(0,0) + shoulderPIDOutput)
-                  .setElbowVoltage   (voltages.get(1,0) + elbowPIDOutput);
+            status.setShoulderVoltage(/*voltages.get(0,0) + */shoulderPIDOutput)
+                  .setElbowVoltage   (/*voltages.get(1,0) + */elbowPIDOutput);
         }
 
         // trigger emergency stop if necessary
         internalDisableTimer.start();
-        if (internalDisable){
+        if (status.getInternalDisable()){
             internalDisableTimer.reset();
         } else {
             if ((Math.abs(shoulderAngleRad - shoulderAngleSetpoint) < internalDisableMaxError) &&
                 (Math.abs(elbowAngleRad - elbowAngleSetpoint) < internalDisableMaxError)) {
                 internalDisableTimer.reset();
             } else if (internalDisableTimer.hasElapsed(internalDisableMaxErrorTime)) {
-                internalDisable = true;
+                status.setInternalDisable(true);
             }
 
             // Check if beyond limits
             if ((!dynamics.isGoodShoulderAngle(shoulderAngleRad, internalDisableBeyondLimitThreshold)) ||
                 (!dynamics.isGoodElbowAngle(elbowAngleRad, internalDisableBeyondLimitThreshold))) {
-                internalDisable = true;
+                    status.setInternalDisable(true);
             }
         }
 
         // Reset internal emergency stop when override is active
         if (disableSupplier.get()) {
-            internalDisable = false;
+            status.setInternalDisable(false);
         }
 
-        status.setShoulderAngleRadSetpoint(shoulderAngleSetpoint);
-        status.setElbowAngleRadSetpoint(elbowAngleSetpoint);
-        status.setShoulderFeedforward(voltages.get(0,0));
-        status.setElbowFeedforward(voltages.get(1,0));
-        status.setShoulderPIDOutput(shoulderPIDOutput);
-        status.setElbowPIDOutput(elbowPIDOutput);        
+        status.setShoulderAngleRadSetpoint(shoulderAngleSetpoint)
+              .setElbowAngleRadSetpoint(elbowAngleSetpoint)
+              .setShoulderFeedforward(voltages.get(0,0))
+              .setElbowFeedforward(voltages.get(1,0))
+              .setShoulderPIDOutput(shoulderPIDOutput)
+              .setElbowPIDOutput(elbowPIDOutput);        
     }
 
 
@@ -451,10 +457,34 @@ public class ArmLoop extends LoopBase {
         internalDisableTimer.reset();
     }
 
-
+    private final ShuffleboardTab tab = Shuffleboard.getTab("Arm");
+    private final GenericEntry kPEntry = tab.add("kP",0).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry kIEntry = tab.add("kI",0).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry kDEntry = tab.add("kD",0).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry setShoulderEntry =   tab.add("Set Shoulder",false)   .withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    private final GenericEntry setElbowEntry =      tab.add("Set Elbow",false)      .withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    private final GenericEntry resetDisable =      tab.add("Reset Internal Disable",false)  .withWidget(BuiltInWidgets.kToggleButton).getEntry();
     @Override
     protected void Update() {
-
+        if(setShoulderEntry.getBoolean(false))
+        {
+            shoulderPID.setP(kPEntry.getDouble(shoulderPID.getP()));
+            shoulderPID.setI(kIEntry.getDouble(shoulderPID.getI()));
+            shoulderPID.setD(kDEntry.getDouble(shoulderPID.getD()));
+            setShoulderEntry.setBoolean(false);
+        }
+        if(setElbowEntry.getBoolean(false))
+        {
+            elbowPID.setP(kPEntry.getDouble(elbowPID.getP()));
+            elbowPID.setI(kIEntry.getDouble(elbowPID.getI()));
+            elbowPID.setD(kDEntry.getDouble(elbowPID.getD()));
+            setElbowEntry.setBoolean(false);
+        }
+        if(resetDisable.getBoolean(false))
+        {
+            status.setInternalDisable(false);
+            resetDisable.setBoolean(false);
+        }
     }
 
 
@@ -468,7 +498,7 @@ public class ArmLoop extends LoopBase {
 
         // throw error if selected trajectory is no where near the current position
         if (!baseTrajectory.startIsNear(shoulderAngleRad, elbowAngleRad, internalDisableMaxError)) {
-            internalDisable = true;
+            status.setInternalDisable(true);
             status.setCurrentArmTrajectory(null);
             return;
         }
