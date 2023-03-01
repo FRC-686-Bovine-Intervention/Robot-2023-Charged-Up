@@ -104,6 +104,13 @@ public class ArmLoop extends LoopBase {
     
     private Supplier<Boolean> disableSupplier = () -> false;
 
+    private final double shoulderMaxAngleRad;
+    private final double shoulderMinAngleRad;
+    private final double elbowMaxAngleRad;
+    private final double elbowMinAngleRad;
+    public static final double kRelativeMaxAngleRad = Math.toRadians(160.0);    // don't let grabber smash into proximal arm
+    public static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
+
     private final double xMinSetpoint = Units.inchesToMeters( 0.0);
     private final double xMaxSetpoint;  // calculated
     private final double zMinSetpoint = Units.inchesToMeters( 0.0);
@@ -133,9 +140,15 @@ public class ArmLoop extends LoopBase {
                                         config.shoulder().length(), config.elbow().length(),
                                         config.shoulder().minAngle(), config.shoulder().maxAngle(), 
                                         config.elbow().minAngle(), config.elbow().maxAngle(),
-                                        ArmHAL.kRelativeMinAngleRad, ArmHAL.kRelativeMaxAngleRad);
+                                        kRelativeMinAngleRad, kRelativeMaxAngleRad);
 
         dynamics = new ArmDynamics(config.shoulder(), ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist()));
+
+        shoulderMinAngleRad = config.shoulder().minAngle();
+        shoulderMaxAngleRad = config.shoulder().maxAngle();
+        elbowMinAngleRad = config.elbow().minAngle();
+        elbowMaxAngleRad = config.elbow().maxAngle();
+        
         
         // Get presets from JSON
         File presetFile = new File(Filesystem.getDeployDirectory(), ArmPresetsJson.jsonFilename);
@@ -171,6 +184,61 @@ public class ArmLoop extends LoopBase {
         setpointState = finalTrajectoryState;
     }
 
+
+    private final ShuffleboardTab tab = Shuffleboard.getTab("Arm");
+    private final GenericEntry kPEntry = tab.add("kP",0).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry kIEntry = tab.add("kI",0).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry kDEntry = tab.add("kD",0).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry setShoulderEntry =   tab.add("Set Shoulder",false)   .withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    private final GenericEntry setElbowEntry =      tab.add("Set Elbow",false)      .withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    private final GenericEntry resetDisable =      tab.add("Reset Internal Disable",false)  .withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    @Override
+    protected void Update() {
+        checkArmCalibration();
+
+        if(setShoulderEntry.getBoolean(false))
+        {
+            shoulderPID.setP(kPEntry.getDouble(shoulderPID.getP()));
+            shoulderPID.setI(kIEntry.getDouble(shoulderPID.getI()));
+            shoulderPID.setD(kDEntry.getDouble(shoulderPID.getD()));
+            setShoulderEntry.setBoolean(false);
+        }
+        if(setElbowEntry.getBoolean(false))
+        {
+            elbowPID.setP(kPEntry.getDouble(elbowPID.getP()));
+            elbowPID.setI(kIEntry.getDouble(elbowPID.getI()));
+            elbowPID.setD(kDEntry.getDouble(elbowPID.getD()));
+            setElbowEntry.setBoolean(false);
+        }
+        if(resetDisable.getBoolean(false))
+        {
+            status.setInternalDisable(false);
+            resetDisable.setBoolean(false);
+        }
+    }
+    
+    // call this every update cycle
+    public void checkArmCalibration() {
+        ArmStatus status = ArmStatus.getInstance();
+        if (status.getShoulderFalconCalibrated() && (status.getShoulderPotEncStatus().calibrated)) {
+            double shoulderAngleRad = Units.degreesToRadians(status.getShoulderPotEncStatus().positionDeg);
+            status.setShoulderCalibAngleRad(shoulderAngleRad);
+            status.setShoulderMinAngleRad(shoulderMinAngleRad);
+            status.setShoulderMaxAngleRad(shoulderMaxAngleRad);
+            status.setShoulderFalconCalibrated(true);            
+        }
+        if (status.getElbowFalconCalibrated() && status.getElbowPotEncStatus().calibrated) {
+            double elbowAngleRad = Units.degreesToRadians(status.getElbowPotEncStatus().positionDeg);
+            status.setElbowCalibAngleRad(elbowAngleRad);
+            status.setElbowMinAngleRad(elbowMinAngleRad);
+            status.setElbowMaxAngleRad(elbowMaxAngleRad);
+            status.setElbowFalconCalibrated(true);            
+        }
+    }
+    
+    
+
+
     private final Timer stateTimer = new Timer();
     
     @Override
@@ -193,8 +261,8 @@ public class ArmLoop extends LoopBase {
         // ================= State Logic =================
 
         // Get measured positions
-        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
+        double shoulderAngleRad = status.getShoulderAngleRad();
+        double elbowAngleRad = status.getElbowAngleRad();
 
         if(prevState != status.getArmState())
             stateTimer.reset();
@@ -206,7 +274,7 @@ public class ArmLoop extends LoopBase {
             case ZeroDistalUp:
                 status.setInternalDisable(true);     // disable PID during zeroing
                 status.setShoulderPower(0);
-                if(status.getElbowStatus().calibrated && status.getShoulderStatus().calibrated)
+                if(status.getElbowPotEncStatus().calibrated && status.getShoulderPotEncStatus().calibrated)
                 {
                     status.setElbowPower(kDistalZeroPower * Math.signum(shoulderAngleRad + kDistalZeroRadUp - elbowAngleRad));
                     if(Math.abs(shoulderAngleRad + kDistalZeroRadUp - elbowAngleRad) <= kDistalZeroErrorThreshold || Math.abs(shoulderAngleRad - ArmPose.Preset.DEFENSE.getShoulderAngleRad()) <= kProximalZeroErrorThreshold)
@@ -215,9 +283,9 @@ public class ArmLoop extends LoopBase {
             break;
             
             case ZeroProximal:
-                if(status.getShoulderStatus().calibrated)
+                if(status.getShoulderPotEncStatus().calibrated)
                 {
-                    status.setElbowPower(kProximalZeroPower * Math.signum(ArmPose.Preset.DEFENSE.getShoulderAngleRad() - shoulderAngleRad) * ArmHAL.kElbowMotorGearRatio / ArmHAL.kShoulderMotorGearRatio);
+                    status.setElbowPower(kProximalZeroPower * Math.signum(ArmPose.Preset.DEFENSE.getShoulderAngleRad() - shoulderAngleRad) * ArmStatus.kElbowMotorGearRatio / ArmStatus.kShoulderMotorGearRatio);
                     status.setShoulderPower(kProximalZeroPower * Math.signum(ArmPose.Preset.DEFENSE.getShoulderAngleRad() - shoulderAngleRad));
                     if(Math.abs(shoulderAngleRad - ArmPose.Preset.DEFENSE.getShoulderAngleRad()) <= kProximalZeroErrorThreshold)
                         status.setArmState(ArmState.ZeroTurret);
@@ -234,7 +302,7 @@ public class ArmLoop extends LoopBase {
 
             case ZeroDistal:
                 status.setShoulderPower(0);
-                if(status.getElbowStatus().calibrated)
+                if(status.getElbowPotEncStatus().calibrated)
                 {
                     status.setElbowPower(kDistalZeroPower * Math.signum(ArmPose.Preset.DEFENSE.getElbowAngleRad() - elbowAngleRad));
                     if(Math.abs(elbowAngleRad - ArmPose.Preset.DEFENSE.getElbowAngleRad()) <= kDistalZeroErrorThreshold)
@@ -325,7 +393,39 @@ public class ArmLoop extends LoopBase {
 
     }
 
+
+
+
+    public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos) {
+        // get pre-planned trajectory
+        ArmTrajectory baseTrajectory = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
+
+        // get current arm positions
+        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderPotEncStatus().positionDeg);
+        double elbowAngleRad = Units.degreesToRadians(status.getElbowPotEncStatus().positionDeg);
+
+        // throw error if selected trajectory is no where near the current position
+        if (!baseTrajectory.startIsNear(shoulderAngleRad, elbowAngleRad, internalDisableMaxError)) {
+            status.setInternalDisable(true);
+            status.setCurrentArmTrajectory(null);
+            return;
+        }
+
+        // any errors in the starting position (in particular due to manual XZ adjustments)
+        // will be linearly intepolated into the trajectory
+        // to smoothly remove these adjustments without needing a separate path
+        status.setCurrentArmTrajectory(baseTrajectory);
+        status.getCurrentArmTrajectory().interpolateEndPoints(Double.valueOf(shoulderAngleRad), Double.valueOf(elbowAngleRad), null, null);
+
+        trajectoryTimer.reset();
+    }
+
     public void runTrajectory() {
+
+        if (!status.getShoulderPotEncStatus().calibrated || !status.getElbowPotEncStatus().calibrated) {
+            // do not run trajectories until our arm angles have been calibrated
+            return;
+        }
                
         // check if current trajectory is finished
         if (status.getCurrentArmTrajectory() != null && trajectoryTimer.hasElapsed(status.getCurrentArmTrajectory().getTotalTime()))
@@ -336,8 +436,8 @@ public class ArmLoop extends LoopBase {
         }
 
         // Get measured positions
-        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
+        double shoulderAngleRad = status.getShoulderAngleRad();
+        double elbowAngleRad = status.getElbowAngleRad();
         
         prevSetpointState = setpointState;
         double shoulderAngleSetpoint = prevSetpointState.get(0,0);
@@ -440,6 +540,16 @@ public class ArmLoop extends LoopBase {
               .setElbowPIDOutput(elbowPIDOutput);        
     }
 
+    public void manualAdjustment(double xThrottle, double yThrottle, double zThrottle) {
+        // xThrottle and zThrottle are assumed to be joystick inputs in the range [-1, +1]
+        this.xThrottle = xThrottle;
+        this.zThrottle = zThrottle;
+
+        // TODO: adjust turret angle target
+        // yAdjustmentInches += yThrottle * manualMaxSpeedDegreesPerSec * Constants.loopPeriodSecs;
+    }    
+
+
 
 
     private final Timer disabledTimer = new Timer();
@@ -455,69 +565,5 @@ public class ArmLoop extends LoopBase {
             status.setArmState(ArmState.DEFAULT); //TODO: Add disable time threshold
         }
         internalDisableTimer.reset();
-    }
-
-    private final ShuffleboardTab tab = Shuffleboard.getTab("Arm");
-    private final GenericEntry kPEntry = tab.add("kP",0).withWidget(BuiltInWidgets.kTextView).getEntry();
-    private final GenericEntry kIEntry = tab.add("kI",0).withWidget(BuiltInWidgets.kTextView).getEntry();
-    private final GenericEntry kDEntry = tab.add("kD",0).withWidget(BuiltInWidgets.kTextView).getEntry();
-    private final GenericEntry setShoulderEntry =   tab.add("Set Shoulder",false)   .withWidget(BuiltInWidgets.kToggleButton).getEntry();
-    private final GenericEntry setElbowEntry =      tab.add("Set Elbow",false)      .withWidget(BuiltInWidgets.kToggleButton).getEntry();
-    private final GenericEntry resetDisable =      tab.add("Reset Internal Disable",false)  .withWidget(BuiltInWidgets.kToggleButton).getEntry();
-    @Override
-    protected void Update() {
-        if(setShoulderEntry.getBoolean(false))
-        {
-            shoulderPID.setP(kPEntry.getDouble(shoulderPID.getP()));
-            shoulderPID.setI(kIEntry.getDouble(shoulderPID.getI()));
-            shoulderPID.setD(kDEntry.getDouble(shoulderPID.getD()));
-            setShoulderEntry.setBoolean(false);
-        }
-        if(setElbowEntry.getBoolean(false))
-        {
-            elbowPID.setP(kPEntry.getDouble(elbowPID.getP()));
-            elbowPID.setI(kIEntry.getDouble(elbowPID.getI()));
-            elbowPID.setD(kDEntry.getDouble(elbowPID.getD()));
-            setElbowEntry.setBoolean(false);
-        }
-        if(resetDisable.getBoolean(false))
-        {
-            status.setInternalDisable(false);
-            resetDisable.setBoolean(false);
-        }
-    }
-
-
-    public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos) {
-        // get pre-planned trajectory
-        ArmTrajectory baseTrajectory = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
-
-        // get current arm positions
-        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderStatus().positionDeg);
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowStatus().positionDeg);
-
-        // throw error if selected trajectory is no where near the current position
-        if (!baseTrajectory.startIsNear(shoulderAngleRad, elbowAngleRad, internalDisableMaxError)) {
-            status.setInternalDisable(true);
-            status.setCurrentArmTrajectory(null);
-            return;
-        }
-
-        // any errors in the starting position (in particular due to manual XZ adjustments)
-        // will be linearly intepolated into the trajectory
-        // to smoothly remove these adjustments without needing a separate path
-        status.setCurrentArmTrajectory(baseTrajectory);
-        status.getCurrentArmTrajectory().interpolateEndPoints(Double.valueOf(shoulderAngleRad), Double.valueOf(elbowAngleRad), null, null);
-
-        trajectoryTimer.reset();
-    }
-
-    public void manualAdjustment(double xThrottle, double yThrottle, double zThrottle) {
-        // xThrottle and zThrottle are assumed to be joystick inputs in the range [-1, +1]
-        this.xThrottle = xThrottle;
-        this.zThrottle = zThrottle;
-
-        // TODO: adjust turret angle target
-        // yAdjustmentInches += yThrottle * manualMaxSpeedDegreesPerSec * Constants.loopPeriodSecs;
     }
 }

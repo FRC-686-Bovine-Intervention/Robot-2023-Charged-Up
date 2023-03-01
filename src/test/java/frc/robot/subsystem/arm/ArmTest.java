@@ -21,8 +21,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.Constants;
-import frc.robot.subsystems.arm.ArmHAL;
 import frc.robot.subsystems.arm.ArmKinematics;
+import frc.robot.subsystems.arm.ArmLoop;
 import frc.robot.subsystems.arm.ArmPose;
 import frc.robot.subsystems.arm.ArmTrajectory;
 import frc.robot.subsystems.arm.json.ArmConfigJson;
@@ -34,7 +34,7 @@ public class ArmTest {
     private static final double kEps = 1e-6;
 
     /** Workaround for deploy directory being returned incorrectly during JUnit test */
-    public void setDeployDirectoryDuringTest() {
+    public static void setDeployDirectoryDuringTest() {
         File deployDir = Filesystem.getDeployDirectory();
 
         // remove everything starting at /build
@@ -94,7 +94,6 @@ public class ArmTest {
         // Get presets from JSON
         File presetFile = new File(Filesystem.getDeployDirectory(), ArmPresetsJson.jsonFilename);
         ArmPresetsJson presets = ArmPresetsJson.loadJson(presetFile);
-
         ArmPose.Preset.writePresets(presets);
 
         final ArmPathsJson paths[][] = new ArmPathsJson[ArmPose.Preset.values().length+1][ArmPose.Preset.values().length+1];
@@ -204,7 +203,7 @@ public class ArmTest {
         config.shoulder().length(), config.elbow().length(),
         config.shoulder().minAngle(), config.shoulder().maxAngle(), 
         config.elbow().minAngle(), config.elbow().maxAngle(),
-        ArmHAL.kRelativeMinAngleRad, ArmHAL.kRelativeMaxAngleRad);
+        ArmLoop.kRelativeMinAngleRad, ArmLoop.kRelativeMaxAngleRad);
 
         xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches() + 48.0);
 

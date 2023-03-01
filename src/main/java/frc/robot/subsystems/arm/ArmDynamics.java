@@ -243,14 +243,15 @@ public class ArmDynamics {
     return C;
   }
 
-  private Matrix<N2, N1> Tg(Vector<N2> position) {
+  public Matrix<N2, N1> Tg(Vector<N2> position) {
     var Tg = new Matrix<>(N2.instance, N1.instance);
     Tg.set(
         0,
         0,
         (proximal.mass() * proximal.cgRadius() + distal.mass() * proximal.length())
                 * g
-                * Math.cos(position.get(0, 0)));
+                * Math.cos(position.get(0, 0))
+        +distal.mass() * distal.cgRadius() * g * Math.cos(position.get(1,0)));
     Tg.set(
         1,
         0,

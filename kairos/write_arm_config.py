@@ -33,8 +33,8 @@ if __name__ == "__main__":
                       }
                   },
                   "wrist": {
-                      "mass": 2.5 + (((1 + 7/16) * lb).to("kg")).value.tolist(),
-                      "length": ((6.0 * inch).to("meter")).value.tolist(),
+                      "mass": (((4.4 + (1 + 7/16)) * lb).to("kg")).value.tolist(),
+                      "length": ((9.0 * inch).to("meter")).value.tolist(),
                       "moi": 0.019,
                       "cgRadius": ((2.5 * inch).to("meter")).value.tolist()
                   },
