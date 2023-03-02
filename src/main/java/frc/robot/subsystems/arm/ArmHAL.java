@@ -129,7 +129,7 @@ public class ArmHAL {
             shoulderMotor.setNeutralMode(NeutralMode.Brake);
             shoulderMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, kArmCurrentLimit, kArmTriggerThresholdCurrent, kArmTriggerThresholdTime));
             shoulderMotor.configVoltageCompSaturation(kArmMotorFullVoltage);
-            shoulderMotor.enableVoltageCompensation(false);
+            shoulderMotor.enableVoltageCompensation(false);     // don't enable VoltageCompensation!  This will changes us to 'Simple' neutral deadband mode, which causes oscillation
         }  
 
         if(elbowMotor != null)
@@ -142,7 +142,8 @@ public class ArmHAL {
             elbowMotor.setNeutralMode(NeutralMode.Brake);
             elbowMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, kArmCurrentLimit, kArmTriggerThresholdCurrent, kArmTriggerThresholdTime));
             elbowMotor.configVoltageCompSaturation(kArmMotorFullVoltage);
-            elbowMotor.enableVoltageCompensation(true);       }
+            elbowMotor.enableVoltageCompensation(false);       // don't enable VoltageCompensation!  This will changes us to 'Simple' neutral deadband mode, which causes oscillation
+        }
     }
 
     // Turret

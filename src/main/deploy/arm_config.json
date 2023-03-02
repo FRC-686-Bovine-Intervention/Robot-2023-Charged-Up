@@ -10,7 +10,7 @@
     "length": 0.6858,
     "moi": 0.153,
     "cgRadius": 0.12382499999999999,
-    "minAngle": -3.0,
+    "minAngle": -2.8,
     "maxAngle": 0,
     "motor": {
       "type": "falcon",
@@ -32,7 +32,7 @@
     }
   },
   "wrist": {
-    "mass": 2.647845459875,
+    "mass": 0,
     "length": 0.2286,
     "moi": 0.019,
     "cgRadius": 0.0635

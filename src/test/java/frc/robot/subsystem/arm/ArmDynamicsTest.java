@@ -31,15 +31,16 @@ public class ArmDynamicsTest {
         // Get presets from JSON
         File configFile = new File(Filesystem.getDeployDirectory(), ArmConfigJson.jsonFilename);
         ArmConfigJson config = ArmConfigJson.loadJson(configFile);
-        ArmDynamics dynamics = new ArmDynamics(config.shoulder(), ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist()));    
+
+        // debug: what are the voltages needed without a wrist?
+        boolean includeWrist = true;
+        var elbow = includeWrist ? ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist()) : config.elbow();
+        ArmDynamics dynamics = new ArmDynamics(config.shoulder(), elbow);    
         
         // Get presets from JSON
         File presetFile = new File(Filesystem.getDeployDirectory(), ArmPresetsJson.jsonFilename);
         ArmPresetsJson presets = ArmPresetsJson.loadJson(presetFile);
         ArmPose.Preset.writePresets(presets);
-
-        double theta1 = ArmPose.Preset.DEFENSE.getShoulderAngleRad();
-        double theta2 = ArmPose.Preset.DEFENSE.getElbowAngleRad();
 
         double g = 9.80665;
         double m1 = config.shoulder().mass();
@@ -50,21 +51,53 @@ public class ArmDynamicsTest {
         double r2 = config.elbow().cgRadius();
         double m3 = config.wrist().mass();
         double r3 = config.wrist().cgRadius();
-        
-        double expected_torque1 = m1*g*r1*Math.cos(theta1) + 
-                                  m2*g*(l1*Math.cos(theta1)+r2*Math.cos(theta2)) + 
-                                  m3*g*(l1*Math.cos(theta1)+(l2+r3)*Math.cos(theta2));
-        double expected_torque2 = m2*g*(r2*Math.cos(theta2)) + 
-                                  m3*g*((l2+r3)*Math.cos(theta2));
+
+        if (!includeWrist) m3=0;
+
+        double theta1 = ArmPose.Preset.DEFENSE.getShoulderAngleRad();
+        double theta2 = ArmPose.Preset.DEFENSE.getElbowAngleRad();
 
         Vector<N2> position =  VecBuilder.fill(theta1, theta2);
         
         var torque = dynamics.Tg(position);
+
+        double expected_torque1 = m1*g*r1*Math.cos(theta1) + 
+                                    m2*g*(l1*Math.cos(theta1)+r2*Math.cos(theta2)) + 
+                                    m3*g*(l1*Math.cos(theta1)+(l2+r3)*Math.cos(theta2));
+        double expected_torque2 = m2*g*(r2*Math.cos(theta2)) + 
+                                    m3*g*((l2+r3)*Math.cos(theta2));
 
         assertEquals(expected_torque1, torque.get(0,0), kEps);
         assertEquals(expected_torque2, torque.get(1,0), kEps);
 
         Matrix<N2,N3> state =  new MatBuilder<>(Nat.N2(),Nat.N3()).fill(theta1, 0, 0, theta2, 0, 0);
         var voltages = dynamics.feedforward(state);        
+
+        double shoulderPercentOut = voltages.get(0,0)/12.0;
+        double elbowPercentOut = voltages.get(1,0)/12.0;
+
+
+        theta1 = ArmPose.Preset.SCORE_HIGH_CONE.getShoulderAngleRad();
+        theta2 = ArmPose.Preset.SCORE_HIGH_CONE.getElbowAngleRad();
+
+        position =  VecBuilder.fill(theta1, theta2);
+        
+        torque = dynamics.Tg(position);
+
+        expected_torque1 = m1*g*r1*Math.cos(theta1) + 
+                                    m2*g*(l1*Math.cos(theta1)+r2*Math.cos(theta2)) + 
+                                    m3*g*(l1*Math.cos(theta1)+(l2+r3)*Math.cos(theta2));
+        expected_torque2 = m2*g*(r2*Math.cos(theta2)) + 
+                                    m3*g*((l2+r3)*Math.cos(theta2));
+
+        assertEquals(expected_torque1, torque.get(0,0), kEps);
+        assertEquals(expected_torque2, torque.get(1,0), kEps);
+
+        state =  new MatBuilder<>(Nat.N2(),Nat.N3()).fill(theta1, 0, 0, theta2, 0, 0);
+        voltages = dynamics.feedforward(state);        
+
+        shoulderPercentOut = voltages.get(0,0)/12.0;
+        elbowPercentOut = voltages.get(1,0)/12.0;
+
     }
 }

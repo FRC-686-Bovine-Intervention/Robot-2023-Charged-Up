@@ -2,6 +2,6 @@
   "solver": {
     "interiorPoints": 15,
     "maxVoltage": 10,
-    "maxJerk": 30
+    "maxJerk": 50
   }
 }
