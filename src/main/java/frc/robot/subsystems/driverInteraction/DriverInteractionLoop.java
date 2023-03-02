@@ -25,6 +25,7 @@ public class DriverInteractionLoop extends LoopBase {
     private final Drive drive = Drive.getInstance();
     private final DriverAssist driverAssist = DriverAssist.getInstance();
     private final Arm arm = Arm.getInstance();
+    private final ArmStatus armStatus = ArmStatus.getInstance();
     private final Intake intake = Intake.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
 
@@ -59,7 +60,7 @@ public class DriverInteractionLoop extends LoopBase {
 
         if(DriverControlButtons.InvertControls.getRisingEdge())
             invertDriveControls = !invertDriveControls;
-        // drive.setDriveCommand(generateDriveCommand());
+        drive.setDriveCommand(generateDriveCommand());
 
         DriverAssistCommand assistCommand = new DriverAssistCommand();
         if(DriverControlButtons.AutoBalance.getButton())
@@ -67,23 +68,42 @@ public class DriverInteractionLoop extends LoopBase {
         driverAssist.setCommand(assistCommand);
 
         IntakeCommand intakeCommand = new IntakeCommand();
+        switch(intakeStatus.getIntakeState())
+        {
+            case Defense:
+                if(!armStatus.EnabledState.IsEnabled && armStatus.getArmState() != ArmState.Defense)
+                    break;
+                if(DriverControlButtons.Intake.getRisingEdge())
+                    intakeCommand.setIntakeState(IntakeState.Grab);
+            break;
+
+            case Grab:
+                if(!DriverControlButtons.Intake.getButton())
+                    intakeCommand.setIntakeState(IntakeState.Defense);
+            break;
+
+            case Hold:
+                if(armStatus.EnabledState.IsEnabled)
+                    break;
+                if(DriverControlButtons.Intake.getRisingEdge())
+                    intakeCommand.setIntakeState(IntakeState.Release);
+            break;
+            
+            case Release:
+                if(armStatus.EnabledState.IsEnabled)
+                        break;
+                if(!DriverControlButtons.Intake.getButton())
+                    intakeCommand.setIntakeState(IntakeState.Defense);
+            break;
+        }
+        intake.setCommand(intakeCommand);
+
         ArmCommand armCommand = new ArmCommand();
         switch(ArmStatus.getInstance().getArmState())
         {
             case Defense:
-                switch(intakeStatus.getIntakeState())
-                {
-                    case Defense:
-                        if(DriverControlButtons.Intake.getRisingEdge())
-                            intakeCommand.setIntakeState(IntakeState.Grab);
-                    break;
-        
-                    case Grab:
-                        if(!DriverControlButtons.Intake.getButton())
-                            intakeCommand.setIntakeState(IntakeState.Defense);
-                    break;
-                    default: break;
-                } 
+                if(DriverControlButtons.Substation.getRisingEdge())
+                    armCommand.setArmState(ArmState.SubstationExtend);
             break;
 
             case IdentifyPiece:
@@ -98,30 +118,32 @@ public class DriverInteractionLoop extends LoopBase {
 
             case Hold:
                 if(DriverControlButtons.Intake.getRisingEdge())
-                        armCommand.setArmState(ArmState.Align);
+                    armCommand.setArmState(ArmState.Align);
             break;
             
             case Align:
                 if(DriverControlButtons.Intake.getRisingEdge())
-                        armCommand.setArmState(ArmState.Extend);
+                    armCommand.setArmState(ArmState.Extend);
             break;
             
             case Extend:
                 if(DriverControlButtons.Intake.getRisingEdge())
-                        armCommand.setArmState(ArmState.Adjust);
+                    armCommand.setArmState(ArmState.Adjust);
             break;
             
             case Adjust:
                 if(DriverControlButtons.Intake.getRisingEdge())
-                        armCommand.setArmState(ArmState.Release);
+                    armCommand.setArmState(ArmState.Release);
             break;
-            
-            case Release:
+
+            case SubstationExtend:
+                if(DriverControlButtons.Substation.getRisingEdge())
+                    armCommand.setArmState(ArmState.SubstationGrab);
             break;
+
+            default: break;
         }
-        
         arm.setCommand(armCommand);
-        intake.setCommand(intakeCommand); 
     }
 
     @Override public void Disabled() {}

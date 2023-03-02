@@ -17,11 +17,11 @@ classdef arm_kinematics < handle
 
         
         function [x2, y2, x3, y3] = forward_kinematics(obj, theta1, theta2)
-           x2 = obj.x1 + obj.arm_length(1)*cos(deg2rad(theta1));
-           y2 = obj.y1 + obj.arm_length(1)*sin(deg2rad(theta1));
+           x2 = obj.x1 + obj.arm_length(1)*cos(theta1);
+           y2 = obj.y1 + obj.arm_length(1)*sin(theta1);
 
-           x3 = x2 + obj.arm_length(2)*cos(deg2rad(theta2));
-           y3 = y2 + obj.arm_length(2)*sin(deg2rad(theta2));
+           x3 = x2 + obj.arm_length(2)*cos(theta2);
+           y3 = y2 + obj.arm_length(2)*sin(theta2);
         end
 
 
@@ -31,7 +31,7 @@ classdef arm_kinematics < handle
             % (finding intersection of 2 circles centered at the base pivot and [x,z]
             % https://math.stackexchange.com/questions/256100/how-can-i-find-the-points-at-which-two-circles-intersect
 
-            x1 = obj.x1;
+            x1 = obj.x1; %#ok<*PROPLC> 
             y1 = obj.y1;
             r1 = obj.arm_length(1); % PROXIMAL
             r2 = obj.arm_length(2); % DISTAL
@@ -65,14 +65,14 @@ classdef arm_kinematics < handle
             end
 
             % calculate joint angles
-            theta1 = rad2deg(angle(complex(x2,y2) - complex(x1,y1)));
-            theta2 = rad2deg(angle(complex(x3,y3) - complex(x2,y2)));
+            theta1 = angle(complex(x2,y2) - complex(x1,y1));
+            theta2 = angle(complex(x3,y3) - complex(x2,y2));
             valid = true(size(theta1));
 
             % for points we can't reach, return an angle pointing in the
             % right angle
             idx = isnan(K);
-            theta1(idx) = rad2deg(angle(complex(x3(idx),y3(idx)) - complex(x1,y1)));
+            theta1(idx) = angle(complex(x3(idx),y3(idx)) - complex(x1,y1));
             theta2(idx) = theta1(idx);
             valid(idx) = false;
         end

@@ -23,17 +23,21 @@ public class ArmKinematics {
   private final double l2;          // distal arm length
   private final double minTheta1;   // min allowable shoulder angle
   private final double maxTheta1;   // max allowable shoulder angle
+  private final double minTheta2;  // min allowable elbow angle, relative to horizontal
+  private final double maxTheta2;  // max allowable elbow angle, relative to horizontal
   private final double minTheta21;  // min allowable elbow angle, relative to shoulder angle
   private final double maxTheta21;  // max allowable elbow angle, relative to shoulder angle
 
   
   public ArmKinematics(Translation2d shoulder, double l1, double l2, double minTheta1, double maxTheta1,
-      double minTheta21, double maxTheta21) {
+      double minTheta2, double maxTheta2, double minTheta21, double maxTheta21) {
     this.shoulder = shoulder;
     this.l1 = l1;
     this.l2 = l2;
     this.minTheta1 = minTheta1;
     this.maxTheta1 = maxTheta1;
+    this.minTheta2 = minTheta2;
+    this.maxTheta2 = maxTheta2;    
     this.minTheta21 = minTheta21;
     this.maxTheta21 = maxTheta21;
   }
@@ -45,11 +49,9 @@ public class ArmKinematics {
   }
 
   /** Converts joint angles to the end effector position. */
-  public Translation2d forward(double theta1, double theta21) {
+  public Translation2d forward(double theta1, double theta2) {
     // theta1 is shoulder angle, relative to horizontal
-    // theta21 is elbow angle, relative to shoulder angle
-    double theta2  = theta1 + theta21;         // elbow angle, relative to horizontal
-
+    // theta2 is elbow angle, relative to horizontal
     return shoulder.plus( new Translation2d(l1 * Math.cos(theta1) + l2 * Math.cos(theta2),
                                             l1 * Math.sin(theta1) + l2 * Math.sin(theta2)));
   }
@@ -113,10 +115,11 @@ public class ArmKinematics {
 
     // Exit if outside valid ranges for the joints
     if (theta1 < minTheta1 || theta1 > maxTheta1 ||
+        theta2 < minTheta2 || theta2 > maxTheta2 ||
         theta21 < minTheta21 || theta21 > maxTheta21) {
-      return Optional.empty();
+        return Optional.empty();
     }
 
-    return Optional.of(VecBuilder.fill(theta1, theta21));
+    return Optional.of(VecBuilder.fill(theta1, theta2));
   }
 }

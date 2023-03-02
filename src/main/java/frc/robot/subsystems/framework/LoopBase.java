@@ -1,6 +1,6 @@
 package frc.robot.subsystems.framework;
 
-import frc.robot.subsystems.framework.StatusBase.EnabledState;
+import frc.robot.subsystems.framework.StatusBase.EnabledStateEnum;
 
 public abstract class LoopBase {
     //TODO: Update documentation
@@ -11,23 +11,23 @@ public abstract class LoopBase {
      */
     protected SubsystemBase Subsystem;
 
-    public final void onStart() {onEverything(EnabledState.Starting);}
+    public final void onStart() {onEverything();}
 
     public final void onLoop() {onEverything();}
 
-    public final void onStop() {onEverything(EnabledState.Stopping);}
+    public final void onStop() {onEverything(EnabledStateEnum.Stopping);}
 
     private void onEverything() {onEverything(null);}
-    private void onEverything(EnabledState state)
+    private void onEverything(EnabledStateEnum state)
     {
         if(Subsystem == null)
             throw new NullPointerException(this.getClass().getName() + " has not defined the super variable Subsystem\n");
 
         if(state != null)
-            Subsystem.Status.Enabled = state;
+            Subsystem.Status.EnabledState = state;
 
         Update();
-        switch(Subsystem.Status.Enabled)
+        switch(Subsystem.Status.EnabledState)
         {
             case Starting:
             case Enabled:

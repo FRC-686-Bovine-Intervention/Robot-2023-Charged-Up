@@ -11,12 +11,12 @@ if __name__ == "__main__":
                       "length": ((27.0 * inch).to("meter")).value.tolist(),
                       "moi": 0.153,
                       "cgRadius": ((4.875 * inch).to("meter")).value.tolist(),
-                      "minAngle": -3.14,
+                      "minAngle": -3.0,
                       "maxAngle": 0,
                       "motor": {
                           "type": "falcon",
                           "count": 1,
-                          "reduction": 5.0 * 5.0 * 72.0 / 16.0
+                          "reduction": 4.0 * 4.0 * 72.0 / 16.0
                       }
                   },
                   "elbow": {
@@ -24,17 +24,17 @@ if __name__ == "__main__":
                       "length": ((14.0 * inch).to("meter")).value.tolist(),
                       "moi": 0.013,
                       "cgRadius": ((2.5 * inch).to("meter")).value.tolist(),
-                      "minAngle": -1.0,
-                      "maxAngle": 3.0,
+                      "minAngle": -1.57,
+                      "maxAngle": 1.047,
                       "motor": {
                           "type": "falcon",
                           "count": 1,
-                          "reduction": 5.0 * 5.0 * 64.0 / 16.0
+                          "reduction": 4.0 * 4.0 * 64.0 / 16.0
                       }
                   },
                   "wrist": {
-                      "mass": 2.5 + (((1 + 7/16) * lb).to("kg")).value.tolist(),
-                      "length": ((6.0 * inch).to("meter")).value.tolist(),
+                      "mass": (((4.4 + (1 + 7/16)) * lb).to("kg")).value.tolist(),
+                      "length": ((9.0 * inch).to("meter")).value.tolist(),
                       "moi": 0.019,
                       "cgRadius": ((2.5 * inch).to("meter")).value.tolist()
                   },

@@ -6,17 +6,15 @@ classdef joint_config < handle
         cgRadius
         minAngle
         maxAngle
-        reduction
         motor
     end
 
     methods
-        function obj = joint_config(mass, length, moi, cgRadius, reduction, motor)
+        function obj = joint_config(mass, length, moi, cgRadius, motor)
             obj.mass = mass;
             obj.length = length;
             obj.moi = moi;
             obj.cgRadius = cgRadius;
-            obj.reduction = reduction;
             obj.motor = motor;
         end
     end

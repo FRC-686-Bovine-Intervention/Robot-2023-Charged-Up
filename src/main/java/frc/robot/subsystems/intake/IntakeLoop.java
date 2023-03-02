@@ -14,7 +14,7 @@ public class IntakeLoop extends LoopBase {
 
     private static final double kDisabledTimeThreshold = 5;
     private static final double kSpikeCurrentThreshold = 15;
-    private static final double kSpikeTimeThreshold = 0.5;
+    private static final double kSpikeTimeThreshold = 0.25;
 
     private IntakeLoop() {Subsystem = Intake.getInstance();}
 
@@ -59,7 +59,7 @@ public class IntakeLoop extends LoopBase {
     protected void Disabled() {
         double currentTime = Timer.getFPGATimestamp();
 
-        if(status.Enabled.IsInitState)
+        if(status.EnabledState.IsInitState)
             disabledTimestamp = currentTime;
         
         if(currentTime - disabledTimestamp < kDisabledTimeThreshold)

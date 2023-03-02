@@ -28,7 +28,9 @@ public record ArmPresetsJson(
 
   public static record PresetEntry(
       int fileIdx,
-      Translation2d xy) {
+      Translation2d xy,
+      double theta1,
+      double theta2) {
 
     public int getFileIdx() {
       return fileIdx;
@@ -40,6 +42,8 @@ public record ArmPresetsJson(
         
     public double getX() { return xy.getX(); }
     public double getY() { return xy.getY(); }
+    public double getTheta1() { return theta1; }
+    public double getTheta2() { return theta2; }    
   }
   
 

@@ -10,12 +10,12 @@
     "length": 0.6858,
     "moi": 0.153,
     "cgRadius": 0.12382499999999999,
-    "minAngle": -3.14,
+    "minAngle": -3.0,
     "maxAngle": 0,
     "motor": {
       "type": "falcon",
       "count": 1,
-      "reduction": 112.5
+      "reduction": 72.0
     }
   },
   "elbow": {
@@ -23,17 +23,17 @@
     "length": 0.35559999999999997,
     "moi": 0.013,
     "cgRadius": 0.0635,
-    "minAngle": -1.0,
-    "maxAngle": 3.0,
+    "minAngle": -1.57,
+    "maxAngle": 1.047,
     "motor": {
       "type": "falcon",
       "count": 1,
-      "reduction": 100.0
+      "reduction": 64.0
     }
   },
   "wrist": {
-    "mass": 3.152039031875,
-    "length": 0.15239999999999998,
+    "mass": 2.647845459875,
+    "length": 0.2286,
     "moi": 0.019,
     "cgRadius": 0.0635
   },

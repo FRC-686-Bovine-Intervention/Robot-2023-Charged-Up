@@ -1,83 +1,102 @@
-// Copyright (c) 2023 FRC 6328
-// http://github.com/Mechanical-Advantage
-//
-// Use of this source code is governed by an MIT-style
-// license that can be found in the LICENSE file at
-// the root directory of this project.
-
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
+import java.util.Map;
+
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import java.util.Map;
+import frc.robot.lib.util.PoseBoundingBoxUtil.CompoundBoundingBox;
+import frc.robot.lib.util.PoseBoundingBoxUtil.RectangularBoundingBox;
 
-/**
- * Contains various field dimensions and useful reference points. Dimensions are in meters, and sets
- * of corners start in the lower left moving clockwise.
- *
- * <p>All translations and poses are stored with the origin at the rightmost point on the BLUE
- * ALLIANCE wall. Use the {@link #allianceFlip(Translation2d)} and {@link #allianceFlip(Pose2d)}
- * methods to flip these values based on the current alliance color.
- */
-public final class FieldConstants {
-  public static final double fieldLength = Units.inchesToMeters(651.25);
-  public static final double fieldWidth = Units.inchesToMeters(315.5);
-  public static final double tapeWidth = Units.inchesToMeters(2.0);
-  public static final double aprilTagWidth = Units.inchesToMeters(6.0);
+public class FieldDimensions {
+    private static final RectangularBoundingBox community1 = 
+        new RectangularBoundingBox(
+            new Translation2d(Community.innerX, Community.rightY),
+            new Translation2d(Community.midX,   Community.leftY)
+        );
+    private static final RectangularBoundingBox community2 = 
+        new RectangularBoundingBox(
+            new Translation2d(Community.innerX, Community.rightY),
+            new Translation2d(Community.outerX, Community.midY)
+        );
+    public static final RectangularBoundingBox chargeStation = 
+        new RectangularBoundingBox(
+            new Translation2d(Community.chargingStationInnerX,  Community.chargingStationRightY),
+            new Translation2d(Community.outerX,                 Community.chargingStationLeftY)
+        );
 
-  // Dimensions for community and charging station, including the tape.
-  public static final class Community {
-    // Region dimensions
-    public static final double innerX = 0.0;
-    public static final double midX =
-        Units.inchesToMeters(132.375); // Tape to the left of charging station
-    public static final double outerX =
-        Units.inchesToMeters(193.25); // Tape to the right of charging station
-    public static final double leftY = Units.feetToMeters(18.0);
-    public static final double midY = leftY - Units.inchesToMeters(59.39) + tapeWidth;
-    public static final double rightY = 0.0;
-    public static final Translation2d[] regionCorners =
-        new Translation2d[] {
-          new Translation2d(innerX, rightY),
-          new Translation2d(innerX, leftY),
-          new Translation2d(midX, leftY),
-          new Translation2d(midX, midY),
-          new Translation2d(outerX, midY),
-          new Translation2d(outerX, rightY),
+    public static final CompoundBoundingBox community = 
+        new CompoundBoundingBox(
+            community1, 
+            community2
+        );
+    public static final CompoundBoundingBox communityWithoutChargeStation = 
+        new CompoundBoundingBox(
+            community1, 
+            community2
+        ).addNegativeBoxes(
+            chargeStation
+        );
+
+    // ===================================================
+    // Imported from Mechanical Advantage's FieldConstants
+    // ===================================================
+    public static final double fieldLength = Units.inchesToMeters(651.25);
+    public static final double fieldWidth = Units.inchesToMeters(315.5);
+    public static final double tapeWidth = Units.inchesToMeters(2.0);
+    public static final double aprilTagWidth = Units.inchesToMeters(6.0);
+
+    // Dimensions for community and charging station, including the tape.
+    public static final class Community {
+        // Region dimensions
+        public static final double innerX = 0.0;
+        public static final double midX =
+            Units.inchesToMeters(132.375); // Tape to the left of charging station
+        public static final double outerX =
+            Units.inchesToMeters(193.25); // Tape to the right of charging station
+        public static final double leftY = Units.feetToMeters(18.0);
+        public static final double midY = leftY - Units.inchesToMeters(59.39) + tapeWidth;
+        public static final double rightY = 0.0;
+        public static final Translation2d[] regionCorners =
+            new Translation2d[] {
+            new Translation2d(innerX, rightY),
+            new Translation2d(innerX, leftY),
+            new Translation2d(midX, leftY),
+            new Translation2d(midX, midY),
+            new Translation2d(outerX, midY),
+            new Translation2d(outerX, rightY),
         };
 
-    // Charging station dimensions
-    public static final double chargingStationLength = Units.inchesToMeters(76.125);
-    public static final double chargingStationWidth = Units.inchesToMeters(97.25);
-    public static final double chargingStationOuterX = outerX - tapeWidth;
-    public static final double chargingStationInnerX =
-        chargingStationOuterX - chargingStationLength;
-    public static final double chargingStationLeftY = midY - tapeWidth;
-    public static final double chargingStationRightY = chargingStationLeftY - chargingStationWidth;
-    public static final Translation2d[] chargingStationCorners =
-        new Translation2d[] {
-          new Translation2d(chargingStationInnerX, chargingStationRightY),
-          new Translation2d(chargingStationInnerX, chargingStationLeftY),
-          new Translation2d(chargingStationOuterX, chargingStationRightY),
-          new Translation2d(chargingStationOuterX, chargingStationLeftY)
+        // Charging station dimensions
+        public static final double chargingStationLength = Units.inchesToMeters(76.125);
+        public static final double chargingStationWidth = Units.inchesToMeters(97.25);
+        public static final double chargingStationOuterX = outerX - tapeWidth;
+        public static final double chargingStationInnerX =
+            chargingStationOuterX - chargingStationLength;
+        public static final double chargingStationLeftY = midY - tapeWidth;
+        public static final double chargingStationRightY = chargingStationLeftY - chargingStationWidth;
+        public static final Translation2d[] chargingStationCorners =
+            new Translation2d[] {
+            new Translation2d(chargingStationInnerX, chargingStationRightY),
+            new Translation2d(chargingStationInnerX, chargingStationLeftY),
+            new Translation2d(chargingStationOuterX, chargingStationRightY),
+            new Translation2d(chargingStationOuterX, chargingStationLeftY)
         };
 
-    // Cable bump
-    public static final double cableBumpInnerX =
-        innerX + Grids.outerX + Units.inchesToMeters(95.25);
-    public static final double cableBumpOuterX = cableBumpInnerX + Units.inchesToMeters(7);
-    public static final Translation2d[] cableBumpCorners =
-        new Translation2d[] {
-          new Translation2d(cableBumpInnerX, 0.0),
-          new Translation2d(cableBumpInnerX, chargingStationRightY),
-          new Translation2d(cableBumpOuterX, 0.0),
-          new Translation2d(cableBumpOuterX, chargingStationRightY)
+        // Cable bump
+        public static final double cableBumpInnerX =
+            innerX + Grids.outerX + Units.inchesToMeters(95.25);
+        public static final double cableBumpOuterX = cableBumpInnerX + Units.inchesToMeters(7);
+        public static final Translation2d[] cableBumpCorners =
+            new Translation2d[] {
+            new Translation2d(cableBumpInnerX, 0.0),
+            new Translation2d(cableBumpInnerX, chargingStationRightY),
+            new Translation2d(cableBumpOuterX, 0.0),
+            new Translation2d(cableBumpOuterX, chargingStationRightY)
         };
-  }
+    }
 
   // Dimensions for grids and nodes
   public static final class Grids {
@@ -163,10 +182,10 @@ public final class FieldConstants {
   public static final class LoadingZone {
     // Region dimensions
     public static final double width = Units.inchesToMeters(99.0);
-    public static final double innerX = FieldConstants.fieldLength;
+    public static final double innerX = FieldDimensions.fieldLength;
     public static final double midX = fieldLength - Units.inchesToMeters(132.25);
     public static final double outerX = fieldLength - Units.inchesToMeters(264.25);
-    public static final double leftY = FieldConstants.fieldWidth;
+    public static final double leftY = FieldDimensions.fieldWidth;
     public static final double midY = leftY - Units.inchesToMeters(50.5);
     public static final double rightY = leftY - width;
     public static final Translation2d[] regionCorners =
@@ -189,7 +208,7 @@ public final class FieldConstants {
     // Single substation dimensions
     public static final double singleSubstationWidth = Units.inchesToMeters(22.75);
     public static final double singleSubstationLeftX =
-        FieldConstants.fieldLength - doubleSubstationLength - Units.inchesToMeters(88.77);
+        FieldDimensions.fieldLength - doubleSubstationLength - Units.inchesToMeters(88.77);
     public static final double singleSubstationCenterX =
         singleSubstationLeftX + (singleSubstationWidth / 2.0);
     public static final double singleSubstationRightX =
