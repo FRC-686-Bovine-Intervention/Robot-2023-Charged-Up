@@ -116,10 +116,6 @@ public class ArmLoop extends LoopBase {
     private final double zMinSetpoint = Units.inchesToMeters( 0.0);
     private final double zMaxSetpoint = Units.inchesToMeters(72.0); 
 
-    private double xThrottle = 0.0;
-    private double zThrottle = 0.0;
-    private double xAdjustment = 0.0; // extension from turret center of rotation
-    private double zAdjustment = 0.0; // height
     private final double xAdjustmentMaxRangeInches = 12.0;
     private final double zAdjustmentMaxRangeInches = 12.0;
     private final double xAdjustmentMaxRange = Units.inchesToMeters(xAdjustmentMaxRangeInches);
@@ -243,10 +239,17 @@ public class ArmLoop extends LoopBase {
     
     @Override
     protected void Enabled() {
+        // ================= Pulling Data from Command =================
         ArmCommand newCommand = status.getCommand();
 
         if(newCommand.getArmState() != null)
             status.setArmState(newCommand.getArmState());
+        if(newCommand.getTargetNode() != null)
+            status.setTargetNode(newCommand.getTargetNode());
+        if(newCommand.getXAdjustment() != null)
+            status.setXThrottle(newCommand.getXAdjustment());
+        if(newCommand.getZAdjustment() != null)
+            status.setXThrottle(newCommand.getZAdjustment());
 
         stateTimer.start();
 
@@ -360,7 +363,10 @@ public class ArmLoop extends LoopBase {
 
             case Extend:
                 // Extend to selected node
+                status.setTargetArmPose(status.getTargetNode().armPreset);
                 // When completed, jump to Adjust
+                if(status.getCurrentArmPose() == status.getTargetArmPose())
+                    status.setArmState(ArmState.Adjust);
             break;
 
             case Adjust:
@@ -430,9 +436,9 @@ public class ArmLoop extends LoopBase {
         // check if current trajectory is finished
         if (status.getCurrentArmTrajectory() != null && trajectoryTimer.hasElapsed(status.getCurrentArmTrajectory().getTotalTime()))
         {
-            status.setCurrentArmTrajectory(null);
-            xAdjustment = 0.0;
-            zAdjustment = 0.0;
+            status.setCurrentArmTrajectory(null)
+                  .setXAdjustment(0)
+                  .setZAdjustment(0);
         }
 
         // Get measured positions
@@ -473,20 +479,20 @@ public class ArmLoop extends LoopBase {
 
                 // update manual adjustments
                 // xThrottle and zThrottle are assumed to be joystick inputs in the range [-1, +1]
-                xAdjustment += xThrottle * manualMaxSpeedMetersPerSec * Constants.loopPeriodSecs;
-                zAdjustment += zThrottle * manualMaxSpeedMetersPerSec * Constants.loopPeriodSecs;
+                status.incrementXAdjustment(status.getXThrottle() * manualMaxSpeedMetersPerSec * Constants.loopPeriodSecs)
+                      .incrementZAdjustment(status.getZThrottle() * manualMaxSpeedMetersPerSec * Constants.loopPeriodSecs);
 
                 // clamp manual adjustments
-                xAdjustment = MathUtil.clamp(xAdjustment, -xAdjustmentMaxRange, +xAdjustmentMaxRange);
-                zAdjustment = MathUtil.clamp(zAdjustment, -zAdjustmentMaxRange, +zAdjustmentMaxRange);
+                status.setXAdjustment(MathUtil.clamp(status.getXAdjustment(), -xAdjustmentMaxRange, +xAdjustmentMaxRange))
+                      .setZAdjustment(MathUtil.clamp(status.getZAdjustment(), -xAdjustmentMaxRange, +xAdjustmentMaxRange));
 
                 // verify frame perimeter
-                double xSetpoint = MathUtil.clamp(xFinalTrajectory + xAdjustment, xMinSetpoint, xMaxSetpoint);
-                double zSetpoint = MathUtil.clamp(zfinalTrajectory + zAdjustment, zMinSetpoint, zMaxSetpoint);
+                double xSetpoint = MathUtil.clamp(xFinalTrajectory + status.getXAdjustment(), xMinSetpoint, xMaxSetpoint);
+                double zSetpoint = MathUtil.clamp(zfinalTrajectory + status.getZAdjustment(), zMinSetpoint, zMaxSetpoint);
 
                 // calcualate current manual adjustment after clamping
-                xAdjustment = xSetpoint - xFinalTrajectory;
-                zAdjustment = zSetpoint - zfinalTrajectory;
+                status.setXAdjustment(xSetpoint - xFinalTrajectory)
+                      .setZAdjustment(zSetpoint - zfinalTrajectory);
 
                 // find new setpoint
                 Optional<Vector<N2>> optTheta = kinematics.inverse(xSetpoint, zSetpoint);
@@ -542,9 +548,8 @@ public class ArmLoop extends LoopBase {
 
     public void manualAdjustment(double xThrottle, double yThrottle, double zThrottle) {
         // xThrottle and zThrottle are assumed to be joystick inputs in the range [-1, +1]
-        this.xThrottle = xThrottle;
-        this.zThrottle = zThrottle;
-
+        status.setXThrottle(xThrottle)
+              .setZThrottle(zThrottle);
         // TODO: adjust turret angle target
         // yAdjustmentInches += yThrottle * manualMaxSpeedDegreesPerSec * Constants.loopPeriodSecs;
     }    

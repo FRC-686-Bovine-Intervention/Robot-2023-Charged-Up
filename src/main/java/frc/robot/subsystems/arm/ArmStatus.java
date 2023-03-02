@@ -41,6 +41,36 @@ public class ArmStatus extends StatusBase {
         public static final ArmState DEFAULT = ZeroDistalUp;
     }
 
+    public enum NodeEnum {
+        BottomLeft      (0,0,ArmPose.Preset.SCORE_HYBRID),
+        BottomCenter    (1,0,ArmPose.Preset.SCORE_HYBRID),
+        BottomRight     (2,0,ArmPose.Preset.SCORE_HYBRID),
+        MiddleLeft      (0,1,ArmPose.Preset.SCORE_MID_CONE),
+        MiddleCenter    (1,1,ArmPose.Preset.SCORE_MID_CUBE),
+        MiddleRight     (2,1,ArmPose.Preset.SCORE_MID_CONE),
+        TopLeft         (0,2,ArmPose.Preset.SCORE_HIGH_CONE),
+        TopCenter       (1,2,ArmPose.Preset.SCORE_HIGH_CUBE),
+        TopRight        (2,2,ArmPose.Preset.SCORE_HIGH_CONE);
+
+        public static final NodeEnum DEFAULT = MiddleCenter;
+
+        public final int xPos;
+        public final int yPos;
+        public final ArmPose.Preset armPreset;
+        NodeEnum(int xPos, int yPos, ArmPose.Preset armPreset) {
+            this.xPos = xPos;
+            this.yPos = yPos;
+            this.armPreset = armPreset;
+        }
+        public NodeEnum fromGridPose(int xPos, int yPos) {
+            for (NodeEnum node : NodeEnum.values()) {
+                if(node.xPos == xPos && node.yPos == yPos)
+                    return node;
+            }
+            return null;
+        }
+    }
+
     private ArmStatus() {Subsystem = arm;}
 
     // Generic
@@ -51,6 +81,10 @@ public class ArmStatus extends StatusBase {
     private ArmState    armState = ArmState.DEFAULT;
     public ArmState     getArmState()                   {return armState;}
     protected ArmStatus setArmState(ArmState armState)  {this.armState = armState; return this;}
+
+    private NodeEnum    targetNode = NodeEnum.DEFAULT;
+    public NodeEnum     getTargetNode()                     {return targetNode;}
+    protected ArmStatus setTargetNode(NodeEnum targetNode)  {this.targetNode = targetNode; return this;}
 
     // Turret
     private double      turretPosition; 
@@ -104,6 +138,24 @@ public class ArmStatus extends StatusBase {
     private boolean         internalDisable = false;
     public boolean          getInternalDisable()                        {return internalDisable;}
     protected ArmStatus     setInternalDisable(boolean internalDisable) {/*this.internalDisable = internalDisable;*/ return this;}
+
+    private double          xThrottle;
+    public double           getXThrottle()                  {return xThrottle;}
+    protected ArmStatus     setXThrottle(double xThrottle)  {this.xThrottle = xThrottle; return this;}
+
+    private double          xAdjustment; // extension from turret center of rotation
+    public double           getXAdjustment()                        {return xAdjustment;}
+    protected ArmStatus     setXAdjustment(double xAdjustment)      {this.xAdjustment = xAdjustment; return this;}
+    protected ArmStatus     incrementXAdjustment(double increment)  {this.xAdjustment += increment; return this;}
+
+    private double          zThrottle;
+    public double           getZThrottle()                  {return zThrottle;}
+    protected ArmStatus     setZThrottle(double zThrottle)  {this.zThrottle = zThrottle; return this;}
+
+    private double          zAdjustment; // height
+    public double           getZAdjustment()                        {return zAdjustment;}
+    protected ArmStatus     setZAdjustment(double zAdjustment)      {this.zAdjustment = zAdjustment; return this;}
+    protected ArmStatus     incrementZAdjustment(double increment)  {this.zAdjustment += increment; return this;}
 
     // Shoulder
     private PotAndEncoder.Reading   shoulderPotEncReading = new PotAndEncoder.Reading(0,0,0);
@@ -314,9 +366,14 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Turret/Target Angle", getTargetTurretAngle());
 
         // Arm
-        logger.recordOutput(prefix + "Arm/Target Pose",         targetArmPose != null ? targetArmPose.name() : "null");
-        logger.recordOutput(prefix + "Arm/Current Pose",        currentArmPose != null ? currentArmPose.name() : "null");
-        logger.recordOutput(prefix + "Arm/Internal Disable",    internalDisable);
+        logger.recordOutput(prefix + "Arm/Target Pose",             targetArmPose != null ? targetArmPose.name() : "null");
+        logger.recordOutput(prefix + "Arm/Current Pose",            currentArmPose != null ? currentArmPose.name() : "null");
+        logger.recordOutput(prefix + "Arm/Internal Disable",        internalDisable);
+        logger.recordOutput(prefix + "Arm/Target Node",             targetNode != null ? targetNode.name() : "null");
+        logger.recordOutput(prefix + "Arm/Adjustments/Throttle/X",  xThrottle);
+        logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Z",  zThrottle);
+        logger.recordOutput(prefix + "Arm/Adjustments/X",           xAdjustment);
+        logger.recordOutput(prefix + "Arm/Adjustments/Z",           zAdjustment);
         // logger.recordOutput(prefix + "Arm/Current Trajectory", currentArmTrajectory != null ? currentArmTrajectory.name() : "null");
         // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Current Traj State/Theta1/", getCurrentTrajState().extractRowVector(0));
         // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Current Traj State/Theta2/", getCurrentTrajState().extractRowVector(1));
