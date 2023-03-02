@@ -38,7 +38,7 @@ public class ArmStatus extends StatusBase {
         SubstationExtend,   // Driver has decided to grab a piece from the substation
         SubstationGrab;     // Driver is ready to grab piece from the substation
 
-        public static final ArmState DEFAULT = Defense;
+        public static final ArmState DEFAULT = ZeroDistalUp;
     }
 
     private ArmStatus() {Subsystem = arm;}
@@ -120,36 +120,37 @@ public class ArmStatus extends StatusBase {
     public static double shoulderRadiansToSensorUnits(double _radians) { return _radians * kShoulderEncoderUnitsPerRad; }
     public static double shoulderSensorUnitsToRadians(double _units) { return _units / kShoulderEncoderUnitsPerRad; }
     
-    private boolean shoulderFalconCalibrated = false;
-    public boolean getShoulderFalconCalibrated() { return shoulderFalconCalibrated; }
-    public ArmStatus setShoulderFalconCalibrated(boolean shoulderFalconCalibrated) { this.shoulderFalconCalibrated = shoulderFalconCalibrated; return this; }
+    private boolean     shoulderFalconCalibrated = false;
+    public boolean      getShoulderFalconCalibrated() { return shoulderFalconCalibrated; }
+    protected ArmStatus setShoulderFalconCalibrated(boolean shoulderFalconCalibrated) { this.shoulderFalconCalibrated = shoulderFalconCalibrated; return this; }
 
-    private double shoulderFalconSensorPosition;
-    public double getShoulderFalconSensorPosition() { return shoulderFalconSensorPosition; }
+    private double      shoulderFalconSensorPosition;
+    public double       getShoulderFalconSensorPosition() { return shoulderFalconSensorPosition; }
     protected ArmStatus setShoulderFalconSensorPosition(double _units) {shoulderFalconSensorPosition = _units; return this; }
 
-    private double shoulderCalibAngleRad;
-    public double getShoulderCalibAngleRad() {return shoulderCalibAngleRad;}
+    private double      shoulderCalibAngleRad;
+    public double       getShoulderCalibAngleRad() {return shoulderCalibAngleRad;}
     protected ArmStatus setShoulderCalibAngleRad(double shoulderCalibAngleRad) {this.shoulderCalibAngleRad = shoulderCalibAngleRad; return this;}
 
-    private double shoulderMinAngleRad;
-    public double getShoulderMinAngleRad() { return shoulderMinAngleRad;}
+    private double      shoulderMinAngleRad;
+    public double       getShoulderMinAngleRad() { return shoulderMinAngleRad;}
     protected ArmStatus setShoulderMinAngleRad(double shoulderMinAngleRad) {this.shoulderMinAngleRad = shoulderMinAngleRad; return this;}
     
-    private double shoulderMaxAngleRad;
-    public double getShoulderMaxAngleRad() {return shoulderMaxAngleRad; }
+    private double      shoulderMaxAngleRad;
+    public double       getShoulderMaxAngleRad() {return shoulderMaxAngleRad; }
     protected ArmStatus setShoulderMaxAngleRad(double shoulderMaxAngleRad) {this.shoulderMaxAngleRad = shoulderMaxAngleRad; return this;}
 
     // main function to get shoulder angle
-    private boolean useShoulderFalconForAngle = true;
-    public double getShoulderAngleRad() { return useShoulderFalconForAngle ? shoulderSensorUnitsToRadians(getShoulderFalconSensorPosition()) : Units.degreesToRadians(getShoulderPotEncStatus().positionDeg); } 
+    private boolean useShoulderFalconForAngle = false;
+    public double   getShoulderAngleRad() { return useShoulderFalconForAngle ? shoulderSensorUnitsToRadians(getShoulderFalconSensorPosition()) : Units.degreesToRadians(getShoulderPotEncStatus().positionDeg); } 
 
     private double      shoulderPower;
     public double       getShoulderPower()                          {return shoulderPower;}
     public double       getShoulderVoltage()                        {return shoulderPower * 12;}
     protected ArmStatus setShoulderPower(double shoulderPower)      {this.shoulderPower = shoulderMotorSoftLimit(shoulderPower); return this;}
-    protected ArmStatus setShoulderVoltage(double shoulderVoltage)  {this.shoulderPower = shoulderMotorSoftLimit(shoulderPower) / 12; return this;}
+    protected ArmStatus setShoulderVoltage(double shoulderVoltage)  {this.shoulderPower = shoulderMotorSoftLimit(shoulderVoltage / 12); return this;}
 
+    private static final double kShoulderMinPower = 0;//0.055;
     public double shoulderMotorSoftLimit(double _power) {
         double power = _power;
 
@@ -165,6 +166,9 @@ public class ArmStatus extends StatusBase {
         // check reverse limits
         if ((shoulderAngleRad < shoulderMinAngleRad) || (relativeAngle < ArmLoop.kRelativeMinAngleRad)) {
             power = Math.min(power, 0.0);   // still allow movement in forward direction
+        }
+        if(Math.signum(power) == Math.signum(shoulderAngleRad + Units.degreesToRadians(90))) {
+            power += Math.signum(power) * kShoulderMinPower;
         }
         return power;
     }
@@ -196,35 +200,35 @@ public class ArmStatus extends StatusBase {
     public static double elbowRadiansToSensorUnits(double _radians) { return _radians * kElbowEncoderUnitsPerRad; }
     public static double elbowSensorUnitsToRadians(double _units) { return _units / kElbowEncoderUnitsPerRad; }
     
-    private boolean elbowFalconCalibrated = false;
-    public boolean getElbowFalconCalibrated() { return elbowFalconCalibrated; }
-    public ArmStatus setElbowFalconCalibrated(boolean elbowFalconCalibrated) { this.elbowFalconCalibrated = elbowFalconCalibrated; return this; }
+    private boolean     elbowFalconCalibrated = false;
+    public boolean      getElbowFalconCalibrated() { return elbowFalconCalibrated; }
+    protected ArmStatus setElbowFalconCalibrated(boolean elbowFalconCalibrated) { this.elbowFalconCalibrated = elbowFalconCalibrated; return this; }
 
-    private double elbowFalconSensorPosition;
-    public double getElbowFalconSensorPosition() { return elbowFalconSensorPosition; }
+    private double      elbowFalconSensorPosition;
+    public double       getElbowFalconSensorPosition() { return elbowFalconSensorPosition; }
     protected ArmStatus setElbowFalconSensorPosition(double _units) {elbowFalconSensorPosition = _units; return this; }
 
-    private double elbowCalibAngleRad;
-    public double getElbowCalibAngleRad() {return elbowCalibAngleRad;}
+    private double      elbowCalibAngleRad;
+    public double       getElbowCalibAngleRad() {return elbowCalibAngleRad;}
     protected ArmStatus setElbowCalibAngleRad(double elbowCalibAngleRad) {this.elbowCalibAngleRad = elbowCalibAngleRad; return this;}
 
-    private double elbowMinAngleRad;
-    public double getElbowMinAngleRad() { return elbowMinAngleRad;}
+    private double      elbowMinAngleRad;
+    public double       getElbowMinAngleRad() { return elbowMinAngleRad;}
     protected ArmStatus setElbowMinAngleRad(double elbowMinAngleRad) {this.elbowMinAngleRad = elbowMinAngleRad; return this;}
     
-    private double elbowMaxAngleRad;
-    public double getElbowMaxAngleRad() {return elbowMaxAngleRad; }
+    private double      elbowMaxAngleRad;
+    public double       getElbowMaxAngleRad() {return elbowMaxAngleRad; }
     protected ArmStatus setElbowMaxAngleRad(double elbowMaxAngleRad) {this.elbowMaxAngleRad = elbowMaxAngleRad; return this;}
 
     // main function to get elbow angle
-    private boolean useElbowFalconForAngle = true;
-    public double getElbowAngleRad() { return useElbowFalconForAngle ? elbowSensorUnitsToRadians(getElbowFalconSensorPosition()) : Units.degreesToRadians(getElbowPotEncStatus().positionDeg); } 
+    private boolean useElbowFalconForAngle = false;
+    public double   getElbowAngleRad() { return useElbowFalconForAngle ? elbowSensorUnitsToRadians(getElbowFalconSensorPosition()) : Units.degreesToRadians(getElbowPotEncStatus().positionDeg); } 
 
     private double      elbowPower;
     public double       getElbowPower()                       {return elbowPower;}
     public double       getElbowVoltage()                     {return elbowPower * 12;}
     protected ArmStatus setElbowPower(double elbowPower)      {this.elbowPower = elbowMotorSoftLimit(elbowPower); return this;}
-    protected ArmStatus setElbowVoltage(double elbowVoltage)  {this.elbowPower = elbowMotorSoftLimit(elbowPower) / 12; return this;}
+    protected ArmStatus setElbowVoltage(double elbowVoltage)  {this.elbowPower = elbowMotorSoftLimit(elbowVoltage / 12); return this;}
 
     public double elbowMotorSoftLimit(double _power) {
         double power = _power;

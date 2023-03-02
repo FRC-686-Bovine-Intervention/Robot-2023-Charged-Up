@@ -129,7 +129,7 @@ public class ArmHAL {
             shoulderMotor.setNeutralMode(NeutralMode.Brake);
             shoulderMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, kArmCurrentLimit, kArmTriggerThresholdCurrent, kArmTriggerThresholdTime));
             shoulderMotor.configVoltageCompSaturation(kArmMotorFullVoltage);
-            shoulderMotor.enableVoltageCompensation(true);
+            shoulderMotor.enableVoltageCompensation(false);
         }  
 
         if(elbowMotor != null)

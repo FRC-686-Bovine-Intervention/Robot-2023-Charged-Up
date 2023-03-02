@@ -220,14 +220,14 @@ public class ArmLoop extends LoopBase {
     // call this every update cycle
     public void checkArmCalibration() {
         ArmStatus status = ArmStatus.getInstance();
-        if (status.getShoulderFalconCalibrated() && (status.getShoulderPotEncStatus().calibrated)) {
+        if (!status.getShoulderFalconCalibrated() && (status.getShoulderPotEncStatus().calibrated)) {
             double shoulderAngleRad = Units.degreesToRadians(status.getShoulderPotEncStatus().positionDeg);
             status.setShoulderCalibAngleRad(shoulderAngleRad);
             status.setShoulderMinAngleRad(shoulderMinAngleRad);
             status.setShoulderMaxAngleRad(shoulderMaxAngleRad);
             status.setShoulderFalconCalibrated(true);            
         }
-        if (status.getElbowFalconCalibrated() && status.getElbowPotEncStatus().calibrated) {
+        if (!status.getElbowFalconCalibrated() && status.getElbowPotEncStatus().calibrated) {
             double elbowAngleRad = Units.degreesToRadians(status.getElbowPotEncStatus().positionDeg);
             status.setElbowCalibAngleRad(elbowAngleRad);
             status.setElbowMinAngleRad(elbowMinAngleRad);
