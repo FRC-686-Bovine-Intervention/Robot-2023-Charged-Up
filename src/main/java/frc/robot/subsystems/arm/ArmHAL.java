@@ -4,11 +4,8 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.RobotBase;
-
 import frc.robot.Constants;
-
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
 
 public class ArmHAL {
@@ -17,8 +14,6 @@ public class ArmHAL {
     public static ArmHAL getInstance() {if(instance == null){instance = new ArmHAL();}return instance;}
 
     private final TalonSRX turretMotor;
-
-    public static final Translation3d robotToTurret = new Translation3d();
 
     private static final double kEncoderUnitsToDegrees = 360.0 / 4096.0;
     private static final double kTurretGearRatio = 1; // Gear ratio is 1:1 because of worm gear

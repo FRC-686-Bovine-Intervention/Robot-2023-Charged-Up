@@ -16,6 +16,7 @@ import frc.robot.subsystems.drive.DriveStatus;
 import frc.robot.subsystems.driverAssist.DriverAssistStatus.DriverAssistState;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.odometry.OdometryStatus;
+import frc.robot.subsystems.vision.VisionStatus;
 
 public class DriverAssistLoop extends LoopBase {
     private static DriverAssistLoop instance;
@@ -24,6 +25,8 @@ public class DriverAssistLoop extends LoopBase {
     private final Drive drive = Drive.getInstance();
     private final DriveStatus driveStatus = DriveStatus.getInstance();
     private final DriverAssistStatus status = DriverAssistStatus.getInstance();
+
+    private final VisionStatus visionStatus = VisionStatus.getInstance();
 
     private static final double kForwardPitchThreshold  = 10;
     private static final double kBackwardPitchThreshold = -10;
@@ -107,6 +110,26 @@ public class DriverAssistLoop extends LoopBase {
 
                 // TODO: actually set drive command
                 status.setDriveCommand(DriveCommand.COAST());
+            break;
+
+            case AutoIntake:
+                if(!visionStatus.getConeExists() && !visionStatus.getCubeExists()){
+                    break;
+                }
+                double xOff;
+                if(!visionStatus.getCubeExists() || (visionStatus.getConeExists() && (visionStatus.getLatestConeYAngle() < visionStatus.getLatestCubeYAngle()))){
+                    xOff = visionStatus.getLatestConeXAngle();
+                } else {
+                    xOff = visionStatus.getLatestCubeXAngle();
+                }
+
+                double threshold = 5;
+                double speed = 1;
+                double kp = 0.1;
+                if(xOff > threshold){
+                    status.setDriveCommand(new DriveCommand(new WheelSpeeds(speed + xOff * kp, speed - xOff * kp)));
+                }
+
             break;
         }
         // Don't override drive command if disabled

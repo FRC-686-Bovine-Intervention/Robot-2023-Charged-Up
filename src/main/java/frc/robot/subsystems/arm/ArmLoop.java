@@ -9,7 +9,6 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeCommand;
 import frc.robot.subsystems.intake.IntakeStatus;
 import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
-import frc.robot.subsystems.vision.VisionStatus.LimelightPipeline;
 
 public class ArmLoop extends LoopBase {
     private static ArmLoop instance;

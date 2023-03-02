@@ -3,8 +3,9 @@ package frc.robot.subsystems.arm;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -45,9 +46,11 @@ public class ArmStatus extends StatusBase {
     public double       getTargetTurretAngle()              {return targetTurretAngle;}
     protected ArmStatus setTargetTurretAngle(double angle)  {targetTurretAngle = angle; return this;}
 
-    private Pose3d      turretPose;
-    public Pose3d       getTurretPose()                     {return turretPose;};
-    protected ArmStatus setTurretPose(Pose3d pose)          {turretPose = pose; return this;};
+    private static final Translation3d robotToTurretTranslation = new Translation3d(); //TODO
+
+    public Transform3d  getRobotToTurret(){
+        return new Transform3d(robotToTurretTranslation, new Rotation3d(0, 0, getTurretPosition()));
+    };
 
     private double      turretPower;
     public double       getTurretPower()                    {return turretPower;}
@@ -73,7 +76,6 @@ public class ArmStatus extends StatusBase {
     public void updateInputs() {
         setCommand(arm.getCommand());
         setTurretPosition(HAL.getTurretRelative());
-        setTurretPose(new Pose3d(ArmHAL.robotToTurret, new Rotation3d(0, 0, getTurretPosition())));
         setShoulderReading(HAL.getShoulderPotEncoder().getReading());
     }
 

@@ -14,7 +14,8 @@ public class DriverAssistStatus extends StatusBase {
     public enum DriverAssistState {
         Disabled,
         AutoBalance,
-        AutoDrive
+        AutoDrive, 
+        AutoIntake,
     }
 
     private DriverAssistStatus() {Subsystem = DriverAssist.getInstance();}
