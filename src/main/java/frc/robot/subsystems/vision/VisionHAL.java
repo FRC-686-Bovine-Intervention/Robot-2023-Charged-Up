@@ -94,6 +94,7 @@ public class VisionHAL {
     public boolean getTargetExists() {return LimelightHelpers.getTV(kLimelightName);}
     public double getTargetXAngle() {return LimelightHelpers.getTX(kLimelightName);}
     public double getTargetYAngle() {return LimelightHelpers.getTY(kLimelightName);}
+    public double getCurrentArea() {return LimelightHelpers.getTA(kLimelightName);}
     public int getCurrentPipeline() {return (int)LimelightHelpers.getCurrentPipelineIndex(kLimelightName);}
     public VisionHAL setPipeline(int pipelineIndex) {LimelightHelpers.setPipelineIndex(kLimelightName, pipelineIndex); return this;}
 }

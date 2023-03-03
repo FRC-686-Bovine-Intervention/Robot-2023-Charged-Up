@@ -95,6 +95,12 @@ public class ArmStatus extends StatusBase {
     public double       getTargetTurretAngle()              {return targetTurretAngle;}
     protected ArmStatus setTargetTurretAngle(double angle)  {targetTurretAngle = angle; return this;}
 
+    private static final Translation3d robotToTurretTranslation = new Translation3d(); //TODO
+
+    public Transform3d  getRobotToTurret(){
+        return new Transform3d(robotToTurretTranslation, new Rotation3d(0, 0, getTurretPosition()));
+    };
+
     private double      turretPower;
     public double       getTurretPower()                    {return turretPower;}
     protected ArmStatus setTurretPower(double turretPower)  {this.turretPower = turretPower; return this;}
