@@ -70,9 +70,10 @@ public class AutoManagerStatus extends StatusBase {
     public boolean getAutoRunning() {return autoRunning;}
     public AutoManagerStatus setAutoRunning(boolean autoRunning) {this.autoRunning = autoRunning; return this;}
 
-    private int actionIndex;
+    private int actionIndex = -1;
     public int getActionIndex() {return actionIndex;}
     public AutoManagerStatus setActionIndex(int actionIndex) {this.actionIndex = actionIndex; return this;}
+    public AutoManagerStatus incrementActionIndex(int increment) {this.actionIndex += increment; return this;}
 
     private Trajectory actionTrajectory;
     public Trajectory getActionTrajectory() {return actionTrajectory;}

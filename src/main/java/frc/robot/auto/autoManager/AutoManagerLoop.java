@@ -12,51 +12,36 @@ public class AutoManagerLoop extends LoopBase {
 
     private final AutoManagerStatus status = AutoManagerStatus.getInstance();
 
-    private AutoManagerLoop() {Subsystem = AutoManager.getInstance();}
+    private final Timer autoTimer = new Timer();
 
-    private int actionIndex = -1;
-    private int prevActionIndex = -1;
-    private double startTime = 0;
+    private AutoManagerLoop() {Subsystem = AutoManager.getInstance();}
 
     @Override
     protected void Enabled() {
         if(!DriverStation.isAutonomous())
             return;
-        if(status.EnabledState.IsInitState)
-        {
+        if(status.EnabledState.IsInitState) {
             status.setAutoRunning(true);
-            actionIndex = -1;
-            startTime = Timer.getFPGATimestamp();
+            status.setActionIndex(-1);
+            autoTimer.start();
         }
-        if(actionIndex < 0)
-        {
-            if(Timer.getFPGATimestamp() - startTime >= status.getInitialDelay())
-            {
-                actionIndex = 0;
-            }
-        }
-        else
-        {
+        if(status.getActionIndex() < 0) {
+            if(autoTimer.hasElapsed(status.getInitialDelay()))
+                status.setActionIndex(0);
+        } else {
             if(!status.getAutoRunning())
                 return;
-            Action action = status.getAutomode().actionList.get(actionIndex);
+            Action action = status.getAutomode().actionList.get(status.getActionIndex());
             status.setActionTrajectory(action.getClass() == RamseteFollowerAction.class ? ((RamseteFollowerAction)action).controller.getTrajectory() : null);
-            if(actionIndex != prevActionIndex)
-                action.start();
-            action.run();
-            prevActionIndex = actionIndex;
-            if(action.isFinished())
-            {
-                action.done();
-                actionIndex++;
+            action.onLoop();
+            if(action.getEvaluatedDone()) {
+                status.incrementActionIndex(1);
             }
-            if(actionIndex >= status.getAutomode().actionList.size())
-            {
+            if(status.getActionIndex() >= status.getAutomode().actionList.size()) {
                 status.setAutoRunning(false);
                 System.out.println(status.getSelectedAutoMode().autoName + " finished");
             }
         }
-        status.setActionIndex(actionIndex);
     }
     @Override
     protected void Disabled() {
