@@ -12,7 +12,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import frc.robot.AdvantageUtil;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
+import frc.robot.subsystems.arm.ArmPose.Preset;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class ArmStatus extends StatusBase {
@@ -137,7 +139,7 @@ public class ArmStatus extends StatusBase {
 
     private boolean         internalDisable = false;
     public boolean          getInternalDisable()                        {return internalDisable;}
-    protected ArmStatus     setInternalDisable(boolean internalDisable) {/*this.internalDisable = internalDisable;*/ return this;}
+    protected ArmStatus     setInternalDisable(boolean internalDisable) {/* this.internalDisable = internalDisable; */ return this;}
 
     private double          xThrottle;
     public double           getXThrottle()                  {return xThrottle;}
@@ -368,17 +370,17 @@ public class ArmStatus extends StatusBase {
         // Arm
         logger.recordOutput(prefix + "Arm/Target Pose",             targetArmPose != null ? targetArmPose.name() : "null");
         logger.recordOutput(prefix + "Arm/Current Pose",            currentArmPose != null ? currentArmPose.name() : "null");
-        logger.recordOutput(prefix + "Arm/Internal Disable",        internalDisable);
         logger.recordOutput(prefix + "Arm/Target Node",             targetNode != null ? targetNode.name() : "null");
         logger.recordOutput(prefix + "Arm/Adjustments/Throttle/X",  xThrottle);
         logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Z",  zThrottle);
         logger.recordOutput(prefix + "Arm/Adjustments/X",           xAdjustment);
         logger.recordOutput(prefix + "Arm/Adjustments/Z",           zAdjustment);
-        // logger.recordOutput(prefix + "Arm/Current Trajectory", currentArmTrajectory != null ? currentArmTrajectory.name() : "null");
-        // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Current Traj State/Theta1/", getCurrentTrajState().extractRowVector(0));
-        // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Current Traj State/Theta2/", getCurrentTrajState().extractRowVector(1));
-        // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Setpoint Traj State/Theta1/", getSetpointTrajState().extractRowVector(0));
-        // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Setpoint Traj State/Theta2/", getSetpointTrajState().extractRowVector(1));
+        logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable",     internalDisable);
+        logger.recordOutput(prefix + "Arm/Trajectory/Current Trajectory",   currentArmTrajectory != null ? "Start pose: " + currentArmTrajectory.getStartString() + " Final pose: " + currentArmTrajectory.getFinalString() : "null");
+        AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta1", getCurrentTrajState().extractRowVector(0));
+        AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta2", getCurrentTrajState().extractRowVector(1));
+        AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Setpoint State/Theta1", getSetpointTrajState().extractRowVector(0));
+        AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Setpoint State/Theta2", getSetpointTrajState().extractRowVector(1));
 
         // Shoulder
         if (getShoulderFalconCalibrated() && oneShotShoulderCalibrationEnabled) {

@@ -126,7 +126,7 @@ public class DriverInteractionLoop extends LoopBase {
                 if(DriverControlButtons.Substation.getRisingEdge())
                     armCommand.setArmState(ArmState.SubstationExtend);
                 if(DriverControlButtons.Trigger.getRisingEdge())
-                    armCommand.setArmState(ArmState.IdentifyPiece);
+                    armCommand.setArmState(ArmState.Align);
             break;
 
             case IdentifyPiece:
@@ -144,11 +144,17 @@ public class DriverInteractionLoop extends LoopBase {
                     armCommand.setArmState(ArmState.Align);
             break;
             
+            case Align:
+                if(armCommand.getTargetNode() != null)
+                    armCommand.setArmState(ArmState.Extend);
+            break;
+
             case Adjust:
                 if(DriverControlButtons.Trigger.getRisingEdge())
                     armCommand.setArmState(ArmState.Release);
-            case Align:
-                if(armCommand.getTargetNode() != null)
+                if(armCommand.getTargetNode() == armStatus.getTargetNode())
+                    armCommand.setArmState(ArmState.Defense);
+                else if(armCommand.getTargetNode() != null)
                     armCommand.setArmState(ArmState.Extend);
             break;
             
