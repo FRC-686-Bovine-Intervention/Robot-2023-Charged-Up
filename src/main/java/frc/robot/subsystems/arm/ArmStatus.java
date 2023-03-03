@@ -6,6 +6,8 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -14,6 +16,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
 import frc.robot.subsystems.framework.StatusBase;
+import frc.robot.subsystems.odometry.Odometry;
+import frc.robot.subsystems.odometry.OdometryStatus;
 
 public class ArmStatus extends StatusBase {
     private static ArmStatus instance;
@@ -100,6 +104,11 @@ public class ArmStatus extends StatusBase {
     public Transform3d  getRobotToTurret(){
         return new Transform3d(robotToTurretTranslation, new Rotation3d(0, 0, getTurretPosition()));
     };
+
+    public Pose3d getTurretToField() {
+        return new Pose3d(OdometryStatus.getInstance().getRobotPose())
+                            .transformBy(getRobotToTurret());
+    } 
 
     private double      turretPower;
     public double       getTurretPower()                    {return turretPower;}

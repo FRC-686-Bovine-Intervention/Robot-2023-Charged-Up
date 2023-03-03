@@ -12,7 +12,9 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -24,6 +26,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.Constants;
+import frc.robot.FieldDimensions;
 import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.arm.json.ArmConfigJson;
 import frc.robot.subsystems.arm.json.ArmPathsJson;
@@ -33,6 +36,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeCommand;
 import frc.robot.subsystems.intake.IntakeStatus;
 import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
+import frc.robot.subsystems.odometry.OdometryStatus;
 
 public class ArmLoop extends LoopBase {
     private static ArmLoop instance;
@@ -116,10 +120,8 @@ public class ArmLoop extends LoopBase {
     private final double zMinSetpoint = Units.inchesToMeters( 0.0);
     private final double zMaxSetpoint = Units.inchesToMeters(72.0); 
 
-    private final double xAdjustmentMaxRangeInches = 12.0;
-    private final double zAdjustmentMaxRangeInches = 12.0;
-    private final double xAdjustmentMaxRange = Units.inchesToMeters(xAdjustmentMaxRangeInches);
-    private final double zAdjustmentMaxRange = Units.inchesToMeters(zAdjustmentMaxRangeInches);
+    private final double manualMaxAdjustmentRangeInches = 12.0;
+    private final double manualMaxAdjustmentRange = Units.inchesToMeters(manualMaxAdjustmentRangeInches);
 
     private final double manualMaxSpeedInchesPerSec = 6.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
     private final double manualMaxSpeedMetersPerSec = Units.inchesToMeters(manualMaxSpeedInchesPerSec);
@@ -394,7 +396,7 @@ public class ArmLoop extends LoopBase {
         }
 
         if(status.getCurrentArmPose() != null && status.getTargetArmPose() != status.getCurrentArmPose())
-            startTrajectory(status.getCurrentArmPose(), status.getTargetArmPose());
+            startTrajectory(status.getCurrentArmPose(), status.getTargetArmPose(), status.getTargetNode(), status.getTurretToField());
 
 
     }
@@ -402,29 +404,51 @@ public class ArmLoop extends LoopBase {
 
 
 
-    public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos) {
+    public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos, ArmStatus.NodeEnum targetNode, Pose3d turretPose) {
+        // get current arm positions
+        double startShoulderAngleRad = status.getShoulderAngleRad();
+        double startElbowAngleRad = status.getElbowAngleRad();
+
         // get pre-planned trajectory
         ArmTrajectory baseTrajectory = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
 
-        // get current arm positions
-        double shoulderAngleRad = Units.degreesToRadians(status.getShoulderPotEncStatus().positionDeg);
-        double elbowAngleRad = Units.degreesToRadians(status.getElbowPotEncStatus().positionDeg);
+        // find closest node
+        var nodeTranslation = getClosestNodeTranslation(targetNode, turretPose);
 
-        // throw error if selected trajectory is no where near the current position
-        if (!baseTrajectory.startIsNear(shoulderAngleRad, elbowAngleRad, internalDisableMaxError)) {
-            status.setInternalDisable(true);
-            status.setCurrentArmTrajectory(null);
-            return;
+        // calculate turret angle to target
+        Translation3d turretToTarget = nodeTranslation.minus(turretPose.getTranslation());
+        double targetAngle = Math.atan2(turretToTarget.getY(), turretToTarget.getX());
+        double robotAngle = OdometryStatus.getInstance().getRobotPose().getRotation().getRadians();
+        double turretAngleToTarget = targetAngle - robotAngle;
+
+        // extend the distance of the base trajectory
+        double finalShoulderAngleRad = finalPos.getShoulderAngleRad();
+        double finalElbowAngleRad = finalPos.getElbowAngleRad();
+
+        // calculate turret distance
+        double dist = Math.sqrt(nodeTranslation.getX()*nodeTranslation.getX() + nodeTranslation.getY()*nodeTranslation.getY());
+        double x = dist;
+        double z = finalPos.getZ();
+        Optional<Vector<N2>> theta = kinematics.inverse(new Translation2d(x,z));
+        if (theta.isPresent()) {
+            finalShoulderAngleRad = theta.get().get(0,0);
+            finalElbowAngleRad = theta.get().get(1,0);
         }
 
+        
         // any errors in the starting position (in particular due to manual XZ adjustments)
         // will be linearly intepolated into the trajectory
         // to smoothly remove these adjustments without needing a separate path
         status.setCurrentArmTrajectory(baseTrajectory);
-        status.getCurrentArmTrajectory().interpolateEndPoints(Double.valueOf(shoulderAngleRad), Double.valueOf(elbowAngleRad), null, null);
+        status.getCurrentArmTrajectory().interpolateEndPoints(startShoulderAngleRad, startElbowAngleRad, finalShoulderAngleRad, finalElbowAngleRad);
+
+        // set turret target angle
+        status.setTargetTurretAngle(turretAngleToTarget);
 
         trajectoryTimer.reset();
     }
+
+
 
     public void runTrajectory() {
 
@@ -483,8 +507,8 @@ public class ArmLoop extends LoopBase {
                       .incrementZAdjustment(status.getZThrottle() * manualMaxSpeedMetersPerSec * Constants.loopPeriodSecs);
 
                 // clamp manual adjustments
-                status.setXAdjustment(MathUtil.clamp(status.getXAdjustment(), -xAdjustmentMaxRange, +xAdjustmentMaxRange))
-                      .setZAdjustment(MathUtil.clamp(status.getZAdjustment(), -xAdjustmentMaxRange, +xAdjustmentMaxRange));
+                status.setXAdjustment(MathUtil.clamp(status.getXAdjustment(), -manualMaxAdjustmentRange, +manualMaxAdjustmentRange))
+                      .setZAdjustment(MathUtil.clamp(status.getZAdjustment(), -manualMaxAdjustmentRange, +manualMaxAdjustmentRange));
 
                 // verify frame perimeter
                 double xSetpoint = MathUtil.clamp(xFinalTrajectory + status.getXAdjustment(), xMinSetpoint, xMaxSetpoint);
@@ -554,6 +578,41 @@ public class ArmLoop extends LoopBase {
         // yAdjustmentInches += yThrottle * manualMaxSpeedDegreesPerSec * Constants.loopPeriodSecs;
     }    
 
+
+
+    
+
+    public Translation3d getClosestNodeTranslation(ArmStatus.NodeEnum _targetNode, Pose3d turretPose) {
+        // target node selects which node in a 3x3 grid
+        // this function finds the closest node out of the 3 possible choices
+
+        int startingRow = _targetNode.xPos;
+
+        double minDist = Double.MAX_VALUE;
+        Translation3d nodeTranslation = new Translation3d();   
+        Translation3d bestTranslation = null;
+
+        for (int row = startingRow; row < FieldDimensions.Grids.nodeRowCount; row+=3) {
+            switch (_targetNode.yPos) {
+                case 0:
+                    nodeTranslation = FieldDimensions.Grids.complexLow3dTranslations[row];
+                case 1:
+                    nodeTranslation = FieldDimensions.Grids.mid3dTranslations[row];
+                case 2:
+                    nodeTranslation = FieldDimensions.Grids.high3dTranslations[row];
+                default:
+                    nodeTranslation = new Translation3d();
+            }
+
+            double dist = nodeTranslation.getDistance(turretPose.getTranslation());
+            if (dist < minDist) {
+                minDist = dist;
+                bestTranslation = nodeTranslation;
+            }
+        }
+
+        return bestTranslation;
+    }
 
 
 
