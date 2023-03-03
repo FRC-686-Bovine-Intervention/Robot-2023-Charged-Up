@@ -6,6 +6,8 @@ import java.util.stream.LongStream;
 
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -89,9 +91,14 @@ public class VisionStatus extends StatusBase {
     protected double        getTargetYAngle()                       {return targetYAngle;}
     private VisionStatus    setTargetYAngle(double targetYAngle)    {this.targetYAngle = targetYAngle; return this;}
 
+    private double          currentArea;
+    protected double        getCurrentArea()                       {return currentArea;}
+    private VisionStatus    setCurrentArea(double currentArea)    {this.currentArea = currentArea; return this;}
+
     private boolean         targetExists;
     protected boolean       getTargetExists()                       {return targetExists;}
     private VisionStatus    setTargetExists(boolean targetExists)   {this.targetExists = targetExists; return this;}
+
 
     private double          latestConeXAngle;
     public double           getLatestConeXAngle()                           {return latestConeXAngle;}
@@ -101,6 +108,15 @@ public class VisionStatus extends StatusBase {
     public double           getLatestConeYAngle()                           {return latestConeYAngle;}
     protected VisionStatus  setLatestConeYAngle(double latestConeYAngle)    {this.latestConeYAngle = latestConeYAngle; return this;}
 
+    private double          latestConeArea;
+    public double           getLatestConeArea()                             {return latestConeArea;}
+    protected VisionStatus  setLatestConeArea(double latestConeArea)        {this.latestConeArea = latestConeArea; return this;}
+
+    private boolean          coneExists;
+    public boolean           getConeExists()                             {return coneExists;}
+    protected VisionStatus   setConeExists(Boolean coneExists)        {this.coneExists = coneExists; return this;}
+
+
     private double          latestCubeXAngle;
     public double           getLatestCubeXAngle()                           {return latestCubeXAngle;}
     protected VisionStatus  setLatestCubeXAngle(double latestCubeXAngle)    {this.latestCubeXAngle = latestCubeXAngle; return this;}
@@ -109,6 +125,14 @@ public class VisionStatus extends StatusBase {
     public double           getLatestCubeYAngle()                           {return latestCubeYAngle;}
     protected VisionStatus  setLatestCubeYAngle(double latestCubeYAngle)    {this.latestCubeYAngle = latestCubeYAngle; return this;}
 
+    private double          latestCubeArea;
+    public double           getLatestCubeArea()                             {return latestCubeArea;}
+    protected VisionStatus  setLatestCubeArea(double latestCubeArea)        {this.latestCubeArea = latestCubeArea; return this;}
+
+    private boolean          cubeExists;
+    public boolean           getCubeExists()                             {return cubeExists;}
+    protected VisionStatus   setCubeExists(Boolean cubeExists)        {this.cubeExists = cubeExists; return this;}
+
     @Override
     protected void updateInputs() {
         setCommand(vision.getVisionCommand());
@@ -116,6 +140,7 @@ public class VisionStatus extends StatusBase {
         setCurrentPipeline(LimelightPipeline.getFromIndex(HAL.getCurrentPipeline()));
         setTargetXAngle(HAL.getTargetXAngle());
         setTargetYAngle(HAL.getTargetYAngle());
+        setCurrentArea(HAL.getCurrentArea());
         setTargetExists(HAL.getTargetExists());
     }
 
@@ -143,6 +168,7 @@ public class VisionStatus extends StatusBase {
         table.put("Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null");
         table.put("Limelight/Target X Angle (Deg)", targetXAngle);
         table.put("Limelight/Target Y Angle (Deg)", targetYAngle);
+        table.put("Limelight/Current Area (Deg)", currentArea);
         table.put("Limelight/Target Exists", targetExists);
     }
 
@@ -152,6 +178,7 @@ public class VisionStatus extends StatusBase {
         setCurrentPipeline(LimelightPipeline.getFromName(table.getString("Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null")));
         setTargetXAngle(table.getDouble("Limelight/Target X Angle (Deg)", targetXAngle));
         setTargetYAngle(table.getDouble("Limelight/Target Y Angle (Deg)", targetYAngle));
+        setTargetYAngle(table.getDouble("Limelight/Current Area (Deg)", targetYAngle));
         setTargetExists(table.getBoolean("Limelight/Target Exists", targetExists));
     }
 
@@ -162,8 +189,11 @@ public class VisionStatus extends StatusBase {
         logger.recordOutput(prefix + "Limelight/Target Pipeline", getTargetPipeline().name());
         logger.recordOutput(prefix + "Limelight/Latest Cone X Angle (Deg)", getLatestConeXAngle());
         logger.recordOutput(prefix + "Limelight/Latest Cone Y Angle (Deg)", getLatestConeYAngle());
+        logger.recordOutput(prefix + "Limelight/Latest Cone Area (Deg)",    getLatestConeArea());
         logger.recordOutput(prefix + "Limelight/Latest Cube X Angle (Deg)", getLatestCubeXAngle());
         logger.recordOutput(prefix + "Limelight/Latest Cube Y Angle (Deg)", getLatestCubeYAngle());
+        logger.recordOutput(prefix + "Limelight/Latest Cube Area (Deg)",    getLatestCubeArea());
+
     }
 
     @Override protected void processTable() {}

@@ -1,6 +1,8 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.Timer;
+import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.vision.VisionStatus.LimelightPipeline;
 
@@ -9,6 +11,8 @@ public class VisionLoop extends LoopBase {
     public static VisionLoop getInstance(){if(instance == null){instance = new VisionLoop();}return instance;}
 
     private final VisionStatus status = VisionStatus.getInstance();
+
+    private final ArmStatus armStatus = ArmStatus.getInstance();
 
     private static final double kPipelineToggleDelay = 2;
 
@@ -49,16 +53,26 @@ public class VisionLoop extends LoopBase {
                 case Cone:
                     status.setLatestConeXAngle(status.getTargetXAngle());
                     status.setLatestConeYAngle(status.getTargetYAngle());
+                    status.setLatestConeArea(status.getCurrentArea());
+                    status.setConeExists(status.getTargetExists());
                     break;
                     
                 case Cube:
                     status.setLatestCubeXAngle(status.getTargetXAngle());
                     status.setLatestCubeYAngle(status.getTargetYAngle());
+                    status.setLatestCubeArea(status.getCurrentArea());
+                    status.setCubeExists(status.getTargetExists());
                 break;
     
                 default: break;
             }
         }
+
+        Transform3d turretToCamera1 = new Transform3d();
+        status.setRobotToCamera1(armStatus.getRobotToTurret().plus(turretToCamera1));
+
+        Transform3d turretToCamera2 = new Transform3d();
+        status.setRobotToCamera2(armStatus.getRobotToTurret().plus(turretToCamera2));
     }
 
     @Override public void Enabled() {}
