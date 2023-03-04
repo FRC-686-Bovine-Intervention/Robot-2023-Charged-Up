@@ -141,5 +141,12 @@ public class ArmTrajectoryTest {
         assertEquals(final_theta1_actual, state.get(1,0), kEps);
         assertEquals(0.0, state.get(1,1), kEps);        
 
-    }        
+    } 
+    
+    
+    @Test
+    void startTrajectoryTest() {
+        
+    }
+
 }
