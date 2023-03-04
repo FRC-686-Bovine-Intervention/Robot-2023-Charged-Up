@@ -333,14 +333,14 @@ public class ArmLoop extends LoopBase {
             break;
 
             case Defense:
-                status.setTargetTurretAngle(0);
+                status.setTargetTurretAngleDeg(0);
                 status.setTargetArmPose(ArmPose.Preset.DEFENSE);
                 if(intakeStatus.getIntakeState() == IntakeState.Hold)
                     status.setArmState(ArmState.IdentifyPiece);
             break;
 
             case IdentifyPiece:
-                status.setTargetTurretAngle(0);
+                status.setTargetTurretAngleDeg(0);
                 status.setTargetArmPose(ArmPose.Preset.DEFENSE);
                 // Check for piece in intake bounding box
             break;
@@ -374,7 +374,7 @@ public class ArmLoop extends LoopBase {
             case Align:
                 status.setTargetArmPose(ArmPose.Preset.DEFENSE);
                 // Align turret to alliance wall
-                status.setTargetTurretAngle((DriverStation.getAlliance() == Alliance.Red ? 0 : 180) - OdometryStatus.getInstance().getRobotPose().getRotation().getDegrees());
+                status.setTargetTurretAngleDeg((DriverStation.getAlliance() == Alliance.Red ? 0 : 180) - OdometryStatus.getInstance().getRobotPose().getRotation().getDegrees());
                 // Check if robot is in not in community, if so jump to Hold
                 // Check if driver has selected node, if so jump to Extend
             break;
@@ -419,8 +419,8 @@ public class ArmLoop extends LoopBase {
 
     private boolean largeTurretError = false;
     private void runTurret() {
-        turretPID.setGoal(status.getTargetTurretAngle());
-        if(status.getTargetTurretAngle() - status.getTurretAngleDeg() >= kTurretPIDMaxError) {
+        turretPID.setGoal(status.getTargetTurretAngleDeg());
+        if(status.getTargetTurretAngleDeg() - status.getTurretAngleDeg() >= kTurretPIDMaxError) {
             if(!largeTurretError) {
                 turretPID.reset(status.getTurretAngleDeg());
             }
@@ -470,7 +470,7 @@ public class ArmLoop extends LoopBase {
         status.getCurrentArmTrajectory().interpolateEndPoints(startShoulderAngleRad, startElbowAngleRad, finalShoulderAngleRad, finalElbowAngleRad);
 
         // set turret target angle
-        status.setTargetTurretAngle(turretAngleToTarget);
+        status.setTargetTurretAngleDeg(turretAngleToTarget);
 
         trajectoryTimer.reset();
     }
