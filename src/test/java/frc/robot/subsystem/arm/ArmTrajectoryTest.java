@@ -3,20 +3,32 @@ package frc.robot.subsystem.arm;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Filesystem;
+import frc.robot.subsystems.arm.ArmLoop;
 import frc.robot.subsystems.arm.ArmPose;
 import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.arm.ArmTrajectory;
+import frc.robot.subsystems.arm.json.ArmPathsJson;
 
 public class ArmTrajectoryTest {
     
@@ -148,17 +160,58 @@ public class ArmTrajectoryTest {
     
     
     @Test
-    void startTrajectoryTest() {
+    void TestStartTrajectory() {
+
+        ArmTest.setDeployDirectoryDuringTest();
+        ArmStatus status = mock(ArmStatus.class);
+        MockedStatic<ArmStatus> mockStatus = mockStatic(ArmStatus.class);
+        mockStatus.when(ArmStatus::getInstance).thenReturn(status);
+
+        ArmLoop loop = ArmLoop.getInstance();
+
+        ArmTrajectory[][] armTrajectories = new ArmTrajectory[ArmPose.Preset.values().length+1][ArmPose.Preset.values().length+1];
+        // Get paths from JSON
+        // also create trajectories for each path
+        for (ArmPose.Preset startPos : ArmPose.Preset.values()) {
+            for (ArmPose.Preset finalPos : ArmPose.Preset.values()) {
+                int startIdx = startPos.getFileIdx();
+                int finalIdx = finalPos.getFileIdx();
+
+                String pathFilename = String.format(ArmPathsJson.jsonFilename, startIdx, finalIdx);
+                
+                File pathFile = new File(Filesystem.getDeployDirectory(), pathFilename);
+                var path = ArmPathsJson.loadJson(pathFile);
+
+                // create trajectory for each path
+                List<Vector<N2>> points = new ArrayList<>();
+                for (int k=0; k<path.theta1().size(); k++) {
+                    points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
+                }
+
+                armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), points);
+            }
+        }
+
+        ArgumentCaptor<Double> turretCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<ArmTrajectory> trajCaptor = ArgumentCaptor.forClass(ArmTrajectory.class);;
+
+        // test
 
         ArmPose.Preset startPos = ArmPose.Preset.DEFENSE;
         ArmPose.Preset finalPos = ArmPose.Preset.SCORE_HIGH_CONE;
         ArmStatus.NodeEnum targetNode = ArmStatus.NodeEnum.TopLeft;
-        Pose3d turretPose = new Pose3d();
+        Pose3d turretPose = new Pose3d(new Translation3d(1.8,1.0, 0.0), new Rotation3d(0.0, 0.0, 0.0));
 
+        when(status.getShoulderAngleRad()).thenReturn(startPos.getShoulderAngleRad());
+        when(status.getElbowAngleRad()).thenReturn(startPos.getElbowAngleRad());
+        when(status.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]);       
+        ArmLoop.getInstance().startTrajectory(startPos, finalPos, targetNode, turretPose);
 
-        public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos, ArmStatus.NodeEnum targetNode, Pose3d turretPose) {
+        verify(status).setTargetTurretAngle(turretCaptor.capture());
+        double turretAngleToTarget = turretCaptor.getValue();
 
-
+        verify(status).setCurrentArmTrajectory(trajCaptor.capture());
+        ArmTrajectory currentArmTraj = trajCaptor.getValue();        
     }
 
 }

@@ -97,7 +97,7 @@ public class ArmStatus extends StatusBase {
 
     private double      targetTurretAngle;
     public double       getTargetTurretAngle()              {return targetTurretAngle;}
-    protected ArmStatus setTargetTurretAngle(double angle)  {targetTurretAngle = angle; return this;}
+    public ArmStatus    setTargetTurretAngle(double angle)  {targetTurretAngle = angle; return this;}
 
     private static final Translation3d robotToTurretTranslation = new Translation3d(); //TODO
 
@@ -140,7 +140,7 @@ public class ArmStatus extends StatusBase {
 
     private ArmTrajectory   currentArmTrajectory = null;
     public ArmTrajectory    getCurrentArmTrajectory()                                   {return currentArmTrajectory;}
-    protected ArmStatus     setCurrentArmTrajectory(ArmTrajectory currentArmTrajectory) {this.currentArmTrajectory = currentArmTrajectory; return this;}
+    public ArmStatus        setCurrentArmTrajectory(ArmTrajectory currentArmTrajectory) {this.currentArmTrajectory = currentArmTrajectory; return this;}
 
     private Matrix<N2,N3>   currentTrajState = new MatBuilder<>(Nat.N2(),Nat.N3()).fill(0,0,0,0,0,0);
     public Matrix<N2,N3>    getCurrentTrajState()                                   {return currentTrajState;}
