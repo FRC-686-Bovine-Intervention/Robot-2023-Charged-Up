@@ -23,12 +23,16 @@ public class ArmHAL {
 
     private static final boolean kClawSolenoidInverted = false;
 
-    private static final double kEncoderUnitsToDegrees = 360.0 / 4096.0;
+    private static final int kRelativePIDId = 0;
+    private static final int kAbsolutePIDId = 1;
+    private static final double kTurretEncoderUnitsToDegrees = 360.0 / 4096.0;
     private static final double kTurretGearRatio = 1; // Gear ratio is 1:1 because of worm gear
     private static final boolean kTurretMotorInverted = true;
     private static final boolean kTurretEncoderInverted = true;
-    private static final int kRelativePIDId = 0;
-    private static final int kAbsolutePIDId = 1;
+    private static final double kTurretEncoderZeroingCalib = 943;   // value read from encoder when turret is set to 0 degrees
+    private static final double kTurretSoftLimitDeg = 225;
+    private static final double kTurretSafeStartLimitDeg = 90;
+    
 
     public static final double kArmMotorFullVoltage = 10.0;  // voltage compensation     
 
@@ -102,12 +106,23 @@ public class ArmHAL {
 
         if (turretMotor != null) {
             turretMotor.configFactoryDefault();
-            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kRelativePIDId, 0);
-            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, kAbsolutePIDId, 0);
-            if(turretMotor.getSelectedSensorPosition(kRelativePIDId) == 0) // Reset relative to absolute only on power on
-                turretMotor.getSensorCollection().syncQuadratureWithPulseWidth(0, 0, true);
             turretMotor.setSensorPhase(kTurretEncoderInverted);
             turretMotor.setInverted(kTurretMotorInverted);
+            
+            // set quadrature encoder to absolute encoder value
+            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kRelativePIDId, 0);
+            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, kAbsolutePIDId, 0);
+            if (turretMotor.getSelectedSensorPosition(kRelativePIDId) == 0) // Reset relative to absolute only on power on
+                turretMotor.getSensorCollection().syncQuadratureWithPulseWidth(0, 0, true);
+
+            // enable turret soft limits
+            turretMotor.configForwardSoftLimitThreshold(+kTurretSoftLimitDeg / kTurretEncoderUnitsToDegrees);
+            turretMotor.configReverseSoftLimitThreshold(-kTurretSoftLimitDeg / kTurretEncoderUnitsToDegrees);
+            turretMotor.configForwardSoftLimitEnable(true);
+            turretMotor.configReverseSoftLimitEnable(true);
+            
+            // lockout turret if startup angle exceeds limit
+            ArmStatus.getInstance().setTurretLockout(Math.abs(turretMotor.getSelectedSensorPosition(kAbsolutePIDId) - kTurretEncoderZeroingCalib) > kTurretSafeStartLimitDeg/kTurretEncoderUnitsToDegrees);
         }
         
         shoulderPotAndEncoderConfig = new PotAndEncoder.Config(kShoulderPotentiometerGearRatio, kShoulderEncoderGearRatio, kShoulderPotentiometerNTurns, 
@@ -154,8 +169,7 @@ public class ArmHAL {
         return this;
     }
 
-    public double getTurretRelative()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kRelativePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0;}
-    public double getTurretAbsolute()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0;}
+    public double getTurretAngleDeg()   {return turretMotor != null ? (turretMotor.getSelectedSensorPosition(kRelativePIDId) - kTurretEncoderZeroingCalib) * kTurretGearRatio * kTurretEncoderUnitsToDegrees : 0;}
 
     // Arm
 

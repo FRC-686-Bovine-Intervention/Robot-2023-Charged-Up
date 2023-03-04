@@ -91,13 +91,13 @@ public class ArmStatus extends StatusBase {
     protected ArmStatus setTargetNode(NodeEnum targetNode)  {this.targetNode = targetNode; return this;}
 
     // Turret
-    private double      turretPosition; 
-    public double       getTurretAngleDeg() {return turretPosition;}
-    private ArmStatus   setTurretPosition(double turretPosition) {this.turretPosition = turretPosition; return this;}
+    private double      turretAngleDeg; 
+    public double       getTurretAngleDeg() {return turretAngleDeg;}
+    private ArmStatus   setTurretAngleDeg(double turretAngleDeg) {this.turretAngleDeg = turretAngleDeg; return this;}
 
-    private double      targetTurretAngle;
-    public double       getTargetTurretAngle()              {return targetTurretAngle;}
-    protected ArmStatus setTargetTurretAngle(double angle)  {targetTurretAngle = angle; return this;}
+    private double      targetTurretAngleDeg;
+    public double       getTargetTurretAngleDeg()              {return targetTurretAngleDeg;}
+    protected ArmStatus setTargetTurretAngleDeg(double angle)  {targetTurretAngleDeg = angle; return this;}
 
     private double      turretPower;
     public double       getTurretPower()                    {return turretPower;}
@@ -323,7 +323,7 @@ public class ArmStatus extends StatusBase {
     @Override
     public void updateInputs() {
         setCommand(arm.getCommand());
-        setTurretPosition(HAL.getTurretRelative());
+        setTurretAngleDeg(HAL.getTurretAngleDeg());
         setShoulderPotEncReading(HAL.getShoulderPotEncoder().getReading());
         setElbowPotEncReading(HAL.getElbowPotEncoder().getReading());
         setShoulderFalconSensorPosition(HAL.getShoulderFalconSensorPosition());
@@ -332,14 +332,14 @@ public class ArmStatus extends StatusBase {
 
     @Override
     public void exportToTable(LogTable table) {
-        table.put("Turret Position", getTurretAngleDeg());
+        table.put("Turret Position (deg)", getTurretAngleDeg());
         shoulderPotEncReading.exportToTable(table, "Shoulder Reading");
         elbowPotEncReading.exportToTable(table, "Elbow Reading");     
     }
     
     @Override
     public void importFromTable(LogTable table) {
-        setTurretPosition(table.getDouble("Turret Position", turretPosition));
+        setTurretAngleDeg(table.getDouble("Turret Position (deg)", turretAngleDeg));
         setShoulderPotEncReading(shoulderPotEncReading.importFromTable(table, "Shoulder Reading"));
         setElbowPotEncReading(elbowPotEncReading.importFromTable(table, "Elbow Reading"));
     }
@@ -364,8 +364,8 @@ public class ArmStatus extends StatusBase {
         HAL.setTurretPower(turretPower);
 
         logger.recordOutput(prefix + "Turret/Power",        getTurretPower());
-        logger.recordOutput(prefix + "Turret/Position",     getTurretAngleDeg());
-        logger.recordOutput(prefix + "Turret/Target Angle", getTargetTurretAngle());
+        logger.recordOutput(prefix + "Turret/Position (deg)",     getTurretAngleDeg());
+        logger.recordOutput(prefix + "Turret/Target Angle (deg)", getTargetTurretAngleDeg());
         logger.recordOutput(prefix + "Turret/Lockout",      getTurretLockout());
 
         // Arm
