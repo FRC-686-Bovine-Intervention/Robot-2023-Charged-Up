@@ -30,10 +30,7 @@ public class DriverInteractionLoop extends LoopBase {
     private final Intake intake = Intake.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
 
-    private DriverInteractionLoop()
-    {
-        Subsystem = DriverInteraction.getInstance();
-    }
+    private DriverInteractionLoop() {Subsystem = DriverInteraction.getInstance();}
 
     private boolean invertDriveControls = false;
 
@@ -101,6 +98,9 @@ public class DriverInteractionLoop extends LoopBase {
 
         ArmCommand armCommand = new ArmCommand();
 
+        armCommand.setXAdjustment(DriverControlAxes.ThrustmasterX.getAxis());
+        armCommand.setZAdjustment(DriverControlAxes.ThrustmasterY.getAxis());
+
         if(DriverControlButtons.ButtonBoard1_1.getRisingEdge())
             armCommand.setTargetNode(NodeEnum.BottomLeft);
         else if(DriverControlButtons.ButtonBoard1_2.getRisingEdge())
@@ -126,7 +126,7 @@ public class DriverInteractionLoop extends LoopBase {
                 if(DriverControlButtons.Substation.getRisingEdge())
                     armCommand.setArmState(ArmState.SubstationExtend);
                 if(DriverControlButtons.Trigger.getRisingEdge())
-                    armCommand.setArmState(ArmState.IdentifyPiece);
+                    armCommand.setArmState(ArmState.Align);
             break;
 
             case IdentifyPiece:
@@ -144,11 +144,17 @@ public class DriverInteractionLoop extends LoopBase {
                     armCommand.setArmState(ArmState.Align);
             break;
             
+            case Align:
+                if(armCommand.getTargetNode() != null)
+                    armCommand.setArmState(ArmState.Extend);
+            break;
+
             case Adjust:
                 if(DriverControlButtons.Trigger.getRisingEdge())
                     armCommand.setArmState(ArmState.Release);
-            case Align:
-                if(armCommand.getTargetNode() != null)
+                if(armCommand.getTargetNode() == armStatus.getTargetNode())
+                    armCommand.setArmState(ArmState.Defense);
+                else if(armCommand.getTargetNode() != null)
                     armCommand.setArmState(ArmState.Extend);
             break;
             

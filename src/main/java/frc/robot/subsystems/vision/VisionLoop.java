@@ -1,6 +1,5 @@
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.framework.LoopBase;
@@ -67,12 +66,6 @@ public class VisionLoop extends LoopBase {
                 default: break;
             }
         }
-
-        Transform3d turretToCamera1 = new Transform3d();
-        status.setRobotToCamera1(armStatus.getRobotToTurret().plus(turretToCamera1));
-
-        Transform3d turretToCamera2 = new Transform3d();
-        status.setRobotToCamera2(armStatus.getRobotToTurret().plus(turretToCamera2));
     }
 
     @Override public void Enabled() {}

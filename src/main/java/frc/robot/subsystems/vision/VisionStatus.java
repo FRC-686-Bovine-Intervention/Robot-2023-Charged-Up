@@ -6,14 +6,15 @@ import java.util.stream.LongStream;
 
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.common.dataflow.structures.Packet;
-import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.AdvantageUtil;
+import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class VisionStatus extends StatusBase {
@@ -22,6 +23,7 @@ public class VisionStatus extends StatusBase {
 
     private final Vision vision = Vision.getInstance();
     private final VisionHAL HAL = VisionHAL.getInstance();
+    private final ArmStatus armStatus = ArmStatus.getInstance();
 
     public enum LimelightPipeline {
         Pole(0),
@@ -75,13 +77,37 @@ public class VisionStatus extends StatusBase {
     public LimelightPipeline    getTargetPipeline()                                 {return targetPipeline;}
     public VisionStatus         setTargetPipeline(LimelightPipeline targetPipeline) {this.targetPipeline = targetPipeline; return this;}
 
-    private Transform3d robotToCamera1 = new Transform3d(); //TODO
-    public Transform3d  getRobotToCamera1()                         {return robotToCamera1;};
-    public VisionStatus setRobotToCamera1(Transform3d transform)    {robotToCamera1 = transform; return this;};
+    private Transform3d turretToCamera1 = 
+    new Transform3d(
+        new Translation3d(
+            0,
+            0,
+            0
+        ),
+        new Rotation3d(
+            0,
+            0,
+            0
+        )
+    ); //TODO
+    public Transform3d  getTurretToCamera1()    {return turretToCamera1;};
+    public Transform3d  getRobotToCamera1()     {return armStatus.getRobotToTurret().plus(turretToCamera1);}
     
-    private Transform3d robotToCamera2 = new Transform3d(); //TODO
-    public Transform3d  getRobotToCamera2()                         {return robotToCamera2;};
-    public VisionStatus setRobotToCamera2(Transform3d transform)    {robotToCamera2 = transform; return this;};
+    private Transform3d turretToCamera2 = 
+    new Transform3d(
+        new Translation3d(
+            0,
+            0,
+            0
+        ),
+        new Rotation3d(
+            0,
+            0,
+            0
+        )
+    ); //TODO
+    public Transform3d  getTurretToCamera2()    {return turretToCamera2;}
+    public Transform3d  getRobotToCamera2()     {return armStatus.getRobotToTurret().plus(turretToCamera2);}
 
     private double          targetXAngle;
     protected double        getTargetXAngle()                       {return targetXAngle;}
@@ -92,8 +118,8 @@ public class VisionStatus extends StatusBase {
     private VisionStatus    setTargetYAngle(double targetYAngle)    {this.targetYAngle = targetYAngle; return this;}
 
     private double          currentArea;
-    protected double        getCurrentArea()                       {return currentArea;}
-    private VisionStatus    setCurrentArea(double currentArea)    {this.currentArea = currentArea; return this;}
+    protected double        getCurrentArea()                    {return currentArea;}
+    private VisionStatus    setCurrentArea(double currentArea)  {this.currentArea = currentArea; return this;}
 
     private boolean         targetExists;
     protected boolean       getTargetExists()                       {return targetExists;}
@@ -136,6 +162,8 @@ public class VisionStatus extends StatusBase {
     @Override
     protected void updateInputs() {
         setCommand(vision.getVisionCommand());
+        HAL.setCameraTransforms(getRobotToCamera1(), 
+                                getRobotToCamera2());
         setVisionPoses(HAL.getVisionPoses());
         setCurrentPipeline(LimelightPipeline.getFromIndex(HAL.getCurrentPipeline()));
         setTargetXAngle(HAL.getTargetXAngle());
@@ -186,6 +214,7 @@ public class VisionStatus extends StatusBase {
     protected void processOutputs(Logger logger, String prefix) {
         HAL.setPipeline(getTargetPipeline().id);
 
+        // Limelight
         logger.recordOutput(prefix + "Limelight/Target Pipeline", getTargetPipeline().name());
         logger.recordOutput(prefix + "Limelight/Latest Cone X Angle (Deg)", getLatestConeXAngle());
         logger.recordOutput(prefix + "Limelight/Latest Cone Y Angle (Deg)", getLatestConeYAngle());
@@ -193,7 +222,10 @@ public class VisionStatus extends StatusBase {
         logger.recordOutput(prefix + "Limelight/Latest Cube X Angle (Deg)", getLatestCubeXAngle());
         logger.recordOutput(prefix + "Limelight/Latest Cube Y Angle (Deg)", getLatestCubeYAngle());
         logger.recordOutput(prefix + "Limelight/Latest Cube Area (Deg)",    getLatestCubeArea());
-
+        
+        // AprilTags
+        logger.recordOutput(prefix + "AprilTags/Robot to Camera/1", new Pose3d().transformBy(getRobotToCamera1()));
+        logger.recordOutput(prefix + "AprilTags/Robot to Camera/2", new Pose3d().transformBy(getRobotToCamera2()));
     }
 
     @Override protected void processTable() {}

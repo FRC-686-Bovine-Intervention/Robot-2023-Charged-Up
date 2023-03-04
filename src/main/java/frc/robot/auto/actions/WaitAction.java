@@ -1,21 +1,20 @@
 package frc.robot.auto.actions;
 
-import edu.wpi.first.wpilibj.Timer;
+public class WaitAction extends Action {
+    private final double waitTime;
 
-public class WaitAction implements Action {
-    private final double endTime;
-
-    public WaitAction(double time)
-    {
-        endTime = Timer.getFPGATimestamp() + time;
+    public WaitAction(double time) {
+        this.waitTime = time;
     }
 
     @Override
-    public boolean isFinished() {
-        return Timer.getFPGATimestamp() >= endTime;
+    public void start() {}
+
+    @Override
+    public void run() {
+        setFinished(actionTimer.hasElapsed(waitTime));
     }
 
-    @Override public void start() {}
-    @Override public void run() {}
-    @Override public void done() {}
+    @Override
+    public void done() {}
 }

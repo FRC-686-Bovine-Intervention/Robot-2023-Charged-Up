@@ -14,7 +14,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.lib.util.LimelightHelpers;
@@ -23,9 +22,12 @@ public class VisionHAL {
     private static VisionHAL instance;
     public static VisionHAL getInstance(){if(instance == null){instance = new VisionHAL();}return instance;}
 
-    private final ArrayList<Pair<PhotonCamera, Transform3d>> cameraPairs = new ArrayList<Pair<PhotonCamera, Transform3d>>();
-
     private static final String kLimelightName = "limelight";
+
+    private final ArrayList<Pair<PhotonCamera, Transform3d>> cameraPairs = new ArrayList<Pair<PhotonCamera, Transform3d>>();
+    private Transform3d cameraTransform1 = new Transform3d(), 
+                        cameraTransform2 = new Transform3d();
+
 
     private final ArrayList<AprilTag> aprilTags = new ArrayList<AprilTag>();
     private final AprilTagFieldLayout aprilTagFieldLayout;
@@ -41,10 +43,14 @@ public class VisionHAL {
         {
             cameraPairs.add(new Pair<PhotonCamera, Transform3d>(
                             new PhotonCamera("TestCam"),
-                            new Transform3d(new Translation3d(Units.inchesToMeters(15), 0, Units.inchesToMeters(30)), new Rotation3d())));
+                            cameraTransform1));
+            cameraPairs.add(new Pair<PhotonCamera, Transform3d>(
+                            new PhotonCamera("TestCam"),
+                            cameraTransform2));
         }
     }
 
+    // AprilTags
     public ArrayList<AprilTag> getVisibleTags()
     {
         ArrayList<AprilTag> list = new ArrayList<AprilTag>();
@@ -91,6 +97,13 @@ public class VisionHAL {
         return list;
     }
 
+    public VisionHAL setCameraTransforms(Transform3d camera1, Transform3d camera2) {
+        this.cameraTransform1 = camera1;
+        this.cameraTransform2 = camera2;
+        return this;
+    }
+
+    // Limelight
     public boolean getTargetExists() {return LimelightHelpers.getTV(kLimelightName);}
     public double getTargetXAngle() {return LimelightHelpers.getTX(kLimelightName);}
     public double getTargetYAngle() {return LimelightHelpers.getTY(kLimelightName);}

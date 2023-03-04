@@ -78,8 +78,8 @@ public class AdvantageUtil {
     }
 
     public static void recordTrajectoryVector(Logger logger, String prefix, Matrix<N1,N3> matrix) {
-        logger.recordOutput(prefix + "position", matrix.get(0,0));
-        logger.recordOutput(prefix + "velocity", matrix.get(0,1));
-        logger.recordOutput(prefix + "acceleration", matrix.get(0,2));
+        logger.recordOutput(prefix + "/position", matrix.get(0,0));
+        logger.recordOutput(prefix + "/velocity", matrix.get(0,1));
+        logger.recordOutput(prefix + "/acceleration", matrix.get(0,2));
     }
 }

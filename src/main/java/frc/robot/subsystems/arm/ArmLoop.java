@@ -20,6 +20,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -59,10 +61,13 @@ public class ArmLoop extends LoopBase {
             0, 
             turretPIDConstraints
         );
+    private static final double kTurretPIDMaxError = 10;
+    private static final double kTurretClockwiseLockoutThreshold = 90;
+    private static final double kTurretCounterLockoutThreshold = -90;
 
-    private static final double kDistalZeroPower =      0.1;
-    private static final double kProximalZeroPower =    0.1;
-    private static final double kTurretZeroPower =      0.08;
+    private static final double kDistalZeroPower =      0.2;
+    private static final double kProximalZeroPower =    0.2;
+    private static final double kTurretZeroPower =      0.1;
 
     private static final double kDistalZeroErrorThreshold = Units.degreesToRadians(2.5);
     private static final double kTurretZeroErrorThreshold = Units.degreesToRadians(2.5);
@@ -87,17 +92,16 @@ public class ArmLoop extends LoopBase {
     private Matrix<N2,N3> prevSetpointState = null;
     private Matrix<N2,N3> finalTrajectoryState = null;
 
-  
     private final PIDController shoulderPID = 
         new PIDController(
-            0.0, 
+            10.0, 
             0.0, 
             0.0, 
             Constants.loopPeriodSecs
         );
     private final PIDController elbowPID = 
         new PIDController(
-            0.0, 
+            10.0, 
             0.0, 
             0.0, 
             Constants.loopPeriodSecs
@@ -117,9 +121,9 @@ public class ArmLoop extends LoopBase {
     public static final double kRelativeMaxAngleRad = Math.toRadians(160.0);    // don't let grabber smash into proximal arm
     public static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
 
-    private final double xMinSetpoint = Units.inchesToMeters( 0.0);
+    private final double xMinSetpoint = Units.inchesToMeters(0.0);
     private final double xMaxSetpoint;  // calculated
-    private final double zMinSetpoint = Units.inchesToMeters( 0.0);
+    private final double zMinSetpoint = Units.inchesToMeters(0.0);
     private final double zMaxSetpoint = Units.inchesToMeters(72.0); 
 
     private final double manualMaxAdjustmentRangeInches = 12.0;
@@ -194,9 +198,16 @@ public class ArmLoop extends LoopBase {
     private final GenericEntry kDEntry = tab.add("kD",0).withWidget(BuiltInWidgets.kTextView).getEntry();
     private final GenericEntry setShoulderEntry =   tab.add("Set Shoulder",false)   .withWidget(BuiltInWidgets.kToggleButton).getEntry();
     private final GenericEntry setElbowEntry =      tab.add("Set Elbow",false)      .withWidget(BuiltInWidgets.kToggleButton).getEntry();
-    private final GenericEntry resetDisable =      tab.add("Reset Internal Disable",false)  .withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    private final GenericEntry resetLockoutEntry =  tab.add("Reset Turret Lockout",false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
     @Override
     protected void Update() {
+        if(!status.getCheckedForTurretLockout()) {
+            status.setTurretLockout(
+                      status.getTurretAngleDeg() >= kTurretClockwiseLockoutThreshold
+                                                 &&
+                      status.getTurretAngleDeg() <= kTurretCounterLockoutThreshold)
+                  .setCheckedForTurretLockout(true);
+        }
         checkArmCalibration();
 
         if(setShoulderEntry.getBoolean(false))
@@ -213,10 +224,10 @@ public class ArmLoop extends LoopBase {
             elbowPID.setD(kDEntry.getDouble(elbowPID.getD()));
             setElbowEntry.setBoolean(false);
         }
-        if(resetDisable.getBoolean(false))
+        if(resetLockoutEntry.getBoolean(false))
         {
-            status.setInternalDisable(false);
-            resetDisable.setBoolean(false);
+            status.setTurretLockout(false);
+            resetLockoutEntry.setBoolean(false);
         }
     }
     
@@ -256,7 +267,7 @@ public class ArmLoop extends LoopBase {
         if(newCommand.getXAdjustment() != null)
             status.setXThrottle(newCommand.getXAdjustment());
         if(newCommand.getZAdjustment() != null)
-            status.setXThrottle(newCommand.getZAdjustment());
+            status.setZThrottle(newCommand.getZAdjustment());
 
         stateTimer.start();
 
@@ -282,8 +293,9 @@ public class ArmLoop extends LoopBase {
         switch(status.getArmState())
         {
             case ZeroDistalUp:
-                status.setInternalDisable(true);     // disable PID during zeroing
-                status.setShoulderPower(0);
+                status.setInternalDisable(true)     // disable PID during zeroing
+                      .setShoulderPower(0)
+                      .setCurrentArmPose(null);
                 if(status.getElbowPotEncStatus().calibrated && status.getShoulderPotEncStatus().calibrated)
                 {
                     status.setElbowPower(kDistalZeroPower * Math.signum(shoulderAngleRad + kDistalZeroRadUp - elbowAngleRad));
@@ -293,6 +305,7 @@ public class ArmLoop extends LoopBase {
             break;
             
             case ZeroProximal:
+                status.setCurrentArmPose(null);
                 if(status.getShoulderPotEncStatus().calibrated)
                 {
                     status.setElbowPower(kProximalZeroPower * Math.signum(ArmPose.Preset.DEFENSE.getShoulderAngleRad() - shoulderAngleRad) * ArmStatus.kElbowMotorGearRatio / ArmStatus.kShoulderMotorGearRatio);
@@ -303,42 +316,42 @@ public class ArmLoop extends LoopBase {
             break;
 
             case ZeroTurret:
-                status.setShoulderPower(0);
-                status.setElbowPower(0);
-                status.setTurretPower(kTurretZeroPower * Math.signum(-status.getTurretPosition()));
-                if(Math.abs(status.getTurretPosition()) <= kTurretZeroErrorThreshold)
-                    status.setArmState(ArmState.ZeroDistal);
+                status.setElbowPower(0)
+                      .setTurretPower(kTurretZeroPower * Math.signum(-status.getTurretAngleDeg()));
+                if(Math.abs(status.getTurretAngleDeg()) <= kTurretZeroErrorThreshold)
+                    status.setArmState(ArmState.Defense);//TODO TurretDebug
             break;
 
             case ZeroDistal:
-                status.setShoulderPower(0);
+                status.setCurrentArmPose(null);
                 if(status.getElbowPotEncStatus().calibrated)
                 {
                     status.setElbowPower(kDistalZeroPower * Math.signum(ArmPose.Preset.DEFENSE.getElbowAngleRad() - elbowAngleRad));
                     if(Math.abs(elbowAngleRad - ArmPose.Preset.DEFENSE.getElbowAngleRad()) <= kDistalZeroErrorThreshold)
                     {
-                        status.setArmState(ArmState.Defense);
-                        status.setCurrentArmPose(ArmPose.Preset.DEFENSE);
-                        status.setInternalDisable(false);     // enable arm trajectories
+                        status.setArmState(ArmState.Defense)
+                              .setCurrentArmPose(ArmPose.Preset.DEFENSE)
+                              .setTargetArmPose(ArmPose.Preset.DEFENSE)
+                              .setInternalDisable(false);     // enable arm trajectories
                     }
                 }
             break;
 
             case Defense:
+                status.setTargetTurretAngleDeg(0);
+                status.setTargetArmPose(ArmPose.Preset.DEFENSE);
                 if(intakeStatus.getIntakeState() == IntakeState.Hold)
                     status.setArmState(ArmState.IdentifyPiece);
             break;
 
             case IdentifyPiece:
+                status.setTargetTurretAngleDeg(0);
+                status.setTargetArmPose(ArmPose.Preset.DEFENSE);
                 // Check for piece in intake bounding box
             break;
             
             case Grab:
                 // Move turret to target pos
-                turretPID.setGoal(status.getTargetTurretAngle());
-                if(stateTimer.get() == 0)
-                    turretPID.reset(status.getTurretPosition());
-                
                 // Extend arm to grab piece
                 if(turretPID.atGoal())
                 {
@@ -359,11 +372,14 @@ public class ArmLoop extends LoopBase {
             case Hold:
                 intake.setCommand(new IntakeCommand(IntakeState.Defense));
                 // Move arm to hold position
+                status.setTargetArmPose(ArmPose.Preset.DEFENSE);
                 // Check if robot is in community, if so jump to Align
             break;
 
             case Align:
+                status.setTargetArmPose(ArmPose.Preset.DEFENSE);
                 // Align turret to alliance wall
+                status.setTargetTurretAngleDeg((DriverStation.getAlliance() == Alliance.Red ? 0 : 180) - OdometryStatus.getInstance().getRobotPose().getRotation().getDegrees());
                 // Check if robot is in not in community, if so jump to Hold
                 // Check if driver has selected node, if so jump to Extend
             break;
@@ -400,10 +416,23 @@ public class ArmLoop extends LoopBase {
             break;
         }
 
+        runTurret();
+
         if(status.getCurrentArmPose() != null && status.getTargetArmPose() != status.getCurrentArmPose())
             startTrajectory(status.getCurrentArmPose(), status.getTargetArmPose(), status.getTargetNode(), status.getTurretToField());
+    }
 
-
+    private boolean largeTurretError = false;
+    private void runTurret() {
+        turretPID.setGoal(status.getTargetTurretAngleDeg());
+        if(status.getTargetTurretAngleDeg() - status.getTurretAngleDeg() >= kTurretPIDMaxError) {
+            if(!largeTurretError) {
+                turretPID.reset(status.getTurretAngleDeg());
+            }
+            largeTurretError = true;
+        } else
+            largeTurretError = false;
+        status.setTurretPower(turretPID.calculate(status.getTurretAngleDeg()));
     }
 
 
@@ -460,6 +489,7 @@ public class ArmLoop extends LoopBase {
         if (status.getCurrentArmTrajectory() != null && trajectoryTimer.hasElapsed(status.getCurrentArmTrajectory().getTotalTime()))
         {
             status.setCurrentArmTrajectory(null)
+                  .setCurrentArmPose(status.getTargetArmPose())
                   .setXAdjustment(0)
                   .setZAdjustment(0);
         }
@@ -533,8 +563,8 @@ public class ArmLoop extends LoopBase {
             elbowPIDOutput = elbowPID.calculate(elbowAngleRad, elbowAngleSetpoint) ;
             
             // set motors to achieve the setpoint
-            status.setShoulderVoltage(/*voltages.get(0,0) + */shoulderPIDOutput)
-                  .setElbowVoltage   (/*voltages.get(1,0) + */elbowPIDOutput);
+            status.setShoulderVoltage(voltages.get(0,0) + shoulderPIDOutput)
+                  .setElbowVoltage   (voltages.get(1,0) + elbowPIDOutput);
         }
 
         // trigger emergency stop if necessary
