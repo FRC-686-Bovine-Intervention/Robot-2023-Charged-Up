@@ -30,10 +30,7 @@ public class DriverInteractionLoop extends LoopBase {
     private final Intake intake = Intake.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
 
-    private DriverInteractionLoop()
-    {
-        Subsystem = DriverInteraction.getInstance();
-    }
+    private DriverInteractionLoop() {Subsystem = DriverInteraction.getInstance();}
 
     private boolean invertDriveControls = false;
 
@@ -100,6 +97,9 @@ public class DriverInteractionLoop extends LoopBase {
         intake.setCommand(intakeCommand);
 
         ArmCommand armCommand = new ArmCommand();
+
+        armCommand.setXAdjustment(DriverControlAxes.ThrustmasterX.getAxis());
+        armCommand.setZAdjustment(DriverControlAxes.ThrustmasterY.getAxis());
 
         if(DriverControlButtons.ButtonBoard1_1.getRisingEdge())
             armCommand.setTargetNode(NodeEnum.BottomLeft);

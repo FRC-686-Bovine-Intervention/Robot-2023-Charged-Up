@@ -20,6 +20,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -57,10 +59,11 @@ public class ArmLoop extends LoopBase {
             0, 
             turretPIDConstraints
         );
+    private static final double kTurretPIDMaxError = 10;
 
-    private static final double kDistalZeroPower =      0.1;
-    private static final double kProximalZeroPower =    0.1;
-    private static final double kTurretZeroPower =      0.08;
+    private static final double kDistalZeroPower =      0.2;
+    private static final double kProximalZeroPower =    0.2;
+    private static final double kTurretZeroPower =      0.1;
 
     private static final double kDistalZeroErrorThreshold = Units.degreesToRadians(2.5);
     private static final double kTurretZeroErrorThreshold = Units.degreesToRadians(2.5);
@@ -85,7 +88,6 @@ public class ArmLoop extends LoopBase {
     private Matrix<N2,N3> prevSetpointState = null;
     private Matrix<N2,N3> finalTrajectoryState = null;
 
-  
     private final PIDController shoulderPID = 
         new PIDController(
             10.0, 
@@ -115,9 +117,9 @@ public class ArmLoop extends LoopBase {
     public static final double kRelativeMaxAngleRad = Math.toRadians(160.0);    // don't let grabber smash into proximal arm
     public static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
 
-    private final double xMinSetpoint = Units.inchesToMeters( 0.0);
+    private final double xMinSetpoint = Units.inchesToMeters(0.0);
     private final double xMaxSetpoint;  // calculated
-    private final double zMinSetpoint = Units.inchesToMeters( 0.0);
+    private final double zMinSetpoint = Units.inchesToMeters(0.0);
     private final double zMaxSetpoint = Units.inchesToMeters(72.0); 
 
     private final double manualMaxAdjustmentRangeInches = 12.0;
@@ -251,7 +253,7 @@ public class ArmLoop extends LoopBase {
         if(newCommand.getXAdjustment() != null)
             status.setXThrottle(newCommand.getXAdjustment());
         if(newCommand.getZAdjustment() != null)
-            status.setXThrottle(newCommand.getZAdjustment());
+            status.setZThrottle(newCommand.getZAdjustment());
 
         stateTimer.start();
 
@@ -300,11 +302,10 @@ public class ArmLoop extends LoopBase {
             break;
 
             case ZeroTurret:
-                status.setShoulderPower(0)
-                      .setElbowPower(0)
-                      .setTurretPower(kTurretZeroPower * Math.signum(-status.getTurretPosition()));
-                if(Math.abs(status.getTurretPosition()) <= kTurretZeroErrorThreshold)
-                    status.setArmState(ArmState.ZeroDistal);
+                status.setElbowPower(0)
+                      .setTurretPower(kTurretZeroPower * Math.signum(-status.getTurretAngleDeg()));
+                if(Math.abs(status.getTurretAngleDeg()) <= kTurretZeroErrorThreshold)
+                    status.setArmState(ArmState.Defense);//TODO TurretDebug
             break;
 
             case ZeroDistal:
@@ -323,22 +324,20 @@ public class ArmLoop extends LoopBase {
             break;
 
             case Defense:
+                status.setTargetTurretAngle(0);
                 status.setTargetArmPose(ArmPose.Preset.DEFENSE);
                 if(intakeStatus.getIntakeState() == IntakeState.Hold)
                     status.setArmState(ArmState.IdentifyPiece);
             break;
 
             case IdentifyPiece:
+                status.setTargetTurretAngle(0);
                 status.setTargetArmPose(ArmPose.Preset.DEFENSE);
                 // Check for piece in intake bounding box
             break;
             
             case Grab:
                 // Move turret to target pos
-                turretPID.setGoal(status.getTargetTurretAngle());
-                if(stateTimer.get() == 0)
-                    turretPID.reset(status.getTurretPosition());
-                
                 // Extend arm to grab piece
                 if(turretPID.atGoal())
                 {
@@ -366,6 +365,7 @@ public class ArmLoop extends LoopBase {
             case Align:
                 status.setTargetArmPose(ArmPose.Preset.DEFENSE);
                 // Align turret to alliance wall
+                status.setTargetTurretAngle((DriverStation.getAlliance() == Alliance.Red ? 0 : 180) - OdometryStatus.getInstance().getRobotPose().getRotation().getDegrees());
                 // Check if robot is in not in community, if so jump to Hold
                 // Check if driver has selected node, if so jump to Extend
             break;
@@ -402,13 +402,24 @@ public class ArmLoop extends LoopBase {
             break;
         }
 
+        runTurret();
+
         if(status.getCurrentArmPose() != null && status.getTargetArmPose() != status.getCurrentArmPose())
             startTrajectory(status.getCurrentArmPose(), status.getTargetArmPose(), status.getTargetNode(), status.getTurretToField());
-
-
     }
 
-
+    private boolean largeTurretError = false;
+    private void runTurret() {
+        turretPID.setGoal(status.getTargetTurretAngle());
+        if(status.getTargetTurretAngle() - status.getTurretAngleDeg() >= kTurretPIDMaxError) {
+            if(!largeTurretError) {
+                turretPID.reset(status.getTurretAngleDeg());
+            }
+            largeTurretError = true;
+        } else
+            largeTurretError = false;
+        status.setTurretPower(turretPID.calculate(status.getTurretAngleDeg()));
+    }
 
 
     public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos, ArmStatus.NodeEnum targetNode, Pose3d turretPose) {

@@ -31,7 +31,7 @@ public class PotAndEncoder {
         this.readyCounter = 0;
         this.absRelDifferenceBuffer = new CircularBuffer(potAndEncoderConfig.averagingBufferMaxSize);
         this.potDifferenceBuffer = new CircularBuffer(potAndEncoderConfig.averagingBufferMaxSize);
-        this.potentiometerAngleDegAtCalib = potAndEncoderConfig.HAL.getPotAngleFromVoltage(potAndEncoderConfig.potentiometerNormalizedVoltageAtCalib); 
+        this.potentiometerAngleDegAtCalib = potAndEncoderConfig.HAL != null ? potAndEncoderConfig.HAL.getPotAngleFromVoltage(potAndEncoderConfig.potentiometerNormalizedVoltageAtCalib) : 0; 
     }
 
     private int readyCounter = 0;

@@ -6,7 +6,6 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -16,9 +15,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import frc.robot.AdvantageUtil;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
-import frc.robot.subsystems.arm.ArmPose.Preset;
 import frc.robot.subsystems.framework.StatusBase;
-import frc.robot.subsystems.odometry.Odometry;
 import frc.robot.subsystems.odometry.OdometryStatus;
 
 public class ArmStatus extends StatusBase {
@@ -27,6 +24,7 @@ public class ArmStatus extends StatusBase {
 
     private final Arm arm = Arm.getInstance();
     private final ArmHAL HAL = ArmHAL.getInstance();
+    private final OdometryStatus odometry = OdometryStatus.getInstance();
 
     public enum ArmState {
         ZeroDistalUp,       // =============================================================================
@@ -44,7 +42,7 @@ public class ArmStatus extends StatusBase {
         SubstationExtend,   // Driver has decided to grab a piece from the substation
         SubstationGrab;     // Driver is ready to grab piece from the substation
 
-        public static final ArmState DEFAULT = ZeroDistalUp;
+        public static final ArmState DEFAULT = ZeroTurret; //TODO TurretDebug
     }
 
     public enum NodeEnum {
@@ -94,42 +92,29 @@ public class ArmStatus extends StatusBase {
 
     // Turret
     private double      turretPosition; 
-    public double       getTurretPosition() {return turretPosition;}
+    public double       getTurretAngleDeg() {return turretPosition;}
     private ArmStatus   setTurretPosition(double turretPosition) {this.turretPosition = turretPosition; return this;}
 
     private double      targetTurretAngle;
     public double       getTargetTurretAngle()              {return targetTurretAngle;}
     protected ArmStatus setTargetTurretAngle(double angle)  {targetTurretAngle = angle; return this;}
 
-    private static final Translation3d robotToTurretTranslation = new Translation3d(); //TODO
-
-    public Transform3d  getRobotToTurret(){
-        return new Transform3d(robotToTurretTranslation, new Rotation3d(0, 0, getTurretPosition()));
-    };
-
-    public Pose3d getTurretToField() {
-        return new Pose3d(OdometryStatus.getInstance().getRobotPose())
-                            .transformBy(getRobotToTurret());
-    } 
-
     private double      turretPower;
     public double       getTurretPower()                    {return turretPower;}
     protected ArmStatus setTurretPower(double turretPower)  {this.turretPower = turretPower; return this;}
 
-    public Transform3d  getTurretPose() {return 
-        new Transform3d(
-            new Translation3d(
-                0,
-                0,
-                0
-            ), 
-            new Rotation3d(
-                0, 
-                0, 
-                Units.degreesToRadians(getTurretPosition())
-            )
-        );
-    }
+    private boolean     turretLockout;
+    public boolean      getTurretLockout()                      {return turretLockout;}
+    protected ArmStatus setTurretLockout(boolean turretLockout) {this.turretLockout = turretLockout; return this;}
+
+    private static final Translation3d robotToTurretTranslation = 
+    new Translation3d(
+        0,
+        0,
+        0
+    ); //TODO
+    public Transform3d getRobotToTurret()   {return new Transform3d(robotToTurretTranslation, new Rotation3d(0, 0, Units.degreesToRadians(getTurretAngleDeg())));}
+    public Pose3d getTurretToField()        {return new Pose3d(odometry.getRobotPose()).transformBy(getRobotToTurret());} 
 
     // Arm
     private ArmPose.Preset  targetArmPose = ArmPose.Preset.DEFENSE;
@@ -154,7 +139,7 @@ public class ArmStatus extends StatusBase {
 
     private boolean         internalDisable = false;
     public boolean          getInternalDisable()                        {return internalDisable;}
-    protected ArmStatus     setInternalDisable(boolean internalDisable) {/* this.internalDisable = internalDisable; */ return this;}
+    protected ArmStatus     setInternalDisable(boolean internalDisable) {this.internalDisable = internalDisable; return this;}
 
     private double          xThrottle;
     public double           getXThrottle()                  {return xThrottle;}
@@ -347,7 +332,7 @@ public class ArmStatus extends StatusBase {
 
     @Override
     public void exportToTable(LogTable table) {
-        table.put("Turret Position", getTurretPosition());
+        table.put("Turret Position", getTurretAngleDeg());
         shoulderPotEncReading.exportToTable(table, "Shoulder Reading");
         elbowPotEncReading.exportToTable(table, "Elbow Reading");     
     }
@@ -379,8 +364,9 @@ public class ArmStatus extends StatusBase {
         HAL.setTurretPower(turretPower);
 
         logger.recordOutput(prefix + "Turret/Power",        getTurretPower());
-        logger.recordOutput(prefix + "Turret/Position",     getTurretPosition());
+        logger.recordOutput(prefix + "Turret/Position",     getTurretAngleDeg());
         logger.recordOutput(prefix + "Turret/Target Angle", getTargetTurretAngle());
+        logger.recordOutput(prefix + "Turret/Lockout",      getTurretLockout());
 
         // Arm
         logger.recordOutput(prefix + "Arm/Target Pose",             targetArmPose != null ? targetArmPose.name() : "null");
@@ -404,7 +390,7 @@ public class ArmStatus extends StatusBase {
             oneShotShoulderCalibrationEnabled = false;
         }
         HAL.setShoulderMotorPower(shoulderPower);
-        shoulderPotEncStatus.recordOutputs(logger, prefix + "Arm/Shoulder Status");
+        shoulderPotEncStatus.recordOutputs(logger, prefix + "Arm/Shoulder/Encoder Status");
         logger.recordOutput(prefix + "Arm/Shoulder/Power",          shoulderPower);
         logger.recordOutput(prefix + "Arm/Shoulder/PotEnc Angle (Rad)",    Units.degreesToRadians(getShoulderPotEncStatus().positionDeg));
         logger.recordOutput(prefix + "Arm/Shoulder/Falcon Angle (Rad)",    shoulderSensorUnitsToRadians(getShoulderFalconSensorPosition()));
@@ -420,7 +406,7 @@ public class ArmStatus extends StatusBase {
             oneShotElbowCalibrationEnabled = false;
         }        
         HAL.setElbowMotorPower(elbowPower);
-        elbowPotEncStatus.recordOutputs(logger, prefix + "Arm/Elbow Status");
+        elbowPotEncStatus.recordOutputs(logger, prefix + "Arm/Elbow/Encoder Status");
         logger.recordOutput(prefix + "Arm/Elbow/Power",         elbowPower);
         logger.recordOutput(prefix + "Arm/Elbow/PotEnc Angle (Rad)",    Units.degreesToRadians(getElbowPotEncStatus().positionDeg));
         logger.recordOutput(prefix + "Arm/Elbow/Falcon Angle (Rad)",    elbowSensorUnitsToRadians(getElbowFalconSensorPosition()));
