@@ -107,6 +107,10 @@ public class ArmStatus extends StatusBase {
     public boolean      getTurretLockout()                      {return turretLockout;}
     protected ArmStatus setTurretLockout(boolean turretLockout) {this.turretLockout = turretLockout; return this;}
 
+    private boolean     checkedForTurretLockout;
+    public boolean      getCheckedForTurretLockout()                                {return checkedForTurretLockout;}
+    protected ArmStatus setCheckedForTurretLockout(boolean checkedForTurretLockout) {this.checkedForTurretLockout = checkedForTurretLockout; return this;}
+
     private static final Translation3d robotToTurretTranslation = 
     new Translation3d(
         0,

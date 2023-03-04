@@ -60,6 +60,8 @@ public class ArmLoop extends LoopBase {
             turretPIDConstraints
         );
     private static final double kTurretPIDMaxError = 10;
+    private static final double kTurretClockwiseLockoutThreshold = 90;
+    private static final double kTurretCounterLockoutThreshold = -90;
 
     private static final double kDistalZeroPower =      0.2;
     private static final double kProximalZeroPower =    0.2;
@@ -191,9 +193,16 @@ public class ArmLoop extends LoopBase {
     private final GenericEntry kDEntry = tab.add("kD",0).withWidget(BuiltInWidgets.kTextView).getEntry();
     private final GenericEntry setShoulderEntry =   tab.add("Set Shoulder",false)   .withWidget(BuiltInWidgets.kToggleButton).getEntry();
     private final GenericEntry setElbowEntry =      tab.add("Set Elbow",false)      .withWidget(BuiltInWidgets.kToggleButton).getEntry();
-    private final GenericEntry resetDisable =      tab.add("Reset Internal Disable",false)  .withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    private final GenericEntry resetLockoutEntry =  tab.add("Reset Turret Lockout",false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
     @Override
     protected void Update() {
+        if(!status.getCheckedForTurretLockout()) {
+            status.setTurretLockout(
+                      status.getTurretAngleDeg() >= kTurretClockwiseLockoutThreshold
+                                                 &&
+                      status.getTurretAngleDeg() <= kTurretCounterLockoutThreshold)
+                  .setCheckedForTurretLockout(true);
+        }
         checkArmCalibration();
 
         if(setShoulderEntry.getBoolean(false))
@@ -210,10 +219,10 @@ public class ArmLoop extends LoopBase {
             elbowPID.setD(kDEntry.getDouble(elbowPID.getD()));
             setElbowEntry.setBoolean(false);
         }
-        if(resetDisable.getBoolean(false))
+        if(resetLockoutEntry.getBoolean(false))
         {
-            status.setInternalDisable(false);
-            resetDisable.setBoolean(false);
+            status.setTurretLockout(false);
+            resetLockoutEntry.setBoolean(false);
         }
     }
     
