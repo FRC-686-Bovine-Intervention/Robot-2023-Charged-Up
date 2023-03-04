@@ -97,7 +97,7 @@ public class ArmStatus extends StatusBase {
 
     private double      targetTurretAngleDeg;
     public double       getTargetTurretAngleDeg()              {return targetTurretAngleDeg;}
-    protected ArmStatus setTargetTurretAngleDeg(double angle)  {targetTurretAngleDeg = angle; return this;}
+    public ArmStatus setTargetTurretAngleDeg(double angle)  {targetTurretAngleDeg = angle; return this;}
 
     private double      turretPower;
     public double       getTurretPower()                    {return turretPower;}
@@ -111,12 +111,7 @@ public class ArmStatus extends StatusBase {
     public boolean      getCheckedForTurretLockout()                                {return checkedForTurretLockout;}
     protected ArmStatus setCheckedForTurretLockout(boolean checkedForTurretLockout) {this.checkedForTurretLockout = checkedForTurretLockout; return this;}
 
-    private static final Translation3d robotToTurretTranslation = 
-    new Translation3d(
-        0,
-        0,
-        0
-    ); //TODO
+    public static final Translation3d robotToTurretTranslation = new Translation3d(Units.inchesToMeters(-6.0), 0, 0);
     public Transform3d getRobotToTurret()   {return new Transform3d(robotToTurretTranslation, new Rotation3d(0, 0, Units.degreesToRadians(getTurretAngleDeg())));}
     public Pose3d getTurretToField()        {return new Pose3d(odometry.getRobotPose()).transformBy(getRobotToTurret());} 
 
@@ -131,7 +126,7 @@ public class ArmStatus extends StatusBase {
 
     private ArmTrajectory   currentArmTrajectory = null;
     public ArmTrajectory    getCurrentArmTrajectory()                                   {return currentArmTrajectory;}
-    protected ArmStatus     setCurrentArmTrajectory(ArmTrajectory currentArmTrajectory) {this.currentArmTrajectory = currentArmTrajectory; return this;}
+    public ArmStatus        setCurrentArmTrajectory(ArmTrajectory currentArmTrajectory) {this.currentArmTrajectory = currentArmTrajectory; return this;}
 
     private Matrix<N2,N3>   currentTrajState = new MatBuilder<>(Nat.N2(),Nat.N3()).fill(0,0,0,0,0,0);
     public Matrix<N2,N3>    getCurrentTrajState()                                   {return currentTrajState;}
