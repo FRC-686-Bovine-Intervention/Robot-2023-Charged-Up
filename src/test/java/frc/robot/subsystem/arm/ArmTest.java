@@ -184,7 +184,6 @@ public class ArmTest {
 
     private final double manualMaxSpeedInchesPerSec = 6.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
     private final double manualMaxSpeedMetersPerSec = Units.inchesToMeters(manualMaxSpeedInchesPerSec);
-    private final double manualMaxSpeedDegreesPerSec = 10.0;  // speed the turret is allowed to manually spin
 
     ArmKinematics kinematics;
 
@@ -291,7 +290,7 @@ public class ArmTest {
             Vector<N2> setpointTheta = optTheta.get();
             setpointState = ArmTrajectory.getFixedState(setpointTheta);
         } else {
-            boolean break_here = true;
+            // boolean break_here = true;
         }
     }
 }

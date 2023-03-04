@@ -42,7 +42,6 @@ import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.arm.ArmTrajectory;
 import frc.robot.subsystems.arm.json.ArmConfigJson;
 import frc.robot.subsystems.arm.json.ArmPathsJson;
-import frc.robot.subsystems.odometry.OdometryStatus;
 
 public class ArmTrajectoryTest {
     
@@ -181,9 +180,6 @@ public class ArmTrajectoryTest {
         ArmStatus mockStatus = mock(ArmStatus.class);
         MockedStatic<ArmStatus> mockStatusStatic = mockStatic(ArmStatus.class);
         mockStatusStatic.when(ArmStatus::getInstance).thenReturn(mockStatus);
-        OdometryStatus mockOdometry = mock(OdometryStatus.class);
-        
-        ArmLoop loop = ArmLoop.getInstance();
 
         ArmTrajectory[][] armTrajectories = new ArmTrajectory[ArmPose.Preset.values().length+1][ArmPose.Preset.values().length+1];
         // Get paths from JSON

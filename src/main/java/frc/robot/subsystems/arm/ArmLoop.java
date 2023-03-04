@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.Constants;
 import frc.robot.FieldDimensions;
 import frc.robot.lib.util.GeomUtil;
+import frc.robot.lib.util.Unwrapper;
 import frc.robot.subsystems.arm.ArmDynamics.JointConfig;
 import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.arm.json.ArmConfigJson;
@@ -254,6 +255,7 @@ public class ArmLoop extends LoopBase {
 
 
     private final Timer stateTimer = new Timer();
+    private Unwrapper turretUnwrapper = new Unwrapper(0.0, 360.0);
     
     @Override
     protected void Enabled() {
@@ -378,8 +380,17 @@ public class ArmLoop extends LoopBase {
 
             case Align:
                 status.setTargetArmPose(ArmPose.Preset.DEFENSE);
+                
+                // unwrap turret angle because odometry wraps it to +/-180
+                double turretAngleDeg = OdometryStatus.getInstance().getRobotPose().getRotation().getDegrees();
+                if (stateTimer.get() == 0.0) {
+                    turretUnwrapper.reset(turretAngleDeg);
+                }
+                double unwrappedTurretAngleDeg = turretUnwrapper.unwrap(turretAngleDeg);
+
                 // Align turret to alliance wall
-                status.setTargetTurretAngleDeg((DriverStation.getAlliance() == Alliance.Red ? 0 : 180) - OdometryStatus.getInstance().getRobotPose().getRotation().getDegrees());
+                status.setTargetTurretAngleDeg((DriverStation.getAlliance() == Alliance.Red ? 0 : 180) - unwrappedTurretAngleDeg);
+                
                 // Check if robot is in not in community, if so jump to Hold
                 // Check if driver has selected node, if so jump to Extend
             break;
