@@ -11,8 +11,11 @@ import org.junit.jupiter.api.Test;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.util.Units;
+import frc.robot.subsystems.arm.ArmPose;
+import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.arm.ArmTrajectory;
 
 public class ArmTrajectoryTest {
@@ -146,7 +149,16 @@ public class ArmTrajectoryTest {
     
     @Test
     void startTrajectoryTest() {
-        
+
+        ArmPose.Preset startPos = ArmPose.Preset.DEFENSE;
+        ArmPose.Preset finalPos = ArmPose.Preset.SCORE_HIGH_CONE;
+        ArmStatus.NodeEnum targetNode = ArmStatus.NodeEnum.TopLeft;
+        Pose3d turretPose = new Pose3d();
+
+
+        public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos, ArmStatus.NodeEnum targetNode, Pose3d turretPose) {
+
+
     }
 
 }
