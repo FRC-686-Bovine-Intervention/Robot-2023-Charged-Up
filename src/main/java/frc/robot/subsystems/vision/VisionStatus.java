@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import frc.robot.AdvantageUtil;
 import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.framework.StatusBase;
@@ -80,14 +81,14 @@ public class VisionStatus extends StatusBase {
     private Transform3d turretToCamera1 = 
     new Transform3d(
         new Translation3d(
-            0,
-            0,
-            0
+            5.364,
+            5.806,
+            33.3
         ),
         new Rotation3d(
             0,
             0,
-            0
+            Units.degreesToRadians(20.0)
         )
     ); //TODO
     public Transform3d  getTurretToCamera1()    {return turretToCamera1;};
@@ -96,14 +97,14 @@ public class VisionStatus extends StatusBase {
     private Transform3d turretToCamera2 = 
     new Transform3d(
         new Translation3d(
-            0,
-            0,
-            0
+            5.364,
+            -5.806,
+            33.3
         ),
         new Rotation3d(
             0,
             0,
-            0
+            Units.degreesToRadians(-20.0)
         )
     ); //TODO
     public Transform3d  getTurretToCamera2()    {return turretToCamera2;}

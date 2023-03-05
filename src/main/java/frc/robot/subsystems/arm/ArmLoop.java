@@ -29,6 +29,9 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.Constants;
 import frc.robot.FieldDimensions;
+import frc.robot.lib.util.GeomUtil;
+import frc.robot.lib.util.Unwrapper;
+import frc.robot.subsystems.arm.ArmDynamics.JointConfig;
 import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.arm.ArmStatus.MotorControlMode;
 import frc.robot.subsystems.arm.json.ArmConfigJson;
@@ -139,13 +142,16 @@ public class ArmLoop extends LoopBase {
         // Get config from JSON
         ArmConfigJson config = arm.getConfig();
 
+        JointConfig shoulder = config.shoulder();
+        JointConfig elbow = ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist());
+
         kinematics = new ArmKinematics(new Translation2d(config.origin().getX(), config.origin().getY()),
-                                        config.shoulder().length(), config.elbow().length(),
+                                        shoulder.length(), elbow.length(),
                                         config.shoulder().minAngle(), config.shoulder().maxAngle(), 
-                                        config.elbow().minAngle(), config.elbow().maxAngle(),
+                                        elbow.minAngle(), elbow.maxAngle(),
                                         kRelativeMinAngleRad, kRelativeMaxAngleRad);
 
-        dynamics = new ArmDynamics(config.shoulder(), ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist()));
+        dynamics = new ArmDynamics(shoulder, elbow);
 
         shoulderMinAngleRad = config.shoulder().minAngle();
         shoulderMaxAngleRad = config.shoulder().maxAngle();
@@ -250,6 +256,7 @@ public class ArmLoop extends LoopBase {
 
 
     private final Timer stateTimer = new Timer();
+    private Unwrapper turretUnwrapper = new Unwrapper(0.0, 360.0);
     
     @Override
     protected void Enabled() {
@@ -378,8 +385,17 @@ public class ArmLoop extends LoopBase {
 
             case Align:
                 status.setTargetArmPose(ArmPose.Preset.DEFENSE);
+                
+                // unwrap turret angle because odometry wraps it to +/-180
+                double turretAngleDeg = OdometryStatus.getInstance().getRobotPose().getRotation().getDegrees();
+                if (stateTimer.get() == 0.0) {
+                    turretUnwrapper.reset(turretAngleDeg);
+                }
+                double unwrappedTurretAngleDeg = turretUnwrapper.unwrap(turretAngleDeg);
+
                 // Align turret to alliance wall
-                status.setTargetTurretAngleDeg((DriverStation.getAlliance() == Alliance.Red ? 0 : 180) + OdometryStatus.getInstance().getRobotPose().getRotation().getDegrees());
+                status.setTargetTurretAngleDeg((DriverStation.getAlliance() == Alliance.Red ? 0 : 180) - unwrappedTurretAngleDeg);
+                
                 // Check if robot is in not in community, if so jump to Hold
                 // Check if driver has selected node, if so jump to Extend
             break;
@@ -438,7 +454,11 @@ public class ArmLoop extends LoopBase {
     }
 
 
-    public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos, ArmStatus.NodeEnum targetNode, Pose3d turretPose) {
+
+
+    public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos, ArmStatus.NodeEnum targetNode, Pose3d turretPose3d) {
+        Translation2d turretXY = GeomUtil.translation3dTo2dXY(turretPose3d.getTranslation());
+        
         // get current arm positions
         double startShoulderAngleRad = status.getShoulderAngleRad();
         double startElbowAngleRad = status.getElbowAngleRad();
@@ -447,11 +467,11 @@ public class ArmLoop extends LoopBase {
         ArmTrajectory baseTrajectory = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
 
         // find closest node
-        var nodeTranslation = getClosestNodeTranslation(targetNode, turretPose);
+        Translation2d nodeXY = getClosestNodeXY(targetNode, turretXY);
 
         // calculate turret angle to target
-        Translation3d turretToTarget = nodeTranslation.minus(turretPose.getTranslation());
-        double targetAngle = Math.atan2(turretToTarget.getY(), turretToTarget.getX());
+        Translation2d turretToTarget = nodeXY.minus(turretXY);
+        double targetAngle = turretToTarget.getAngle().getRadians();
         double robotAngle = OdometryStatus.getInstance().getRobotPose().getRotation().getRadians();
         double turretAngleToTarget = targetAngle - robotAngle;
 
@@ -460,25 +480,17 @@ public class ArmLoop extends LoopBase {
         double finalElbowAngleRad = finalPos.getElbowAngleRad();
 
         // calculate turret distance
-        double dist = Math.sqrt(nodeTranslation.getX()*nodeTranslation.getX() + nodeTranslation.getY()*nodeTranslation.getY());
-        double x = dist;
-        double z = finalPos.getZ();
+        double x = turretToTarget.getNorm();
+        double z = Units.inchesToMeters(finalPos.getZ());
         Optional<Vector<N2>> theta = kinematics.inverse(new Translation2d(x,z));
         if (theta.isPresent()) {
             finalShoulderAngleRad = theta.get().get(0,0);
             finalElbowAngleRad = theta.get().get(1,0);
         }
 
-        
-        // any errors in the starting position (in particular due to manual XZ adjustments)
-        // will be linearly intepolated into the trajectory
-        // to smoothly remove these adjustments without needing a separate path
-        status.setCurrentArmTrajectory(baseTrajectory);
-        status.getCurrentArmTrajectory().interpolateEndPoints(startShoulderAngleRad, startElbowAngleRad, finalShoulderAngleRad, finalElbowAngleRad);
-
-        // set turret target angle
+        // set outputs
         status.setTargetTurretAngleDeg(turretAngleToTarget);
-
+        status.setCurrentArmTrajectory(baseTrajectory.interpolateEndPoints(startShoulderAngleRad, startElbowAngleRad, finalShoulderAngleRad, finalElbowAngleRad));
         trajectoryTimer.reset();
     }
 
@@ -617,32 +629,36 @@ public class ArmLoop extends LoopBase {
 
     
 
-    public Translation3d getClosestNodeTranslation(ArmStatus.NodeEnum _targetNode, Pose3d turretPose) {
+    public Translation2d getClosestNodeXY(ArmStatus.NodeEnum _targetNode, Translation2d turretLoc) {
         // target node selects which node in a 3x3 grid
         // this function finds the closest node out of the 3 possible choices
 
         int startingRow = _targetNode.xPos;
 
         double minDist = Double.MAX_VALUE;
-        Translation3d nodeTranslation = new Translation3d();   
-        Translation3d bestTranslation = null;
+        Translation3d nodeTranslation3d = new Translation3d();   
+        Translation2d bestTranslation = null;
 
         for (int row = startingRow; row < FieldDimensions.Grids.nodeRowCount; row+=3) {
             switch (_targetNode.yPos) {
                 case 0:
-                    nodeTranslation = FieldDimensions.Grids.complexLow3dTranslations[row];
+                    nodeTranslation3d = FieldDimensions.Grids.complexLow3dTranslations[row];
+                    break;
                 case 1:
-                    nodeTranslation = FieldDimensions.Grids.mid3dTranslations[row];
+                    nodeTranslation3d = FieldDimensions.Grids.mid3dTranslations[row];
+                    break;
                 case 2:
-                    nodeTranslation = FieldDimensions.Grids.high3dTranslations[row];
+                    nodeTranslation3d = FieldDimensions.Grids.high3dTranslations[row];
+                    break;
                 default:
-                    nodeTranslation = new Translation3d();
+                    nodeTranslation3d = new Translation3d();
             }
 
-            double dist = nodeTranslation.getDistance(turretPose.getTranslation());
+            Translation2d nodeLocation = GeomUtil.translation3dTo2dXY(nodeTranslation3d);
+            double dist = turretLoc.getDistance(nodeLocation);
             if (dist < minDist) {
                 minDist = dist;
-                bestTranslation = nodeTranslation;
+                bestTranslation = nodeLocation;
             }
         }
 

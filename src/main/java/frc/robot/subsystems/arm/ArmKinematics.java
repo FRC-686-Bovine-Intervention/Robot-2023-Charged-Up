@@ -18,7 +18,7 @@ import edu.wpi.first.math.numbers.N2;
  * Converts between joint angles and the end effector position.
  */
 public class ArmKinematics {
-  private final Translation2d shoulder;  // location of shoulder joint relative to center of turret rotation at floor height
+  private final Translation2d origin;  // location of shoulder joint relative to center of turret rotation at floor height
   private final double l1;          // proximal arm length
   private final double l2;          // distal arm length
   private final double minTheta1;   // min allowable shoulder angle
@@ -29,9 +29,9 @@ public class ArmKinematics {
   private final double maxTheta21;  // max allowable elbow angle, relative to shoulder angle
 
   
-  public ArmKinematics(Translation2d shoulder, double l1, double l2, double minTheta1, double maxTheta1,
+  public ArmKinematics(Translation2d origin, double l1, double l2, double minTheta1, double maxTheta1,
       double minTheta2, double maxTheta2, double minTheta21, double maxTheta21) {
-    this.shoulder = shoulder;
+    this.origin = origin;
     this.l1 = l1;
     this.l2 = l2;
     this.minTheta1 = minTheta1;
@@ -52,7 +52,7 @@ public class ArmKinematics {
   public Translation2d forward(double theta1, double theta2) {
     // theta1 is shoulder angle, relative to horizontal
     // theta2 is elbow angle, relative to horizontal
-    return shoulder.plus( new Translation2d(l1 * Math.cos(theta1) + l2 * Math.cos(theta2),
+    return origin.plus( new Translation2d(l1 * Math.cos(theta1) + l2 * Math.cos(theta2),
                                             l1 * Math.sin(theta1) + l2 * Math.sin(theta2)));
   }
 
@@ -70,8 +70,8 @@ public class ArmKinematics {
      * https://math.stackexchange.com/questions/256100/how-can-i-find-the-points-at-which-two-circles-intersect */
 
     // x0 is shoulder position
-    double x0 = shoulder.getX();
-    double y0 = shoulder.getY();
+    double x0 = origin.getX();
+    double y0 = origin.getY();
 
     // x1 is elbow position
     // x2 is end effector position

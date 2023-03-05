@@ -20,6 +20,13 @@ public class Unwrapper
         prevOut = 0;
     }
 
+
+    public void reset(double initialValue)
+    {
+        prevIn = initialValue;
+        prevOut = 0;
+    }
+
     public double unwrap(double in)
     {
         double deltaIn = in - prevIn;
