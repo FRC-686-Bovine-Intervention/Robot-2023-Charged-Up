@@ -3,6 +3,7 @@ package frc.robot.subsystems.drive;
 import java.util.ArrayList;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.RemoteFeedbackDevice;
@@ -34,12 +35,15 @@ public class DriveHAL {
 	
     public static final TalonFXInvertType kLeftMotorInverted    = TalonFXInvertType.Clockwise;
     public static final TalonFXInvertType kRightMotorInverted   = TalonFXInvertType.CounterClockwise;
+    public static final boolean kLeftSensorPhase    = true;
+    public static final boolean kRightSensorPhase   = false;
+    public static final int kTalonIdx       = 0;
+    public static final int kCANCoderIdx    = 1;
 
     public static final int kDriveTrainCurrentLimit = 25;
 
 	// Constant import
 	public static final int kTalonTimeoutMs = 5;
-	public static final int kTalonPidIdx = 0;
 
 	public enum GyroSelectionEnum { BNO055, NAVX, PIGEON; }
     public static final GyroSelectionEnum GyroSelection = GyroSelectionEnum.PIGEON;
@@ -53,14 +57,14 @@ public class DriveHAL {
     //TODO: Update Drive Coefficients
 	// Wheels
 	public static final double kDriveWheelCircumInches    = 4*Math.PI;
-	public static final double kTrackWidthInches          = 24.500;
+	public static final double kTrackWidthInches          = 24.500;//20.5;
 	public static final double kTrackEffectiveDiameter    = 22.5; //Went 707in in 10 rotations       (kTrackWidthInches * kTrackWidthInches + kTrackLengthInches * kTrackLengthInches) / kTrackWidthInches;
 	public static final double kTrackScrubFactor          = 1.0;
 
 	// Wheel Encoder
-	public static final int    kTalonFXEncoderUnitsPerRev    = 2048*2;
-	public static final double kDriveGearRatio				= 1;
-	public static final double kFalconEncoderStatusFramePeriod = 0.100;	// 100 ms
+	public static final int    kTalonFXEncoderUnitsPerRev       = 2048*2;
+	public static final double kDriveGearRatio                  = (62.0/10)*(30.0/22);//(10.0/62)*(22.0/30);
+	public static final double kFalconEncoderStatusFramePeriod  = 0.100;	// 100 ms
 
 	// CONTROL LOOP GAINS   
 	public static final double kCalEncoderUnitsPer100ms = 1400;		// velocity at a nominal throttle (measured using NI web interface)
@@ -189,11 +193,12 @@ public class DriveHAL {
             lMotorMaster.configMotionCruiseVelocity(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxVel), kTalonTimeoutMs);
             lMotorMaster.configMotionAcceleration(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxAccel), kTalonTimeoutMs);
 
+            lMotorMaster.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, kTalonIdx, kTalonTimeoutMs);
             // Set CANCoder as encoder
             if(rCanCoder != null)
             {
                 lMotorMaster.configRemoteFeedbackFilter(lCanCoder, 0);
-                lMotorMaster.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0);
+                lMotorMaster.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0, kCANCoderIdx, kTalonTimeoutMs);
             }
 
             lMotorMaster.configOpenloopRamp(kDriveOpenLoopRampRate, 0);
@@ -241,11 +246,12 @@ public class DriveHAL {
             rMotorMaster.configMotionCruiseVelocity(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxVel), kTalonTimeoutMs);
             rMotorMaster.configMotionAcceleration(inchesPerSecondToEncoderUnitsPerFrame(kPathFollowingMaxAccel), kTalonTimeoutMs);
 
+            rMotorMaster.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, kTalonIdx, kTalonTimeoutMs);
             // Set CANCoder as encoder
             if(rCanCoder != null)
             {
                 rMotorMaster.configRemoteFeedbackFilter(rCanCoder, 0);
-                rMotorMaster.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0);
+                rMotorMaster.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0, kCANCoderIdx, kTalonTimeoutMs);
             }
 
             rMotorMaster.configOpenloopRamp(kDriveOpenLoopRampRate, 0);
@@ -336,17 +342,17 @@ public class DriveHAL {
         return this;
     }
 
-    public double getLeftDistanceInches()   {return lMotorMaster != null ? encoderUnitsToInches(lMotorMaster.getSelectedSensorPosition(kTalonPidIdx)) : 0;}
-    public double getRightDistanceInches()  {return rMotorMaster != null ? encoderUnitsToInches(rMotorMaster.getSelectedSensorPosition(kTalonPidIdx)) : 0;}
+    public double getLeftDistanceInches()   {return lMotorMaster != null ? encoderUnitsToInches(lMotorMaster.getSelectedSensorPosition(kTalonIdx)) : 0;}
+    public double getRightDistanceInches()  {return rMotorMaster != null ? encoderUnitsToInches(rMotorMaster.getSelectedSensorPosition(kTalonIdx)) : 0;}
 
-    public double getLeftSpeedInchesPerSec()    {return lMotorMaster != null ? encoderUnitsPerFrameToInchesPerSecond(lMotorMaster.getSelectedSensorVelocity(kTalonPidIdx)) : 0;}
-    public double getRightSpeedInchesPerSec()   {return rMotorMaster != null ? encoderUnitsPerFrameToInchesPerSecond(rMotorMaster.getSelectedSensorVelocity(kTalonPidIdx)) : 0;}
+    public double getLeftSpeedInchesPerSec()    {return lMotorMaster != null ? encoderUnitsPerFrameToInchesPerSecond(lMotorMaster.getSelectedSensorVelocity(kTalonIdx)) : 0;}
+    public double getRightSpeedInchesPerSec()   {return rMotorMaster != null ? encoderUnitsPerFrameToInchesPerSecond(rMotorMaster.getSelectedSensorVelocity(kTalonIdx)) : 0;}
 
     public double getLeftCurrent()  {return lMotorMaster != null ? lMotorMaster.getStatorCurrent() : 0;}
     public double getRightCurrent() {return rMotorMaster != null ? rMotorMaster.getStatorCurrent() : 0;}
 
-    public double getLeftPIDError()     {return lMotorMaster != null ? lMotorMaster.getClosedLoopError(kTalonPidIdx) : 0;}
-    public double getRightPIDError()    {return rMotorMaster != null ? rMotorMaster.getClosedLoopError(kTalonPidIdx) : 0;}
+    public double getLeftPIDError()     {return lMotorMaster != null ? lMotorMaster.getClosedLoopError(kTalonIdx) : 0;}
+    public double getRightPIDError()    {return rMotorMaster != null ? rMotorMaster.getClosedLoopError(kTalonIdx) : 0;}
 
     public double getLeftMotorStatus()     {return getMotorStatus(lMotorMaster);}
     public double getRightMotorStatus()    {return getMotorStatus(rMotorMaster);}
@@ -361,9 +367,9 @@ public class DriveHAL {
                 return motor.getMotorOutputPercent();
             case Position:
             case MotionMagic:
-                return motor.getSelectedSensorPosition(kTalonPidIdx);
+                return motor.getSelectedSensorPosition(kTalonIdx);
             case Velocity:
-                return motor.getSelectedSensorVelocity(kTalonPidIdx);
+                return motor.getSelectedSensorVelocity(kTalonIdx);
         }
     }
 

@@ -104,15 +104,21 @@ public class ArmHAL {
 
         if (turretMotor != null) {
             turretMotor.configFactoryDefault();
+            turretMotor.configOpenloopRamp(1);
             turretMotor.setSensorPhase(kTurretEncoderInverted);
             turretMotor.setInverted(kTurretMotorInverted);
             
             // set quadrature encoder to absolute encoder value
             turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kRelativePIDId, 0);
             turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, kAbsolutePIDId, 0);
-            if (turretMotor.getSelectedSensorPosition(kRelativePIDId) == 0) // Reset relative to absolute only on power on
-                turretMotor.getSensorCollection().syncQuadratureWithPulseWidth(0, 0, true);
-
+            // if (turretMotor.getSelectedSensorPosition(kRelativePIDId) == 0) { // Reset relative to absolute only on power on
+                System.out.println("ARM HAL Rel before sync: " + turretMotor.getSelectedSensorPosition(kRelativePIDId));
+                System.out.println("ARM HAL Abs before sync: " + turretMotor.getSelectedSensorPosition(kAbsolutePIDId));
+                turretMotor.setSelectedSensorPosition(turretMotor.getSelectedSensorPosition(kAbsolutePIDId) - kTurretEncoderZeroingCalib, kRelativePIDId, 0);
+                // turretMotor.getSensorCollection().syncQuadratureWithPulseWidth(0, 0, true);
+                System.out.println("ARM HAL Rel after sync: " + turretMotor.getSelectedSensorPosition(kRelativePIDId));
+                System.out.println("ARM HAL Abs after sync: " + turretMotor.getSelectedSensorPosition(kAbsolutePIDId));
+            // }
             // enable turret soft limits
             turretMotor.configForwardSoftLimitThreshold(+kTurretSoftLimitDeg / kTurretEncoderUnitsToDegrees);
             turretMotor.configReverseSoftLimitThreshold(-kTurretSoftLimitDeg / kTurretEncoderUnitsToDegrees);
@@ -164,7 +170,9 @@ public class ArmHAL {
         return this;
     }
 
-    public double getTurretAngleDeg()   {return turretMotor != null ? (turretMotor.getSelectedSensorPosition(kRelativePIDId) - kTurretEncoderZeroingCalib) * kTurretGearRatio * kTurretEncoderUnitsToDegrees : 0;}
+    public double getTurretAngleDeg()   {return turretMotor != null ? (turretMotor.getSelectedSensorPosition(kRelativePIDId)/*  - kTurretEncoderZeroingCalib */) * kTurretGearRatio * kTurretEncoderUnitsToDegrees : 0;}
+    public double getTurretRelative()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kRelativePIDId) : 0;}
+    public double getTurretAbsolute()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) : 0;}
 
     // Arm
 

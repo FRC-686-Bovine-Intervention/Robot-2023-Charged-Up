@@ -14,20 +14,20 @@ import frc.robot.auto.actions.RamseteFollowerAction;
 public class RamseteFollowerTestAuto extends AutoMode {
     public RamseteFollowerTestAuto()
     {
-        RamseteController controller = new RamseteController(1,1);
+        RamseteController controller = new RamseteController();
 
         TrajectoryConfig config = new TrajectoryConfig(Units.feetToMeters(1), Units.feetToMeters(2));
 
-        Pose2d origin = new Pose2d(0,0,Rotation2d.fromDegrees(0));
-        Pose2d point1 = new Pose2d(0.5,0.5,Rotation2d.fromDegrees(90));
-        Pose2d point2 = new Pose2d(0,1,Rotation2d.fromDegrees(180));
-        Pose2d point3 = new Pose2d(-0.5,0.5,Rotation2d.fromDegrees(270));
-        Pose2d point4 = origin;
         // Pose2d origin = new Pose2d(0,0,Rotation2d.fromDegrees(0));
-        // Pose2d point1 = new Pose2d(0.5,0.0,Rotation2d.fromDegrees(0));
-        // Pose2d point2 = new Pose2d(1,0,Rotation2d.fromDegrees(0));
-        // Pose2d point3 = new Pose2d(1.5,0,Rotation2d.fromDegrees(0));
-        // Pose2d point4 = new Pose2d(2,0,Rotation2d.fromDegrees(0));
+        // Pose2d point1 = new Pose2d(0.5,0.5,Rotation2d.fromDegrees(90));
+        // Pose2d point2 = new Pose2d(0,1,Rotation2d.fromDegrees(180));
+        // Pose2d point3 = new Pose2d(-0.5,0.5,Rotation2d.fromDegrees(270));
+        // Pose2d point4 = origin;
+        Pose2d origin = new Pose2d(0,0,Rotation2d.fromDegrees(0));
+        Pose2d point1 = new Pose2d(0.5,0.0,Rotation2d.fromDegrees(0));
+        Pose2d point2 = new Pose2d(1,0,Rotation2d.fromDegrees(0));
+        Pose2d point3 = new Pose2d(1.5,0,Rotation2d.fromDegrees(0));
+        Pose2d point4 = new Pose2d(2,0,Rotation2d.fromDegrees(0));
 
         ArrayList<Pose2d> path1 = new ArrayList<Pose2d>();
         ArrayList<Pose2d> path2 = new ArrayList<Pose2d>();

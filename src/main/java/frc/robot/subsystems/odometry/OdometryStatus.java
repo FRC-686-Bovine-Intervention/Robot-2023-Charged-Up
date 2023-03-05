@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
 import frc.robot.AdvantageUtil;
 import frc.robot.FieldDimensions;
@@ -22,13 +23,14 @@ public class OdometryStatus extends StatusBase {
     //TODO:change to meters per sec
     private WheelSpeeds     robotSpeed = new WheelSpeeds();
     public WheelSpeeds      getRobotSpeedInPerSec()                         {return robotSpeed;}
+    public WheelSpeeds      getRobotSpeedMeterPerSec()                      {return new WheelSpeeds(Units.inchesToMeters(robotSpeed.left), Units.inchesToMeters(robotSpeed.right));}
     public OdometryStatus   setRobotSpeedInPerSec(WheelSpeeds robotSpeed)   {this.robotSpeed = robotSpeed; return this;}
 
     @Override
     protected void processOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "Robot Pose (Meters, Rad)", AdvantageUtil.deconstruct(getRobotPose()));
-        logger.recordOutput(prefix + "Robot Speed (M|Sec)/Left", getRobotSpeedInPerSec().left);
-        logger.recordOutput(prefix + "Robot Speed (M|Sec)/Right", getRobotSpeedInPerSec().right);
+        logger.recordOutput(prefix + "Robot Speed (M|Sec)/Left", getRobotSpeedMeterPerSec().left);
+        logger.recordOutput(prefix + "Robot Speed (M|Sec)/Right", getRobotSpeedMeterPerSec().right);
 
         logger.recordOutput(prefix + "Pose Bounding Boxes/In Community", FieldDimensions.community.withinBounds(robotPose));
         logger.recordOutput(prefix + "Pose Bounding Boxes/In Community without Charge Station", FieldDimensions.communityWithoutChargeStation.withinBounds(robotPose));
