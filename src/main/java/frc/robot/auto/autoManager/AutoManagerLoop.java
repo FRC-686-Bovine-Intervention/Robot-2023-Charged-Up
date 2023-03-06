@@ -21,8 +21,9 @@ public class AutoManagerLoop extends LoopBase {
         if(!DriverStation.isAutonomous())
             return;
         if(status.EnabledState.IsInitState) {
-            status.setAutoRunning(true);
-            status.setActionIndex(-1);
+            status.setCurrentAutoMode(status.getNewAutomode())
+                  .setAutoRunning(true)
+                  .setActionIndex(-1);
             autoTimer.start();
         }
         if(status.getActionIndex() < 0) {
@@ -31,13 +32,13 @@ public class AutoManagerLoop extends LoopBase {
         } else {
             if(!status.getAutoRunning())
                 return;
-            Action action = status.getAutomode().actionList.get(status.getActionIndex());
+            Action action = status.getCurrentAutoMode().actionList.get(status.getActionIndex());
             status.setActionTrajectory(action.getClass() == RamseteFollowerAction.class ? ((RamseteFollowerAction)action).controller.getTrajectory() : null);
             action.onLoop();
             if(action.getEvaluatedDone()) {
                 status.incrementActionIndex(1);
             }
-            if(status.getActionIndex() >= status.getAutomode().actionList.size()) {
+            if(status.getActionIndex() >= status.getCurrentAutoMode().actionList.size()) {
                 status.setAutoRunning(false);
                 System.out.println(status.getSelectedAutoMode().autoName + " finished");
             }

@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.auto.modes.AutoMode;
+import frc.robot.auto.modes.DriveStraightAuto;
 import frc.robot.auto.modes.RamseteFollowerTestAuto;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -18,12 +19,13 @@ public class AutoManagerStatus extends StatusBase {
     public static AutoManagerStatus getInstance(){if(instance == null){instance = new AutoManagerStatus();}return instance;}
 
     public enum AutoModesEnum{
-        RamseteFollowerTest("Ramsete Follower", new RamseteFollowerTestAuto())
+        RamseteFollowerTest("Ramsete Follower", RamseteFollowerTestAuto.class),
+        DriveStraightAuto("Drive Straight", DriveStraightAuto.class)
         ;
         public final String autoName;
-        public final AutoMode autoMode;
-        AutoModesEnum(AutoMode autoMode){this(autoMode.getClass().getSimpleName(), autoMode);}
-        AutoModesEnum(String autoName, AutoMode autoMode)
+        public final Class<? extends AutoMode> autoMode;
+        AutoModesEnum(Class<? extends AutoMode> autoMode) {this(autoMode.getSimpleName(), autoMode);}
+        AutoModesEnum(String autoName, Class<? extends AutoMode> autoMode)
         {
             this.autoName = autoName;
             this.autoMode = autoMode;
@@ -63,9 +65,20 @@ public class AutoManagerStatus extends StatusBase {
 
     private AutoModesEnum selectedAutoMode;
     public AutoModesEnum getSelectedAutoMode()                                      {return selectedAutoMode;}
-    public AutoMode getAutomode()                                                   {return selectedAutoMode.autoMode;}
     public AutoManagerStatus setSelectedAutoMode(AutoModesEnum selectedAutoMode)    {this.selectedAutoMode = selectedAutoMode; return this;}
-
+    public Class<? extends AutoMode> getAutomode()                                  {return selectedAutoMode.autoMode;}
+    public AutoMode getNewAutomode() {
+        try {
+            return getAutomode().getConstructor().newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    private AutoMode currentAutoMode;
+    public AutoMode getCurrentAutoMode()                            {return currentAutoMode;}
+    public AutoManagerStatus setCurrentAutoMode(AutoMode autoMode)  {this.currentAutoMode = autoMode; return this;}
+    
     private boolean autoRunning;
     public boolean getAutoRunning() {return autoRunning;}
     public AutoManagerStatus setAutoRunning(boolean autoRunning) {this.autoRunning = autoRunning; return this;}

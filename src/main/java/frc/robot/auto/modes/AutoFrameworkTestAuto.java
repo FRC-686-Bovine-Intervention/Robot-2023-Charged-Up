@@ -1,7 +1,7 @@
 package frc.robot.auto.modes;
 
 import frc.robot.auto.actions.ArmCommandAction;
-import frc.robot.auto.actions.DriveStraightAction;
+import frc.robot.auto.actions.DrivePercentAction;
 import frc.robot.auto.actions.IntakeCommandAction;
 import frc.robot.auto.actions.ParallelAction;
 import frc.robot.auto.actions.SeriesAction;
@@ -40,8 +40,8 @@ public class AutoFrameworkTestAuto extends AutoMode {
         addAction(new ParallelAction(
             new IntakeCommandAction(new IntakeCommand(IntakeState.Grab)), 
             new SeriesAction(
-                new DriveStraightAction(0.1, 3).setTimeout(1), 
-                new DriveStraightAction(-0.1, 2).setTimeout(2)
+                new DrivePercentAction(0.1, 3).setTimeout(1), 
+                new DrivePercentAction(-0.1, 2).setTimeout(2)
             )
         ));
     }

@@ -49,35 +49,31 @@ public class DriveHAL {
     public static final GyroSelectionEnum GyroSelection = GyroSelectionEnum.PIGEON;
     private final WPI_Pigeon2 gyro;
 
-    // Pigeon 2 Mount Pose (Gotten from Phoenix Tuner calibration)
-    private static final double kPigeonMountPoseYaw     = -90.5947;
-    private static final double kPigeonMountPosePitch   = 0.320278;
-    private static final double kPigeonMountPoseRoll    = -0.0856472;
+    // Pigeon 2 Mount Pose (Retrieved from Phoenix Tuner calibration)
+    private static final double kPigeonMountPoseYaw     = 91.95;
+    private static final double kPigeonMountPosePitch   = 0.47715;
+    private static final double kPigeonMountPoseRoll    = -0.679167;
 
     //TODO: Update Drive Coefficients
 	// Wheels
-	public static final double kDriveWheelCircumInches    = 4*Math.PI;
+	public static final double kDriveWheelCircumInches    = 4.25*Math.PI;
 	public static final double kTrackWidthInches          = 24.500;//20.5;
 	public static final double kTrackEffectiveDiameter    = 22.5; //Went 707in in 10 rotations       (kTrackWidthInches * kTrackWidthInches + kTrackLengthInches * kTrackLengthInches) / kTrackWidthInches;
 	public static final double kTrackScrubFactor          = 1.0;
 
 	// Wheel Encoder
-	public static final int    kTalonFXEncoderUnitsPerRev       = 2048*2;
+	public static final int    kTalonFXEncoderUnitsPerRev       = 2048;
 	public static final double kDriveGearRatio                  = (62.0/10)*(30.0/22);//(10.0/62)*(22.0/30);
 	public static final double kFalconEncoderStatusFramePeriod  = 0.100;	// 100 ms
 
 	// CONTROL LOOP GAINS   
-	public static final double kCalEncoderUnitsPer100ms = 1400;		// velocity at a nominal throttle (measured using NI web interface)
-	public static final double kCalPercentOutput 		 = 0.49;	// percent output of motor at kCalEncoderPulsePer100ms (using NI web interface)
+	public static final double kCalEncoderUnitsPer100ms = 10200; // velocity at a nominal throttle (measured using NI web interface)
+	public static final double kCalPercentOutput        = 0.5;	// percent output of motor at kCalEncoderPulsePer100ms (using NI web interface)
    
-    // CONTROL LOOP GAINS
-    public static final double kFullThrottlePercentOutput = 1.0;	
-    public static final double kFullThrottleEncoderUnitsPer100ms = 2900; 
-
     // PID gains for drive velocity loop (sent to Talon)
     // Units: error is 2048 counts/rev.  Max output is +/- 1023 units
     public static final double kDriveVelocityKf = kCalPercentOutput * 1023.0 / kCalEncoderUnitsPer100ms;
-    public static final double kDriveVelocityKp = 0.3;
+    public static final double kDriveVelocityKp = 0.5;
     public static final double kDriveVelocityKi = 0.0;
     public static final double kDriveVelocityKd = 5.0;
     public static final int    kDriveVelocityIZone = 0;
