@@ -45,24 +45,24 @@ classdef arm_dynamics < handle
             I2 = obj.elbow.moi;
             c2 = cos(position(obj.ELBOW));
             
-            cx = cos(position(obj.SHOULDER) - position(obj.ELBOW));
-            sx = sin(position(obj.SHOULDER) - position(obj.ELBOW));
+            c21 = cos(position(obj.ELBOW) - position(obj.SHOULDER));
+            s21 = sin(position(obj.ELBOW) - position(obj.SHOULDER));
             
             g = obj.g; %#ok<*PROPLC> 
 
             M = zeros(2,2);
             M(1,1) = m1*r1^2 + m2*l1^2 + I1;
-            M(1,2) = m2*l1*r2 + I2 + m2*l1*r2*cx;
-            M(2,1) = M(1,2);
+            M(1,2) = m2*l1*r2*c21;
+            M(2,1) = m2*l1*r2*c21;
             M(2,2) = m2*r2^2 + I2;
 
             C = zeros(2,2);
-            C(1,1) = +m2*l1*r2*sx*velocity(obj.ELBOW);
-            C(1,2) = +m2*l1*r2*sx*(velocity(obj.SHOULDER) - velocity(obj.ELBOW));
-            C(2,1) = C(1,2);
-            C(2,2) = +m2*l1*r2*sx*velocity(obj.SHOULDER);
+            C(1,1) = 0;
+            C(1,2) = -m2*l1*r2*s21*velocity(obj.ELBOW);
+            C(2,1) = +m2*l1*r2*s21*velocity(obj.SHOULDER);
+            C(2,2) = 0;
 
-            Tg(1,1) = (m1*r1 + m2*l1)*g*c1 + m2*r2*g*c2;
+            Tg(1,1) = (m1*r1 + m2*l1)*g*c1;
             Tg(2,1) = m2*r2*g*c2;
         end
 
