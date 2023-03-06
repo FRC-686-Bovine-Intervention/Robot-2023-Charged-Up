@@ -17,6 +17,9 @@ public class OdometryLoop extends LoopBase {
     private static OdometryLoop instance;
     public static OdometryLoop getInstance(){if(instance == null){instance = new OdometryLoop();}return instance;}
 
+    private final OdometryStatus status = OdometryStatus.getInstance();
+    private final DriveStatus driveStatus = DriveStatus.getInstance();
+
     private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(DriveHAL.kTrackWidthInches));
     private final DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, new Rotation2d(), 0, 0, new Pose2d(),
         new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), // State measurement standard deviations. X, Y, theta.
@@ -27,15 +30,31 @@ public class OdometryLoop extends LoopBase {
     
     @Override
     public void Update() {
-        DriveStatus driveStatus = DriveStatus.getInstance();
+        OdometryCommand newCommand = status.getCommand();
+
         for(Pose2d poseEstimate : VisionStatus.getInstance().getVisionPoses())
         {
             poseEstimator.addVisionMeasurement(poseEstimate, Timer.getFPGATimestamp());
         }
-        Pose2d poseEstimate = poseEstimator.update(driveStatus.getRotation(), Units.inchesToMeters(driveStatus.getLeftDistanceInches()), Units.inchesToMeters(driveStatus.getRightDistanceInches()));
+        Pose2d poseEstimate = 
+            poseEstimator.update(
+                driveStatus.getRotation(), 
+                Units.inchesToMeters(driveStatus.getLeftDistanceInches()), 
+                Units.inchesToMeters(driveStatus.getRightDistanceInches())
+            );
 
-        OdometryStatus.getInstance().setRobotPose(poseEstimate);
-        OdometryStatus.getInstance().setRobotSpeedInPerSec(driveStatus.getWheelSpeeds());
+        if(newCommand.getResetPose() != null) {
+            poseEstimate = newCommand.getResetPose();
+            poseEstimator.resetPosition(
+                driveStatus.getRotation(), 
+                Units.inchesToMeters(driveStatus.getLeftDistanceInches()), 
+                Units.inchesToMeters(driveStatus.getRightDistanceInches()), 
+                poseEstimate
+            );
+        }
+
+        status.setRobotPose(poseEstimate);
+        status.setRobotSpeedInPerSec(driveStatus.getWheelSpeeds());
     }
     
     @Override public void Enabled() {}

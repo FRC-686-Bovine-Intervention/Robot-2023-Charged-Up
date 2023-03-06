@@ -14,7 +14,13 @@ public class OdometryStatus extends StatusBase {
     private static OdometryStatus instance;
     public static OdometryStatus getInstance(){if(instance == null){instance = new OdometryStatus();}return instance;}
 
-    private OdometryStatus() {Subsystem = Odometry.getInstance();}
+    private final Odometry odometry = Odometry.getInstance();
+
+    private OdometryStatus() {Subsystem = odometry;}
+
+    private OdometryCommand command;
+    public OdometryCommand  getCommand()                        {return command;}
+    private OdometryStatus  setCommand(OdometryCommand command) {this.command = command; return this;}
 
     private Pose2d          robotPose = new Pose2d();
     public Pose2d           getRobotPose()                  {return robotPose;}
@@ -25,6 +31,10 @@ public class OdometryStatus extends StatusBase {
     public WheelSpeeds      getRobotSpeedInPerSec()                         {return robotSpeed;}
     public WheelSpeeds      getRobotSpeedMeterPerSec()                      {return new WheelSpeeds(Units.inchesToMeters(robotSpeed.left), Units.inchesToMeters(robotSpeed.right));}
     public OdometryStatus   setRobotSpeedInPerSec(WheelSpeeds robotSpeed)   {this.robotSpeed = robotSpeed; return this;}
+
+    @Override protected void updateInputs() {
+        setCommand(odometry.getCommand());
+    }
 
     @Override
     protected void processOutputs(Logger logger, String prefix) {
@@ -37,7 +47,6 @@ public class OdometryStatus extends StatusBase {
         logger.recordOutput(prefix + "Pose Bounding Boxes/In Charge Station", FieldDimensions.chargeStation.withinBounds(robotPose));
     }
     
-    @Override protected void updateInputs() {}
     @Override protected void exportToTable(LogTable table) {}
     @Override protected void importFromTable(LogTable table) {}
     @Override protected void processTable() {}

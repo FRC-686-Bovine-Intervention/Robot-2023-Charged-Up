@@ -11,4 +11,8 @@ public class Odometry extends SubsystemBase {
         Loop = OdometryLoop.getInstance();
         Status = OdometryStatus.getInstance();
     }
+
+    private OdometryCommand command;
+    public OdometryCommand  getCommand()                        {return command;}
+    public Odometry         setCommand(OdometryCommand command) {this.command = command; return this;}
 }
