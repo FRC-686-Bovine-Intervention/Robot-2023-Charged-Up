@@ -45,6 +45,8 @@ public class OdometryStatus extends StatusBase {
         logger.recordOutput(prefix + "Pose Bounding Boxes/In Community", FieldDimensions.community.withinBounds(robotPose));
         logger.recordOutput(prefix + "Pose Bounding Boxes/In Community without Charge Station", FieldDimensions.communityWithoutChargeStation.withinBounds(robotPose));
         logger.recordOutput(prefix + "Pose Bounding Boxes/In Charge Station", FieldDimensions.chargeStation.withinBounds(robotPose));
+
+        odometry.setCommand(new OdometryCommand());
     }
     
     @Override protected void exportToTable(LogTable table) {}

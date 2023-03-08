@@ -18,6 +18,7 @@ import frc.robot.subsystems.driverInteraction.DriverInteraction;
 import frc.robot.subsystems.framework.SubsystemController;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.odometry.Odometry;
+import frc.robot.subsystems.vision.Vision;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -49,11 +50,11 @@ public class Robot extends LoggedRobot {
     subsystemController.register(AutoManager.getInstance());
     subsystemController.register(DriverInteraction.getInstance());
     subsystemController.register(DriverAssist.getInstance());
-    // subsystemController.register(Vision.getInstance());
+    subsystemController.register(Vision.getInstance());
     // subsystemController.register(Arm.getInstance());
-    subsystemController.register(Intake.getInstance());
+    // subsystemController.register(Intake.getInstance());
     subsystemController.register(Drive.getInstance());
-    subsystemController.register(Odometry.getInstance());
+    // subsystemController.register(Odometry.getInstance());
     subsystemController.start();
   }
 

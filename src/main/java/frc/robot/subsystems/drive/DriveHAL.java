@@ -73,7 +73,7 @@ public class DriveHAL {
     // PID gains for drive velocity loop (sent to Talon)
     // Units: error is 2048 counts/rev.  Max output is +/- 1023 units
     public static final double kDriveVelocityKf = kCalPercentOutput * 1023.0 / kCalEncoderUnitsPer100ms;
-    public static final double kDriveVelocityKp = 0.5;
+    public static final double kDriveVelocityKp = 0.3;
     public static final double kDriveVelocityKi = 0.0;
     public static final double kDriveVelocityKd = 5.0;
     public static final int    kDriveVelocityIZone = 0;

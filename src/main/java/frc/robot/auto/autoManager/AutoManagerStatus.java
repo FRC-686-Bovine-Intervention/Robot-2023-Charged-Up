@@ -1,10 +1,13 @@
 package frc.robot.auto.autoManager;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -12,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.auto.modes.AutoMode;
 import frc.robot.auto.modes.DriveStraightAuto;
 import frc.robot.auto.modes.RamseteFollowerTestAuto;
+import frc.robot.auto.modes.WallSideTwoPieceAuto;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class AutoManagerStatus extends StatusBase {
@@ -20,7 +24,8 @@ public class AutoManagerStatus extends StatusBase {
 
     public enum AutoModesEnum{
         RamseteFollowerTest("Ramsete Follower", RamseteFollowerTestAuto.class),
-        DriveStraightAuto("Drive Straight", DriveStraightAuto.class)
+        DriveStraightAuto("Drive Straight", DriveStraightAuto.class),
+        WallSideTwoPiece("Double Wall Side", WallSideTwoPieceAuto.class),
         ;
         public final String autoName;
         public final Class<? extends AutoMode> autoMode;
@@ -70,10 +75,12 @@ public class AutoManagerStatus extends StatusBase {
     public AutoMode getNewAutomode() {
         try {
             return getAutomode().getConstructor().newInstance();
+        } catch (InvocationTargetException e) {
+            
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
         }
+        return null;
     }
     private AutoMode currentAutoMode;
     public AutoMode getCurrentAutoMode()                            {return currentAutoMode;}
@@ -124,6 +131,7 @@ public class AutoManagerStatus extends StatusBase {
     protected void processOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "Initial Delay", initialDelay);
         logger.recordOutput(prefix + "Selected Auto Mode", selectedAutoMode != null ? selectedAutoMode.name() : null);
+        logger.recordOutput(prefix + "Auto Mode Class", getAutomode() != null ? getAutomode().getSimpleName() : null);
         logger.recordOutput(prefix + "Auto Running", autoRunning);
         logger.recordOutput(prefix + "Action Index", actionIndex);
         // logger.recordOutput(prefix + "Action Trajectory", actionTrajectory);

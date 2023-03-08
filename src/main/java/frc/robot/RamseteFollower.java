@@ -3,8 +3,6 @@ package frc.robot;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.DifferentialDriveFeedforward;
-import edu.wpi.first.math.controller.DifferentialDriveWheelVoltages;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
@@ -13,8 +11,8 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.drive.DriveCommand;
-import frc.robot.subsystems.drive.DriveHAL;
 import frc.robot.subsystems.drive.DriveCommand.DriveControlMode;
+import frc.robot.subsystems.drive.DriveHAL;
 import frc.robot.subsystems.odometry.OdometryStatus;
 
 public class RamseteFollower {

@@ -32,16 +32,18 @@ public class OdometryLoop extends LoopBase {
     public void Update() {
         OdometryCommand newCommand = status.getCommand();
 
-        for(Pose2d poseEstimate : VisionStatus.getInstance().getVisionPoses())
-        {
-            poseEstimator.addVisionMeasurement(poseEstimate, Timer.getFPGATimestamp());
-        }
         Pose2d poseEstimate = 
             poseEstimator.update(
                 driveStatus.getRotation(), 
                 Units.inchesToMeters(driveStatus.getLeftDistanceInches()), 
                 Units.inchesToMeters(driveStatus.getRightDistanceInches())
             );
+
+        for(Pose2d visionEstimate : VisionStatus.getInstance().getVisionPoses())
+        {
+            if(visionEstimate != null)
+                poseEstimator.addVisionMeasurement(visionEstimate, Timer.getFPGATimestamp());
+        }
 
         if(newCommand.getResetPose() != null) {
             poseEstimate = newCommand.getResetPose();

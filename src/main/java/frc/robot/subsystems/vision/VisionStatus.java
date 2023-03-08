@@ -79,34 +79,34 @@ public class VisionStatus extends StatusBase {
     public VisionStatus         setTargetPipeline(LimelightPipeline targetPipeline) {this.targetPipeline = targetPipeline; return this;}
 
     private Transform3d turretToCamera1 = 
-    new Transform3d(
-        new Translation3d(
-            5.364,
-            5.806,
-            33.3
-        ),
-        new Rotation3d(
-            0,
-            0,
-            Units.degreesToRadians(20.0)
-        )
-    ); //TODO
+        new Transform3d(
+            new Translation3d(
+                5.364,
+                5.806,
+                33.3
+            ),
+            new Rotation3d(
+                0,
+                0,
+                Units.degreesToRadians(20.0)
+            )
+        ); //TODO
     public Transform3d  getTurretToCamera1()    {return turretToCamera1;};
     public Transform3d  getRobotToCamera1()     {return armStatus.getRobotToTurret().plus(turretToCamera1);}
     
     private Transform3d turretToCamera2 = 
-    new Transform3d(
-        new Translation3d(
-            5.364,
-            -5.806,
-            33.3
-        ),
-        new Rotation3d(
-            0,
-            0,
-            Units.degreesToRadians(-20.0)
-        )
-    ); //TODO
+        new Transform3d(
+            new Translation3d(
+                5.364,
+                -5.806,
+                33.3
+            ),
+            new Rotation3d(
+                0,
+                0,
+                Units.degreesToRadians(-20.0)
+            )
+        ); //TODO
     public Transform3d  getTurretToCamera2()    {return turretToCamera2;}
     public Transform3d  getRobotToCamera2()     {return armStatus.getRobotToTurret().plus(turretToCamera2);}
 
