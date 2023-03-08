@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.drive.DriveHAL;
 import frc.robot.subsystems.drive.DriveStatus;
 import frc.robot.subsystems.framework.LoopBase;
@@ -19,6 +18,7 @@ public class OdometryLoop extends LoopBase {
 
     private final OdometryStatus status = OdometryStatus.getInstance();
     private final DriveStatus driveStatus = DriveStatus.getInstance();
+    private final VisionStatus visionStatus = VisionStatus.getInstance();
 
     private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(DriveHAL.kTrackWidthInches));
     private final DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, new Rotation2d(), 0, 0, new Pose2d(),
@@ -39,10 +39,12 @@ public class OdometryLoop extends LoopBase {
                 Units.inchesToMeters(driveStatus.getRightDistanceInches())
             );
 
-        for(Pose2d visionEstimate : VisionStatus.getInstance().getVisionPoses())
+        for(int i = 0; i < visionStatus.getVisionPoses().size(); i++)
         {
-            if(visionEstimate != null)
-                poseEstimator.addVisionMeasurement(visionEstimate, Timer.getFPGATimestamp());
+            Pose2d visionPose = visionStatus.getVisionPoses().get(i);
+            Double visionTime = visionStatus.getVisionTimes().get(i);
+            if(visionPose != null)
+                poseEstimator.addVisionMeasurement(visionPose, visionTime.doubleValue());
         }
 
         if(newCommand.getResetPose() != null) {

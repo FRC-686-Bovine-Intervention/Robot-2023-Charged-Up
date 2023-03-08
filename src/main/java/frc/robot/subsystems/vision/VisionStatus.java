@@ -1,11 +1,11 @@
 package frc.robot.subsystems.vision;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.stream.LongStream;
 
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -14,7 +14,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import frc.robot.AdvantageUtil;
 import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -66,10 +65,7 @@ public class VisionStatus extends StatusBase {
     protected VisionCommand getCommand()                        {return command;}
     private VisionStatus    setCommand(VisionCommand command)   {this.command = command; return this;}
 
-    private ArrayList<Pose2d>   visionPoses = new ArrayList<Pose2d>();
-    public ArrayList<Pose2d>    getVisionPoses()                                {return visionPoses;}
-    public VisionStatus         setVisionPoses(ArrayList<Pose2d> visionPoses)   {this.visionPoses = visionPoses; return this;}
-
+    // Limelight
     private LimelightPipeline   currentPipeline = null;
     public LimelightPipeline    getCurrentPipeline()                                    {return currentPipeline;}
     private VisionStatus        setCurrentPipeline(LimelightPipeline currentPipeline)   {this.currentPipeline = currentPipeline; return this;}
@@ -77,38 +73,6 @@ public class VisionStatus extends StatusBase {
     private LimelightPipeline   targetPipeline = LimelightPipeline.Cone;
     public LimelightPipeline    getTargetPipeline()                                 {return targetPipeline;}
     public VisionStatus         setTargetPipeline(LimelightPipeline targetPipeline) {this.targetPipeline = targetPipeline; return this;}
-
-    private Transform3d turretToCamera1 = 
-        new Transform3d(
-            new Translation3d(
-                5.364,
-                5.806,
-                33.3
-            ),
-            new Rotation3d(
-                0,
-                0,
-                Units.degreesToRadians(20.0)
-            )
-        ); //TODO
-    public Transform3d  getTurretToCamera1()    {return turretToCamera1;};
-    public Transform3d  getRobotToCamera1()     {return armStatus.getRobotToTurret().plus(turretToCamera1);}
-    
-    private Transform3d turretToCamera2 = 
-        new Transform3d(
-            new Translation3d(
-                5.364,
-                -5.806,
-                33.3
-            ),
-            new Rotation3d(
-                0,
-                0,
-                Units.degreesToRadians(-20.0)
-            )
-        ); //TODO
-    public Transform3d  getTurretToCamera2()    {return turretToCamera2;}
-    public Transform3d  getRobotToCamera2()     {return armStatus.getRobotToTurret().plus(turretToCamera2);}
 
     private double          targetXAngle;
     protected double        getTargetXAngle()                       {return targetXAngle;}
@@ -157,15 +121,69 @@ public class VisionStatus extends StatusBase {
     protected VisionStatus  setLatestCubeArea(double latestCubeArea)        {this.latestCubeArea = latestCubeArea; return this;}
 
     private boolean          cubeExists;
-    public boolean           getCubeExists()                             {return cubeExists;}
-    protected VisionStatus   setCubeExists(Boolean cubeExists)        {this.cubeExists = cubeExists; return this;}
+    public boolean           getCubeExists()                            {return cubeExists;}
+    protected VisionStatus   setCubeExists(Boolean cubeExists)          {this.cubeExists = cubeExists; return this;}
+
+    // AprilTags
+    private ArrayList<Pose2d>   visionPoses = new ArrayList<Pose2d>();
+    public ArrayList<Pose2d>    getVisionPoses()                                {return visionPoses;}
+    protected VisionStatus      setVisionPoses(ArrayList<Pose2d> visionPoses)   {this.visionPoses = visionPoses; return this;}
+
+    private ArrayList<Double>   visionTimes = new ArrayList<Double>();
+    public ArrayList<Double>    getVisionTimes()                                {return visionTimes;}
+    protected VisionStatus      setVisionTimes(ArrayList<Double> visionTimes)   {this.visionTimes = visionTimes; return this;}
+
+    private ArrayList<AprilTag> visibleTags = new ArrayList<AprilTag>();
+    public ArrayList<AprilTag>  getVisibleTags()                                {return visibleTags;}
+    protected VisionStatus      setVisibleTags(ArrayList<AprilTag> visibleTags) {this.visibleTags = visibleTags; return this;}
+
+    // Camera 1
+    private Transform3d turretToCamera1 = 
+        new Transform3d(
+            new Translation3d(
+                5.364,
+                5.806,
+                33.3
+            ),
+            new Rotation3d(
+                0,
+                0,
+                Units.degreesToRadians(20.0)
+            )
+        ); //TODO
+    public Transform3d  getTurretToCamera1()    {return turretToCamera1;};
+    public Transform3d  getRobotToCamera1()     {return armStatus.getRobotToTurret().plus(turretToCamera1);}
+
+    private PhotonPipelineResult    camera1Result;
+    public PhotonPipelineResult     getCamera1Result()                                      {return camera1Result;}
+    private VisionStatus            setCamera1Result(PhotonPipelineResult camera1Result)    {this.camera1Result = camera1Result; return this;}
+    
+    // Camera 2
+    private Transform3d turretToCamera2 = 
+        new Transform3d(
+            new Translation3d(
+                5.364,
+                -5.806,
+                33.3
+            ),
+            new Rotation3d(
+                0,
+                0,
+                Units.degreesToRadians(-20.0)
+            )
+        ); //TODO
+    public Transform3d  getTurretToCamera2()    {return turretToCamera2;}
+    public Transform3d  getRobotToCamera2()     {return armStatus.getRobotToTurret().plus(turretToCamera2);}
+
+    private PhotonPipelineResult    camera2Result;
+    public PhotonPipelineResult     getCamera2Result()                                      {return camera2Result;}
+    private VisionStatus            setCamera2Result(PhotonPipelineResult camera2Result)    {this.camera2Result = camera2Result; return this;}
 
     @Override
     protected void updateInputs() {
         setCommand(vision.getVisionCommand());
-        HAL.setCameraTransforms(getRobotToCamera1(), 
-                                getRobotToCamera2());
-        setVisionPoses(HAL.getVisionPoses());
+        setCamera1Result(HAL.getCamera1Result());
+        setCamera2Result(HAL.getCamera2Result());
         setCurrentPipeline(LimelightPipeline.getFromIndex(HAL.getCurrentPipeline()));
         setTargetXAngle(HAL.getTargetXAngle());
         setTargetYAngle(HAL.getTargetYAngle());
@@ -175,24 +193,15 @@ public class VisionStatus extends StatusBase {
 
     @Override
     protected void exportToTable(LogTable table) {
-        table.put("Vision Poses", AdvantageUtil.deconstructPose2ds(visionPoses));
-        long[] tagIDs = new long[0];
-        ArrayList<Pose3d> tagPoses = new ArrayList<Pose3d>();
+        Packet camPacket = new Packet(null);
+        if (camera1Result != null)
+            camPacket = camera1Result.populatePacket(camPacket);
+        table.put("AprilTags/Camera 1 Results", camPacket.getData());
 
-        for(AprilTag tag : HAL.getAprilTagFieldLayout().getTags())
-        {
-            tagPoses.add(tag.pose);
-            tagIDs = LongStream.concat(Arrays.stream(tagIDs), Arrays.stream(new long[]{tag.ID})).toArray();
-        }
-
-        ArrayList<Pose3d> visiblePoses = new ArrayList<Pose3d>();
-
-        for(AprilTag target : HAL.getVisibleTags())
-            visiblePoses.add(target.pose);
-
-        table.put("AprilTags/AprilTag Poses", AdvantageUtil.deconstructPose3ds(tagPoses));
-        table.put("AprilTags/AprilTag IDs", tagIDs);
-        table.put("AprilTags/Visible Tag Poses", AdvantageUtil.deconstructPose3ds(visiblePoses));
+        camPacket = new Packet(null);
+        if (camera2Result != null)
+            camPacket = camera2Result.populatePacket(camPacket);
+        table.put("AprilTags/Camera 2 Results", camPacket.getData());
 
         table.put("Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null");
         table.put("Limelight/Target X Angle (Deg)", targetXAngle);
@@ -203,7 +212,9 @@ public class VisionStatus extends StatusBase {
 
     @Override
     protected void importFromTable(LogTable table) {
-        setVisionPoses(AdvantageUtil.reconstructPose2d(table.getDoubleArray("Vision Poses", null)));
+        camera1Result.createFromPacket(new Packet(table.getRaw("AprilTags/Camera 1 Results", null)));
+        camera2Result.createFromPacket(new Packet(table.getRaw("AprilTags/Camera 2 Results", null)));
+
         setCurrentPipeline(LimelightPipeline.getFromName(table.getString("Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null")));
         setTargetXAngle(table.getDouble("Limelight/Target X Angle (Deg)", targetXAngle));
         setTargetYAngle(table.getDouble("Limelight/Target Y Angle (Deg)", targetYAngle));

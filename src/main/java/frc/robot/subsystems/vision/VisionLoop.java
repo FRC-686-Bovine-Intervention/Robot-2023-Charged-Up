@@ -1,5 +1,17 @@
 package frc.robot.subsystems.vision;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Optional;
+
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
+
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.framework.LoopBase;
@@ -10,12 +22,20 @@ public class VisionLoop extends LoopBase {
     public static VisionLoop getInstance(){if(instance == null){instance = new VisionLoop();}return instance;}
 
     private final VisionStatus status = VisionStatus.getInstance();
-
     private final ArmStatus armStatus = ArmStatus.getInstance();
 
     private static final double kPipelineToggleDelay = 2;
+    private final AprilTagFieldLayout aprilTagFieldLayout;
 
-    private VisionLoop() {Subsystem = Vision.getInstance();}
+    private VisionLoop() {
+        Subsystem = Vision.getInstance();
+        
+        try {
+            aprilTagFieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+        } catch (IOException e) {
+            throw new NullPointerException("Failed to load AprilTagFieldLayout");
+        }
+    }
 
     private double pipelineStartTimestamp;
     
@@ -24,6 +44,52 @@ public class VisionLoop extends LoopBase {
         VisionCommand newCommand = status.getCommand();
         double currentTime = Timer.getFPGATimestamp();
 
+        // AprilTags
+        ArrayList<Pose2d>   visionPoses = new ArrayList<Pose2d>();
+        ArrayList<Double>   visionTimes = new ArrayList<Double>();
+        ArrayList<AprilTag> visibleTags = new ArrayList<AprilTag>();
+        PhotonPipelineResult cameraResult;
+
+        // Camera 1
+        cameraResult = status.getCamera1Result();
+        if (cameraResult != null) {
+            for(PhotonTrackedTarget target : cameraResult.targets) {
+                Optional<Pose3d> fiducialPose = aprilTagFieldLayout.getTagPose(target.getFiducialId());
+                if (fiducialPose.isEmpty()) {continue;}
+                
+                Pose3d targetPose = fiducialPose.get();
+                Pose3d botPose = targetPose
+                                    .transformBy(target.getBestCameraToTarget().inverse())
+                                    .transformBy(status.getRobotToCamera1().inverse());
+                
+                visionPoses.add(botPose.toPose2d());
+                visionTimes.add(cameraResult.getTimestampSeconds());
+                visibleTags.add(new AprilTag(target.getFiducialId(), fiducialPose.get()));
+            }
+        }
+        // Camera 2
+        cameraResult = status.getCamera2Result();
+        if (cameraResult != null) {
+            for(PhotonTrackedTarget target : cameraResult.targets) {
+                Optional<Pose3d> fiducialPose = aprilTagFieldLayout.getTagPose(target.getFiducialId());
+                if (fiducialPose.isEmpty()) {continue;}
+                
+                Pose3d targetPose = fiducialPose.get();
+                Pose3d botPose = targetPose
+                                    .transformBy(target.getBestCameraToTarget().inverse())
+                                    .transformBy(status.getRobotToCamera2().inverse());
+                
+                visionPoses.add(botPose.toPose2d());
+                visionTimes.add(cameraResult.getTimestampSeconds());
+                visibleTags.add(new AprilTag(target.getFiducialId(), fiducialPose.get()));
+            }
+        }
+        
+        status.setVisionPoses(visionPoses)
+              .setVisionTimes(visionTimes)
+              .setVisibleTags(visibleTags);
+
+        // Limelight
         if(newCommand.getTargetPipeline() != null)
         {
             status.setTargetPipeline(newCommand.getTargetPipeline());
