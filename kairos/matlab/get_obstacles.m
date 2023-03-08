@@ -21,7 +21,7 @@ obstacle{obstacleEnum.INTAKE}.x = [0.0  0.0  12.0  12.0];
 obstacle{obstacleEnum.INTAKE}.y = [0.0  12.0 + intake_margin.y    12.0 + intake_margin.y     0.0];
 
 obstacle{obstacleEnum.BONKER_BAR_TM}.x = [0.0  0.0  6.5  6.5];
-obstacle{obstacleEnum.BONKER_BAR_TM}.y = [0.0   18.0 + intake_margin.y    18.0 + intake_margin.y     0.0];
+obstacle{obstacleEnum.BONKER_BAR_TM}.y = [0.0   21.0 + intake_margin.y    21.0 + intake_margin.y     0.0];
 
 obstacle{obstacleEnum.MID_NODE}.x =  [fieldPos.mid_shelf_front_corner.x  fieldPos.mid_shelf_front_corner.x    fieldPos.back_wall.x     fieldPos.back_wall.x];
 obstacle{obstacleEnum.MID_NODE}.y =  [0                         fieldPos.mid_shelf.y                 fieldPos.mid_shelf.y     0];
