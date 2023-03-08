@@ -323,7 +323,7 @@ class Solver:
                     any_violated = True
 
             # Set enabled
-            if any_violated or (constraint_key in parameters["constraintOverrides"]):
+            if any_violated:# or (constraint_key in parameters["constraintOverrides"]):
                 opti.set_value(constraint_parameter, 0)
             else:
                 opti.set_value(constraint_parameter, 1)
