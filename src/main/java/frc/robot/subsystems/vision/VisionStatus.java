@@ -150,13 +150,13 @@ public class VisionStatus extends StatusBase {
         new Transform3d(
             new Translation3d(
                 Units.inchesToMeters(11.33),
-                Units.inchesToMeters(5.806),
-                Units.inchesToMeters(33.3)
+                Units.inchesToMeters(+5.806),
+                Units.inchesToMeters(20.375)
             ),
             new Rotation3d(
                 0,
                 0,
-                Units.degreesToRadians(20.0)
+                Units.degreesToRadians(-20.0)
             )
         ); //TODO
     public Transform3d  getTurretToCamera1()    {return turretToCamera1;};
@@ -171,13 +171,13 @@ public class VisionStatus extends StatusBase {
         new Transform3d(
             new Translation3d(
                 Units.inchesToMeters(11.33),
-                Units.inchesToMeters(5.806),
-                Units.inchesToMeters(33.3)
+                Units.inchesToMeters(-5.806),
+                Units.inchesToMeters(20.375)
             ),
             new Rotation3d(
                 0,
                 0,
-                Units.degreesToRadians(-20.0)
+                Units.degreesToRadians(+20.0)
             )
         ); //TODO
     public Transform3d  getTurretToCamera2()    {return turretToCamera2;}
