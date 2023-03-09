@@ -45,6 +45,7 @@ public class VisionLoop extends LoopBase {
         double currentTime = Timer.getFPGATimestamp();
 
         // AprilTags
+        ArrayList<Pose2d>   targetPoses = new ArrayList<Pose2d>();
         ArrayList<Pose2d>   visionPoses = new ArrayList<Pose2d>();
         ArrayList<Double>   visionTimes = new ArrayList<Double>();
         ArrayList<AprilTag> visibleTags = new ArrayList<AprilTag>();
@@ -62,6 +63,7 @@ public class VisionLoop extends LoopBase {
                                     .transformBy(target.getBestCameraToTarget().inverse())
                                     .transformBy(status.getRobotToCamera1().inverse());
                 
+                targetPoses.add((new Pose3d()).transformBy(target.getBestCameraToTarget()).toPose2d());
                 visionPoses.add(botPose.toPose2d());
                 visionTimes.add(cameraResult.getTimestampSeconds());
                 visibleTags.add(new AprilTag(target.getFiducialId(), fiducialPose.get()));
@@ -79,13 +81,15 @@ public class VisionLoop extends LoopBase {
                                     .transformBy(target.getBestCameraToTarget().inverse())
                                     .transformBy(status.getRobotToCamera2().inverse());
                 
+                targetPoses.add((new Pose3d()).transformBy(target.getBestCameraToTarget()).toPose2d());
                 visionPoses.add(botPose.toPose2d());
                 visionTimes.add(cameraResult.getTimestampSeconds());
                 visibleTags.add(new AprilTag(target.getFiducialId(), fiducialPose.get()));
             }
         }
         
-        status.setVisionPoses(visionPoses)
+        status.setTargetPoses(targetPoses)
+              .setVisionPoses(visionPoses)
               .setVisionTimes(visionTimes)
               .setVisibleTags(visibleTags);
 
