@@ -5,6 +5,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
+import frc.robot.joysticks.ButtonBoard3x3;
 import frc.robot.joysticks.Thrustmaster;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -13,7 +14,8 @@ public class DriverInteractionStatus extends StatusBase {
     public static DriverInteractionStatus getInstance() {if(instance == null){instance = new DriverInteractionStatus();}return instance;}
 
     public enum Joysticks{
-        Thrustmaster(new Joystick(Constants.kThrustmasterPort));
+        Thrustmaster(new Joystick(Constants.kThrustmasterPort)),
+        ButtonBoard(new Joystick(Constants.kButtonboardPort));
 
         public final Joystick joystick;
         Joysticks(Joystick joystick)                {this.joystick = joystick;}
@@ -25,9 +27,19 @@ public class DriverInteractionStatus extends StatusBase {
 
     public enum DriverControlButtons{
         InvertControls  (Thrustmaster.kLeftThumbButton),
-        Intake          (Thrustmaster.kTriggerButton),
+        Trigger         (Thrustmaster.kTriggerButton),
         AutoBalance     (Thrustmaster.kBottomThumbButton),
-        DriverAssist    (Thrustmaster.kRightThumbButton);
+        DriverAssist    (Thrustmaster.kRightThumbButton),
+        Substation      (Thrustmaster.kTopButton3),
+        ButtonBoard1_1  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton1_1),
+        ButtonBoard1_2  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton1_2),
+        ButtonBoard1_3  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton1_3),
+        ButtonBoard2_1  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton2_1),
+        ButtonBoard2_2  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton2_2),
+        ButtonBoard2_3  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton2_3),
+        ButtonBoard3_1  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton3_1),
+        ButtonBoard3_2  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton3_2),
+        ButtonBoard3_3  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton3_3);
 
         private final Joysticks joystick;
         private final int buttonID;

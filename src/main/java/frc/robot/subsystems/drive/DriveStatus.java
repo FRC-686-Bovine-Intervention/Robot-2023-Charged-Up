@@ -140,7 +140,7 @@ public class DriveStatus extends StatusBase {
         logger.recordOutput(prefix + "Motor PID Error/Left",            getLeftMotorPIDError());
         logger.recordOutput(prefix + "Motor PID Error/Right",           getRightMotorPIDError());
 
-        getCommand().logCommand(logger, prefix + "Command");
+        getCommand().logCommand(logger, prefix + "Command/");
     }
     
 }

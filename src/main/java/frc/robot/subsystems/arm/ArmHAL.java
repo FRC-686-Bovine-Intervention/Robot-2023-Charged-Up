@@ -2,34 +2,58 @@ package frc.robot.subsystems.arm;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
+import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 import edu.wpi.first.wpilibj.RobotBase;
-
+import edu.wpi.first.wpilibj.Solenoid;
 import frc.robot.Constants;
-
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
 
 public class ArmHAL {
-
     private static ArmHAL instance;
     public static ArmHAL getInstance() {if(instance == null){instance = new ArmHAL();}return instance;}
 
     private final TalonSRX turretMotor;
+    private final WPI_TalonFX shoulderMotor, elbowMotor;
+    private final Solenoid clawSolenoid;
 
-    private static final double kEncoderUnitsToDegrees = 360.0 / 4096.0;
+    private static final boolean kClawSolenoidInverted = false;
+
+    private static final int kRelativePIDId = 0;
+    private static final int kAbsolutePIDId = 1;
+    private static final double kTurretEncoderUnitsToDegrees = 360.0 / 4096.0;
     private static final double kTurretGearRatio = 1; // Gear ratio is 1:1 because of worm gear
     private static final boolean kTurretMotorInverted = true;
     private static final boolean kTurretEncoderInverted = true;
-    private static final int kRelativePIDId = 0;
-    private static final int kAbsolutePIDId = 1;
+    private static final double kTurretEncoderZeroingCalib = 943;   // value read from encoder when turret is set to 0 degrees
+    private static final double kTurretSoftLimitDeg = 225;
+
+    public static final double kArmMotorFullVoltage = 10.0;  // voltage compensation     
+
+    public static final TalonFXInvertType kShoulderMotorInverted    = TalonFXInvertType.Clockwise;          
+    public static final TalonFXInvertType kElbowMotorInverted       = TalonFXInvertType.CounterClockwise;    
+
+    public static final double kArmCurrentLimit = 100;
+    public static final double kArmTriggerThresholdCurrent = 40;
+    public static final double kArmTriggerThresholdTime = 0.5;
+
+   
+	// Constant import
+	public static final int kTalonTimeoutMs = 5;
+	public static final int kTalonPidIdx = 0;  
 
     private final static double kShoulderPotentiometerGearRatio           = 72.0/16.0;
     private final static double kShoulderEncoderGearRatio                 = 72.0/16.0;
-    private final static double kShoulderPotentiometerNTurns              = 3.0;    
-    private final static double kShoulderAngleAtCalibration               = 0.0;      // TODO: update at calibration
-    private final static double kShoulderPotentiometerAngleDegAtCalib     = 30.0;     // TODO: update at calibration
-    private final static double kShoulderAbsoluteEncoderAngleDegAtCalib   = 30.0;     // TODO: update at calibration
+    private final static double kShoulderPotentiometerNTurns              = 5.0;    
+    private final static double kShoulderAngleAtCalibration               = -90.0;      // calibrated 2/23 (straight down)
+    private final static double kShoulderPotNormalizedVoltageAtCalib      = 0.50619;//0.5135;     // calibrated 2/23
+    private final static double kShoulderAbsoluteEncoderAngleDegAtCalib   = 86.20;//81.37;     // calibrated 2/23
+    private final static boolean kShoulderPotInverted                     = false;
+    private final static boolean kShoulderEncInverted                     = false;
 
     private final PotAndEncoder shoulderPotEncoder;
     private final PotAndEncoder.Config shoulderPotAndEncoderConfig;
@@ -37,45 +61,104 @@ public class ArmHAL {
 
     private final static double kElbowPotentiometerGearRatio              = 64.0/16.0;
     private final static double kElbowEncoderGearRatio                    = 64.0/16.0;
-    private final static double kElbowPotentiometerNTurns                 = 3.0;
-    private final static double kElbowAngleAtCalibration                  = 0.0;      // TODO: update at calibration
-    private final static double kElbowPotentiometerAngleDegAtCalib        = 30.0;     // TODO: update at calibration
-    private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 30.0;     // TODO: update at calibration
+    private final static double kElbowPotentiometerNTurns                 = 5.0;
+    private final static double kElbowAngleAtCalibration                  = 0.0;       // calibrated 2/23 (straight out)
+    private final static double kElbowPotNormalizedVoltageAtCalib         = 0.4850;//0.4845;    // calibrated 2/23
+    private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 109.97;//109.25;    // calibrated 2/23
+    private final static boolean kElbowPotInverted                        = true;
+    private final static boolean kElbowEncInverted                        = true;
 
+    
     private final PotAndEncoder elbowPotEncoder;
     private final PotAndEncoder.Config elbowPotAndEncoderConfig;
     private final PotAndEncoder.HAL elbowPotAndEncoderHAL;
-
+        
     private ArmHAL()
     {
         if(RobotBase.isReal())
         {
             turretMotor = new TalonSRX(Constants.kTurretMotorID);
-            shoulderPotAndEncoderHAL = null;//new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, kShoulderPotentiometerNTurns, kShoulderPotentiometerAngleDegAtCalib, kShoulderAngleAtCalibration);            
-            elbowPotAndEncoderHAL    = null;//new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, kElbowPotentiometerNTurns, kElbowPotentiometerAngleDegAtCalib, kElbowAngleAtCalibration); 
+            shoulderMotor = null;//new WPI_TalonFX(Constants.kShoulderMotorID);
+            elbowMotor    = null;//new WPI_TalonFX(Constants.kElbowMotorID);    
+            shoulderPotAndEncoderHAL = null;//new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, kShoulderPotentiometerNTurns, 
+                                                            //  kShoulderPotentiometerGearRatio, kShoulderPotNormalizedVoltageAtCalib, kShoulderAngleAtCalibration, 
+                                                            //  kShoulderPotInverted, kShoulderEncInverted);            
+            elbowPotAndEncoderHAL    = null;//new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, kElbowPotentiometerNTurns, 
+                                                            // kElbowPotentiometerGearRatio, kElbowPotNormalizedVoltageAtCalib, kElbowAngleAtCalibration, 
+                                                            // kElbowPotInverted, kElbowEncInverted); 
+            clawSolenoid = null;//new Solenoid(PneumaticsModuleType.CTREPCM, Constants.kClawSolenoidID);
         }
         else
         {
             turretMotor = null;
-            shoulderPotAndEncoderHAL = null;
-            elbowPotAndEncoderHAL = null;
+            shoulderMotor = null;
+            elbowMotor    = null;            
+            shoulderPotAndEncoderHAL = new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, kShoulderPotentiometerNTurns, 
+                                                             kShoulderPotentiometerGearRatio, kShoulderPotNormalizedVoltageAtCalib, kShoulderAngleAtCalibration, 
+                                                             kShoulderPotInverted, kShoulderEncInverted);            
+            elbowPotAndEncoderHAL    = new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, kElbowPotentiometerNTurns, 
+                                                            kElbowPotentiometerGearRatio, kElbowPotNormalizedVoltageAtCalib, kElbowAngleAtCalibration, 
+                                                            kElbowPotInverted, kElbowEncInverted); 
+            clawSolenoid = null;
         }
 
         if (turretMotor != null) {
             turretMotor.configFactoryDefault();
-            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kRelativePIDId, 0);
-            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, kAbsolutePIDId, 0);
-            if(turretMotor.getSelectedSensorPosition(kRelativePIDId) == 0) // Reset relative to absolute only on power on
-                turretMotor.getSensorCollection().syncQuadratureWithPulseWidth(0, 0, true);
+            turretMotor.configOpenloopRamp(1);
             turretMotor.setSensorPhase(kTurretEncoderInverted);
             turretMotor.setInverted(kTurretMotorInverted);
+            
+            // set quadrature encoder to absolute encoder value
+            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kRelativePIDId, 0);
+            turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, kAbsolutePIDId, 0);
+            // if (turretMotor.getSelectedSensorPosition(kRelativePIDId) == 0) { // Reset relative to absolute only on power on
+                turretMotor.setSelectedSensorPosition(turretMotor.getSelectedSensorPosition(kAbsolutePIDId) - kTurretEncoderZeroingCalib, kRelativePIDId, 0);
+                // turretMotor.getSensorCollection().syncQuadratureWithPulseWidth(0, 0, true);
+            // }
+            // enable turret soft limits
+            turretMotor.configForwardSoftLimitThreshold(+kTurretSoftLimitDeg / kTurretEncoderUnitsToDegrees);
+            turretMotor.configReverseSoftLimitThreshold(-kTurretSoftLimitDeg / kTurretEncoderUnitsToDegrees);
+            turretMotor.configForwardSoftLimitEnable(true);
+            turretMotor.configReverseSoftLimitEnable(true);
         }
-        shoulderPotAndEncoderConfig = new PotAndEncoder.Config(kShoulderPotentiometerGearRatio, kShoulderEncoderGearRatio, kShoulderPotentiometerNTurns, kShoulderAngleAtCalibration, kShoulderPotentiometerAngleDegAtCalib, kShoulderAbsoluteEncoderAngleDegAtCalib, shoulderPotAndEncoderHAL);
-        elbowPotAndEncoderConfig = new PotAndEncoder.Config(kElbowPotentiometerGearRatio, kElbowEncoderGearRatio, kElbowPotentiometerNTurns, kElbowAngleAtCalibration, kElbowPotentiometerAngleDegAtCalib, kElbowAbsoluteEncoderAngleDegAtCalib, elbowPotAndEncoderHAL);
+        
+        shoulderPotAndEncoderConfig = new PotAndEncoder.Config(kShoulderPotentiometerGearRatio, kShoulderEncoderGearRatio, kShoulderPotentiometerNTurns, 
+                                                                kShoulderAngleAtCalibration, kShoulderPotNormalizedVoltageAtCalib, kShoulderAbsoluteEncoderAngleDegAtCalib, 
+                                                                kShoulderPotInverted, kShoulderEncInverted, shoulderPotAndEncoderHAL);
+        elbowPotAndEncoderConfig = new PotAndEncoder.Config(kElbowPotentiometerGearRatio, kElbowEncoderGearRatio, kElbowPotentiometerNTurns, 
+                                                                kElbowAngleAtCalibration, kElbowPotNormalizedVoltageAtCalib, kElbowAbsoluteEncoderAngleDegAtCalib, 
+                                                                kElbowPotInverted, kElbowEncInverted, elbowPotAndEncoderHAL);
         shoulderPotEncoder = new PotAndEncoder(shoulderPotAndEncoderConfig);
         elbowPotEncoder = new PotAndEncoder(elbowPotAndEncoderConfig);
+
+        if(shoulderMotor != null)
+        {
+            shoulderMotor.configFactoryDefault();
+            
+            // Set up the encoders
+            shoulderMotor.setInverted(kShoulderMotorInverted);           
+            shoulderMotor.setSensorPhase(true);
+            shoulderMotor.setNeutralMode(NeutralMode.Brake);
+            shoulderMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, kArmCurrentLimit, kArmTriggerThresholdCurrent, kArmTriggerThresholdTime));
+            shoulderMotor.configVoltageCompSaturation(kArmMotorFullVoltage);
+            shoulderMotor.enableVoltageCompensation(false);     // don't enable VoltageCompensation!  This will changes us to 'Simple' neutral deadband mode, which causes oscillation
+        }  
+
+        if(elbowMotor != null)
+        {
+            elbowMotor.configFactoryDefault();
+            
+            // Set up the encoders
+            elbowMotor.setInverted(kElbowMotorInverted);           
+            elbowMotor.setSensorPhase(false);
+            elbowMotor.setNeutralMode(NeutralMode.Brake);
+            elbowMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, kArmCurrentLimit, kArmTriggerThresholdCurrent, kArmTriggerThresholdTime));
+            elbowMotor.configVoltageCompSaturation(kArmMotorFullVoltage);
+            elbowMotor.enableVoltageCompensation(false);       // don't enable VoltageCompensation!  This will changes us to 'Simple' neutral deadband mode, which causes oscillation
+        }
     }
 
+    // Turret
     public ArmHAL setTurretPower(double power){
         if (turretMotor != null) {
             turretMotor.set(ControlMode.PercentOutput, power);
@@ -83,13 +166,69 @@ public class ArmHAL {
         return this;
     }
 
-    public double getTurretRelative(){
-        return turretMotor != null ? turretMotor.getSelectedSensorPosition(kRelativePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
-    }
-    public double getTurretAbsolute(){
-        return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) * kTurretGearRatio * kEncoderUnitsToDegrees : 0; // Gear ratio is 1:1 because of worm gear
+    public double getTurretAngleDeg()   {return turretMotor != null ? (turretMotor.getSelectedSensorPosition(kRelativePIDId)/*  - kTurretEncoderZeroingCalib */) * kTurretGearRatio * kTurretEncoderUnitsToDegrees : 0;}
+    public double getTurretRelative()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kRelativePIDId) : 0;}
+    public double getTurretAbsolute()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) : 0;}
+
+    // Arm
+
+    
+    // Shoulder
+    public PotAndEncoder getShoulderPotEncoder()    {return shoulderPotEncoder;}
+
+    public double getShoulderFalconSensorPosition() { return shoulderMotor != null ? shoulderMotor.getSelectedSensorPosition(): 0; }
+    public void setShoulderFalconSensorPosition(double _units) { if (shoulderMotor != null) {shoulderMotor.setSelectedSensorPosition(_units); }}
+
+    public void disableShoulderSoftLimits() {
+        if (shoulderMotor != null) {        
+            shoulderMotor.configForwardSoftLimitEnable(false);
+            shoulderMotor.configReverseSoftLimitEnable(false);
+        }
     }
 
-    public PotAndEncoder getShoulderPotEncoder() {return shoulderPotEncoder;}
-    public PotAndEncoder getElbowPotEncoder() {return elbowPotEncoder;}
+    public void enableShoulderSoftLimits(double revLimitSensorUnits, double fwdLimitSensorUnits) {
+        if (shoulderMotor != null) {        
+            shoulderMotor.configForwardSoftLimitThreshold(fwdLimitSensorUnits);
+            shoulderMotor.configReverseSoftLimitThreshold(revLimitSensorUnits);
+            shoulderMotor.configForwardSoftLimitEnable(true);
+            shoulderMotor.configReverseSoftLimitEnable(true);
+        }
+    }
+
+    public void setShoulderMotorPower(double _power) { if (shoulderMotor != null) { shoulderMotor.set(_power);  }}
+
+
+
+    // Elbow
+    public PotAndEncoder getElbowPotEncoder()       {return elbowPotEncoder;}   
+
+    public double getElbowFalconSensorPosition() { return elbowMotor != null ? elbowMotor.getSelectedSensorPosition(): 0; }
+    public void setElbowFalconSensorPosition(double _units) { if (elbowMotor != null) {elbowMotor.setSelectedSensorPosition(_units); }}
+
+    public void disableElbowSoftLimits() {
+        if (elbowMotor != null) {        
+            elbowMotor.configForwardSoftLimitEnable(false);
+            elbowMotor.configReverseSoftLimitEnable(false);
+        }
+    }
+
+    public void enableElbowSoftLimits(double revLimitSensorUnits, double fwdLimitSensorUnits) {
+        if (elbowMotor != null) {        
+            elbowMotor.configForwardSoftLimitThreshold(fwdLimitSensorUnits);
+            elbowMotor.configReverseSoftLimitThreshold(revLimitSensorUnits);
+            elbowMotor.configForwardSoftLimitEnable(true);
+            elbowMotor.configReverseSoftLimitEnable(true);
+        }
+    }
+
+    public void setElbowMotorPower(double _power) { if (elbowMotor != null) { elbowMotor.set(_power);  }}
+
+        
+    // Claw
+    public ArmHAL setClawGrabbing(boolean clawGrabbing) {
+        if(clawSolenoid != null)
+            clawSolenoid.set(clawGrabbing ^ kClawSolenoidInverted); 
+        return this;
+    }
 }
+

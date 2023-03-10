@@ -1,12 +1,22 @@
 package frc.robot.subsystems.arm;
 
+import java.io.File;
+
+import edu.wpi.first.wpilibj.Filesystem;
+import frc.robot.subsystems.arm.json.ArmConfigJson;
 import frc.robot.subsystems.framework.SubsystemBase;
 
 public class Arm extends SubsystemBase {
     private static Arm instance;
     public static Arm getInstance(){if(instance == null) instance = new Arm(); return instance;}
 
-    private Arm(){}
+    private final ArmConfigJson config;
+    public ArmConfigJson        getConfig() {return config;}
+
+    private Arm() {
+        File configFile = new File(Filesystem.getDeployDirectory(), ArmConfigJson.jsonFilename);
+        config = ArmConfigJson.loadJson(configFile);
+    }
 
     @Override
     public void init()

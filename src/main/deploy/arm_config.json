@@ -1,0 +1,46 @@
+{
+  "frame_width_inches": 24.0,
+  "bumper_width_inches": 30.5,
+  "origin": [
+    0.343,
+    1.27
+  ],
+  "shoulder": {
+    "mass": 1.5966451424,
+    "length": 0.6858,
+    "moi": 0.153,
+    "cgRadius": 0.12382499999999999,
+    "minAngle": -2.8,
+    "maxAngle": 0,
+    "motor": {
+      "type": "falcon",
+      "count": 1,
+      "reduction": 72.0
+    }
+  },
+  "elbow": {
+    "mass": 0.5488467677,
+    "length": 0.35559999999999997,
+    "moi": 0.013,
+    "cgRadius": 0.0635,
+    "minAngle": -1.57,
+    "maxAngle": 1.047,
+    "motor": {
+      "type": "falcon",
+      "count": 1,
+      "reduction": 64.0
+    }
+  },
+  "wrist": {
+    "mass": 0,
+    "length": 0.2286,
+    "moi": 0.019,
+    "cgRadius": 0.0635
+  },
+  "cone": {
+    "mass": 0.652039031875,
+    "length": 0.212725,
+    "moi": 0.019,
+    "cgRadius": 0.0
+  }
+}

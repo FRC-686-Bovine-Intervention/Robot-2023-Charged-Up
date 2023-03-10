@@ -14,7 +14,8 @@ public class DriverAssistStatus extends StatusBase {
     public enum DriverAssistState {
         Disabled,
         AutoBalance,
-        AutoDrive
+        AutoDrive, 
+        AutoIntake,
     }
 
     private DriverAssistStatus() {Subsystem = DriverAssist.getInstance();}
@@ -62,7 +63,7 @@ public class DriverAssistStatus extends StatusBase {
         logger.recordOutput(prefix + "usingProportional",       getUsingProportional());
 
         if(getDriveCommand() != null)
-            getDriveCommand().logCommand(logger, prefix + "Drive Command");
+            getDriveCommand().logCommand(logger, prefix + "Drive Command/");
     }
     
     @Override protected void exportToTable(LogTable table) {}

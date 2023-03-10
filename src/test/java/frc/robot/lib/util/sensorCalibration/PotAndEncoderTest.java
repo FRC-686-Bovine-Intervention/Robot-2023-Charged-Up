@@ -8,24 +8,27 @@ import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 
+import edu.wpi.first.math.MathUtil;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
-import frc.robot.lib.util.Util;
 
 public class PotAndEncoderTest {
     
     static final double kEps = 1e-9;
 
-    double potentiometerGearRatio           = 3.0;
-    double encoderGearRatio                 = 5.0;
-    double potentiometerNTurns              = 3.0;    
-    double outputAngleAtCalibration         = -37.1;      
-    double potentiometerAngleDegAtCalib     = 421.0840;     
-    double absoluteEncoderAngleDegAtCalib   = 288.0176;     
+    double potentiometerGearRatio           = 4.0;
+    double encoderGearRatio                 = 4.0;
+    double potentiometerNTurns              = 5.0;    
+    double outputAngleDegAtCalibration         = -90.0;      
+    double potentiometerNormalizedVoltageAtCalib     = 0.4467;     
+    double absoluteEncoderAngleDegAtCalib   = 87.5;     
+    boolean potInverted = false;
+    boolean encInverted = false;
     
     final PotAndEncoder.HAL hal = mock(PotAndEncoder.HAL.class);
 
-    final PotAndEncoder.Config config = new PotAndEncoder.Config(potentiometerGearRatio, encoderGearRatio, 
-                potentiometerNTurns, outputAngleAtCalibration, potentiometerAngleDegAtCalib, absoluteEncoderAngleDegAtCalib, hal);
+    final PotAndEncoder.Config config = new PotAndEncoder.Config(potentiometerGearRatio, encoderGearRatio, potentiometerNTurns, 
+                outputAngleDegAtCalibration, potentiometerNormalizedVoltageAtCalib, absoluteEncoderAngleDegAtCalib, 
+                potInverted, encInverted, hal);
     
     // simulate hardware inputs
     PotAndEncoder.Reading mockHALReading(double outputAngleDeg)
@@ -35,18 +38,22 @@ public class PotAndEncoderTest {
 
         double potReadingDeg, absReadingDeg, relReadingDeg;
         
-        potReadingDeg = potAngleDeg + (potentiometerAngleDegAtCalib - potentiometerGearRatio*outputAngleAtCalibration);
-        potReadingDeg = Util.limit(potReadingDeg, 0.0, potentiometerNTurns*360.0);
+        potReadingDeg = potAngleDeg;
 
-        absReadingDeg = encAngleDeg + (absoluteEncoderAngleDegAtCalib - encoderGearRatio*outputAngleAtCalibration);
-        absReadingDeg = Util.fmodulo(absReadingDeg, 360.0);    // modulo 360
+        absReadingDeg = encAngleDeg + (absoluteEncoderAngleDegAtCalib - encoderGearRatio*outputAngleDegAtCalibration);
+        absReadingDeg = MathUtil.inputModulus(absReadingDeg, 0.0, 360.0);    // modulo 360
 
         relReadingDeg = encAngleDeg;
-        relReadingDeg = Util.fmodulo(relReadingDeg, 360.0);    // modulo 360        
+        relReadingDeg = MathUtil.inputModulus(relReadingDeg, 0.0, 360.0);    // modulo 360        
 
         return new PotAndEncoder.Reading(potReadingDeg, absReadingDeg, relReadingDeg);
     }
 
+    double mockGetPotAngleFromVoltage(double voltage) {
+        double potScale = potInverted ? -potentiometerNTurns*360.0 : potentiometerNTurns*360.0;
+        double potOffset = potentiometerGearRatio*outputAngleDegAtCalibration - potScale*potentiometerNormalizedVoltageAtCalib;
+        return potScale*voltage + potOffset;
+    }
 
     @Test
     public void TestIsMoving() 
@@ -134,9 +141,11 @@ public class PotAndEncoderTest {
 
     @Test
     public void TestCalibration() {
-        // run a series of dwells, where we move for a while then sit still for long enought to (re-)calculate the offset
+        // run a series of dwells, where we move for a while then sit still for long enough to (re-)calculate the offset
         // check the final results for accuracy
         
+        when(hal.getPotAngleFromVoltage(potentiometerNormalizedVoltageAtCalib)).thenReturn(mockGetPotAngleFromVoltage(potentiometerNormalizedVoltageAtCalib));
+
         PotAndEncoder potEncoder = new PotAndEncoder(config);
         PotAndEncoder.Status status = null;
 
@@ -153,7 +162,7 @@ public class PotAndEncoderTest {
             167.3599,
            -123.2593,
             169.4134,
-            outputAngleAtCalibration};
+            outputAngleDegAtCalibration};
         final int numDwells = 10;   // 1 less than the list above
 
         double outputAngleDeg = dwellList[1];
@@ -184,24 +193,11 @@ public class PotAndEncoderTest {
             }
             assertFalse(status.moving);
             assertTrue(status.calibrated);
-
-            // PotAndEncoderDebug debug = calib.getDebug();
-            // System.out.printf("outAngleDeg = %.3f\n", calib.outputAngleDeg);
-            // System.out.printf("potAngleDeg = %.3f\n", calib.getPotAngleDeg());
-            // System.out.printf("absAngleDeg = %.3f\n", calib.getAbsAngleDeg());
-            // System.out.printf("relAngleDeg = %.3f\n", calib.getRelAngleDeg());
-            // System.out.printf("averageAbsRelDifference = %.3f\n", debug.getAverageAbsRelDifference());
-            // System.out.printf("averagePotDifference = %.3f\n", debug.getAveragePotDifference());
-            // System.out.printf("absAngleDegEstimate = %.3f\n", debug.getAbsAngleDegEstimate());
-            // System.out.printf("absAngleDegEstimateAtCalib = %.3f\n", debug.getAbsAngleDegEstimateAtCalib());
-            // System.out.printf("absAngleNumRotationsSinceCalib = %.3f\n", debug.getAbsAngleNumRotationsSinceCalib());
-            // System.out.printf("offset = %.3f\n", debug.getOffset());
-            // System.out.printf("dwell=%2d, actual=%.3f, calc=%.3f\n", dwellCnt, dwellList[dwellCnt], calib.getPosition());
         
             assertEquals(outputAngleDeg, status.positionDeg, kEps);
         }
 
         // final output angle is at the calibration angle
-        assertEquals(outputAngleDeg, outputAngleAtCalibration, kEps);        
+        assertEquals(outputAngleDegAtCalibration, status.positionDeg, kEps);        
     }
 }

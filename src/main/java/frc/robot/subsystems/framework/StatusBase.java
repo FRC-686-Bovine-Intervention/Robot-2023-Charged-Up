@@ -11,19 +11,21 @@ public abstract class StatusBase implements LoggableInputs{
 
     public SubsystemBase Subsystem;
 
-    public enum EnabledState
+    public enum EnabledStateEnum
     {
-        Starting(true),
-        Enabled(false),
-        Stopping(true),
-        Disabled(false);
+        Starting    (true, true),
+        Enabled     (true, false),
+        Stopping    (false, true),
+        Disabled    (false, false);
+        public final boolean IsEnabled;
         public final boolean IsInitState;
-        private EnabledState(boolean IsInitState)
+        private EnabledStateEnum(boolean IsEnabled, boolean IsInitState)
         {
+            this.IsEnabled = IsEnabled;
             this.IsInitState = IsInitState;
         }
     }
-    public EnabledState Enabled = EnabledState.Disabled;
+    public EnabledStateEnum EnabledState = EnabledStateEnum.Disabled;
 
     protected GenericEntry EnabledEntry;
     private boolean EnabledSwitch = true;
@@ -32,7 +34,7 @@ public abstract class StatusBase implements LoggableInputs{
     public final void toLog(LogTable table)
     {
         table.put("Enabled Switch", EnabledSwitch);
-        table.put("Enabled State", Enabled.name());
+        table.put("Enabled State", EnabledState.name());
         exportToTable(table);
     }
 
@@ -43,16 +45,16 @@ public abstract class StatusBase implements LoggableInputs{
         switch(table.getString("Enabled State", "Default"))
         {
             case "Starting":
-                Enabled = EnabledState.Starting;
+                EnabledState = EnabledStateEnum.Starting;
             break;
             case "Enabled":
-                Enabled = EnabledState.Enabled;
+                EnabledState = EnabledStateEnum.Enabled;
             break;
             case "Stopping":
-                Enabled = EnabledState.Stopping;
+                EnabledState = EnabledStateEnum.Stopping;
             break;
             case "Disabled":
-                Enabled = EnabledState.Disabled;
+                EnabledState = EnabledStateEnum.Disabled;
             break;
             default: break;
         }
@@ -65,21 +67,21 @@ public abstract class StatusBase implements LoggableInputs{
             EnabledSwitch = true;
         else
             EnabledSwitch = EnabledEntry.getBoolean(true);
-        switch(Enabled)
+        switch(EnabledState)
         {
             case Starting:
-                Enabled = EnabledState.Enabled;
+                EnabledState = EnabledStateEnum.Enabled;
             break;
             case Enabled:
                 if(DriverStation.isDisabled() || !EnabledSwitch)
-                    Enabled = EnabledState.Stopping;
+                    EnabledState = EnabledStateEnum.Stopping;
             break;
             case Stopping:
-                Enabled = EnabledState.Disabled;
+                EnabledState = EnabledStateEnum.Disabled;
             break;
             case Disabled:
                 if(DriverStation.isEnabled() && EnabledSwitch)
-                    Enabled = EnabledState.Starting;
+                    EnabledState = EnabledStateEnum.Starting;
             break;
         }
         updateInputs();
@@ -93,7 +95,7 @@ public abstract class StatusBase implements LoggableInputs{
             throw new NullPointerException(this.getClass().getName() + " has not defined the super variable Subsystem\n");
         String prefix = Subsystem.getClass().getSimpleName() + "/";
         Logger.getInstance().recordOutput(prefix + "Enabled Switch", EnabledSwitch);
-        Logger.getInstance().recordOutput(prefix + "Enabled State", Enabled.name());
+        Logger.getInstance().recordOutput(prefix + "Enabled State", EnabledState.name());
         processOutputs(Logger.getInstance(), prefix);
     }
 

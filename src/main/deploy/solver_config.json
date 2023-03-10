@@ -1,0 +1,7 @@
+{
+  "solver": {
+    "interiorPoints": 15,
+    "maxVoltage": 10,
+    "maxJerk": 50
+  }
+}

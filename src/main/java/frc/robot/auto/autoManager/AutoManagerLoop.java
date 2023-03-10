@@ -5,6 +5,8 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.auto.actions.Action;
 import frc.robot.auto.actions.RamseteFollowerAction;
 import frc.robot.subsystems.framework.LoopBase;
+import frc.robot.subsystems.odometry.Odometry;
+import frc.robot.subsystems.odometry.OdometryCommand;
 
 public class AutoManagerLoop extends LoopBase {
     private static AutoManagerLoop instance;
@@ -12,51 +14,38 @@ public class AutoManagerLoop extends LoopBase {
 
     private final AutoManagerStatus status = AutoManagerStatus.getInstance();
 
-    private AutoManagerLoop() {Subsystem = AutoManager.getInstance();}
+    private final Timer autoTimer = new Timer();
 
-    private int actionIndex = -1;
-    private int prevActionIndex = -1;
-    private double startTime = 0;
+    private AutoManagerLoop() {Subsystem = AutoManager.getInstance();}
 
     @Override
     protected void Enabled() {
         if(!DriverStation.isAutonomous())
             return;
-        if(status.Enabled.IsInitState)
-        {
-            status.setAutoRunning(true);
-            actionIndex = -1;
-            startTime = Timer.getFPGATimestamp();
+        if(status.EnabledState.IsInitState) {
+            status.setCurrentAutoMode(status.getNewAutomode())
+                  .setAutoRunning(true)
+                  .setActionIndex(-1);
+            Odometry.getInstance().setCommand(new OdometryCommand().setResetPose(status.getCurrentAutoMode().initialPose));
+            autoTimer.start();
         }
-        if(actionIndex < 0)
-        {
-            if(Timer.getFPGATimestamp() - startTime >= status.getInitialDelay())
-            {
-                actionIndex = 0;
-            }
-        }
-        else
-        {
+        if(status.getActionIndex() < 0) {
+            if(autoTimer.hasElapsed(status.getInitialDelay()))
+                status.setActionIndex(0);
+        } else {
             if(!status.getAutoRunning())
                 return;
-            Action action = status.getAutomode().actionList.get(actionIndex);
+            Action action = status.getCurrentAutoMode().actionList.get(status.getActionIndex());
             status.setActionTrajectory(action.getClass() == RamseteFollowerAction.class ? ((RamseteFollowerAction)action).controller.getTrajectory() : null);
-            if(actionIndex != prevActionIndex)
-                action.start();
-            action.run();
-            prevActionIndex = actionIndex;
-            if(action.isFinished())
-            {
-                action.done();
-                actionIndex++;
+            action.onLoop();
+            if(action.getEvaluatedDone()) {
+                status.incrementActionIndex(1);
             }
-            if(actionIndex >= status.getAutomode().actionList.size())
-            {
+            if(status.getActionIndex() >= status.getCurrentAutoMode().actionList.size()) {
                 status.setAutoRunning(false);
                 System.out.println(status.getSelectedAutoMode().autoName + " finished");
             }
         }
-        status.setActionIndex(actionIndex);
     }
     @Override
     protected void Disabled() {

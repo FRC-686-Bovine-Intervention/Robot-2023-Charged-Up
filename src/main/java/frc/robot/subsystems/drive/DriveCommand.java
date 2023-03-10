@@ -93,11 +93,11 @@ public class DriveCommand {
 
     public DriveCommand logCommand(Logger logger, String prefix)
     {
-        logger.recordOutput(prefix + "/Drive Mode",              getDriveMode().name());
-        logger.recordOutput(prefix + "/Talon Control Mode",      getTalonMode().name());
-        logger.recordOutput(prefix + "/Talon Neutral Mode",      getNeutralMode().name());
-        logger.recordOutput(prefix + "/Drive Setpoint/Left",     getWheelSpeed().left);
-        logger.recordOutput(prefix + "/Drive Setpoint/Right",    getWheelSpeed().right);
+        logger.recordOutput(prefix + "Drive Mode",              getDriveMode().name());
+        logger.recordOutput(prefix + "Talon Control Mode",      getTalonMode().name());
+        logger.recordOutput(prefix + "Talon Neutral Mode",      getNeutralMode().name());
+        logger.recordOutput(prefix + "Drive Setpoint/Left",     getWheelSpeed().left);
+        logger.recordOutput(prefix + "Drive Setpoint/Right",    getWheelSpeed().right);
         return this;
     }
 }
