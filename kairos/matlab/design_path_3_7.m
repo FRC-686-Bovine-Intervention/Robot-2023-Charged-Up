@@ -6,7 +6,7 @@ if ~exist(filename, 'file')
     filename = fullfile('..\..\src\main\deploy\paths\', sprintf('arm_path_%d_%d.json', startIdx, finalIdx));
 end
 s = jsondecode(fileread(filename));
-orig_T = max(s.totalTime, 0) * grannyFactor;
+orig_T = max(s.totalTime, 0);
 orig_points = [s.theta1.'; s.theta2.'];
 % remove extraneous loop
 orig_points = orig_points(:,[1 6:end]);

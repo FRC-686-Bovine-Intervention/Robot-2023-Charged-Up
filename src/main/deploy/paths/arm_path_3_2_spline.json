@@ -1,6 +1,6 @@
 {
-  "startPos": "double_substation",
-  "finalPos": "score_hybrid",
+  "startPos": "score_hybrid",
+  "finalPos": "double_substation",
   "totalTime": 0.58659740770105684,
   "theta1": [
     -1.7482893859165045,

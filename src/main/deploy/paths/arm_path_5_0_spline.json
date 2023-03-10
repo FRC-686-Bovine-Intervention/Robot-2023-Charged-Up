@@ -1,6 +1,6 @@
 {
-  "startPos": "defense",
-  "finalPos": "score_high_cube",
+  "startPos": "score_high_cube",
+  "finalPos": "defense",
   "totalTime": 0.79755857737987179,
   "theta1": [
     -0.69963516335191034,

@@ -1,6 +1,6 @@
 {
-  "startPos": "score_hybrid",
-  "finalPos": "score_mid_cube",
+  "startPos": "score_mid_cube",
+  "finalPos": "score_hybrid",
   "totalTime": 0.546753445020922,
   "theta1": [
     -1.4817013692885419,

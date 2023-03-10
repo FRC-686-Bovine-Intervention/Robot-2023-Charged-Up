@@ -1,6 +1,6 @@
 {
-  "startPos": "intake",
-  "finalPos": "score_mid_cube",
+  "startPos": "score_mid_cube",
+  "finalPos": "intake",
   "totalTime": 0.51572097902045821,
   "theta1": [
     -1.4817013692885419,

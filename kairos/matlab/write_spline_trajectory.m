@@ -31,6 +31,10 @@ if ~exist(orig_filename, 'file')
     copyfile(traj_filename, orig_filename);
 end
 
+% flip directions and write return path
+temp = s.startPos;
+s.startPos = s.finalPos;
+s.finalPos = temp;
 s.theta1 = fliplr(s.theta1);
 s.theta2 = fliplr(s.theta2);
 

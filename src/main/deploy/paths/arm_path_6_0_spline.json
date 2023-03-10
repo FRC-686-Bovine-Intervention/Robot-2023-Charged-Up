@@ -1,6 +1,6 @@
 {
-  "startPos": "defense",
-  "finalPos": "score_mid_cone",
+  "startPos": "score_mid_cone",
+  "finalPos": "defense",
   "totalTime": 0.60638392163567889,
   "theta1": [
     -1.2768810150903604,

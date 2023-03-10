@@ -1,6 +1,6 @@
 {
-  "startPos": "defense",
-  "finalPos": "intake",
+  "startPos": "intake",
+  "finalPos": "defense",
   "totalTime": 1.3148565213909618,
   "theta1": [
     -2.2732553541534206,
