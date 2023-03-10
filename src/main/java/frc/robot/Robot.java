@@ -47,13 +47,13 @@ public class Robot extends LoggedRobot {
     Logger.getInstance().start(); // Start logging! No more data receivers, replay sources, or metadata values may be added.
 
     subsystemController = SubsystemController.getInstance();
-    subsystemController.register(AutoManager.getInstance());
-    subsystemController.register(DriverInteraction.getInstance());
-    subsystemController.register(DriverAssist.getInstance());
+    // subsystemController.register(AutoManager.getInstance());
+    // subsystemController.register(DriverInteraction.getInstance());
+    // subsystemController.register(DriverAssist.getInstance());
     subsystemController.register(Vision.getInstance());
     // subsystemController.register(Arm.getInstance());
     // subsystemController.register(Intake.getInstance());
-    subsystemController.register(Drive.getInstance());
+    // subsystemController.register(Drive.getInstance());
     subsystemController.register(Odometry.getInstance());
     subsystemController.start();
   }

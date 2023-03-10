@@ -7,18 +7,22 @@ import org.littletonrobotics.junction.Logger;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.targeting.PhotonPipelineResult;
 
-import com.ctre.phoenix.Util;
-
 import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import frc.robot.AdvantageUtil;
 import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.framework.StatusBase;
+import frc.robot.subsystems.odometry.OdometryStatus;
 
 public class VisionStatus extends StatusBase {
     private static VisionStatus instance;
@@ -128,35 +132,46 @@ public class VisionStatus extends StatusBase {
     protected VisionStatus   setCubeExists(Boolean cubeExists)          {this.cubeExists = cubeExists; return this;}
 
     // AprilTags
-    private ArrayList<Pose2d>   targetPoses = new ArrayList<Pose2d>();
-    public ArrayList<Pose2d>    getTargetPoses()                                {return targetPoses;}
-    protected VisionStatus      setTargetPoses(ArrayList<Pose2d> targetPoses)   {this.targetPoses = targetPoses; return this;}
+    public record VisionData(AprilTag aprilTag, Transform3d camToTarget, Transform3d robotToCam, double timestamp) {
+        public Pose2d getRobotPose() {
+            return aprilTag.pose.transformBy(camToTarget.inverse()).transformBy(robotToCam.inverse()).toPose2d();
+        }
+        public Pose3d getReprojection() {
+            return new Pose3d(OdometryStatus.getInstance().getRobotPose()).transformBy(robotToCam).transformBy(camToTarget);
+        }
+        public double getReprojectionError() {
+            return aprilTag.pose.getTranslation().getDistance(getReprojection().getTranslation());
+        }
+        public double getKalmanError() {
+            return OdometryStatus.getInstance().getRobotPose().getTranslation().getDistance(getRobotPose().getTranslation());
+        }
+        public Matrix<N3, N1> getStdDevs() {
+            double xyCoefficient = 0.01;
+            double thetaCoefficient = 0.01;
+            
+            double distance = getKalmanError();
+            double xyStdDev = xyCoefficient * distance * distance;
+            double thetaStdDev = thetaCoefficient * distance * distance;
 
-
-    private ArrayList<Pose2d>   visionPoses = new ArrayList<Pose2d>();
-    public ArrayList<Pose2d>    getVisionPoses()                                {return visionPoses;}
-    protected VisionStatus      setVisionPoses(ArrayList<Pose2d> visionPoses)   {this.visionPoses = visionPoses; return this;}
-
-    private ArrayList<Double>   visionTimes = new ArrayList<Double>();
-    public ArrayList<Double>    getVisionTimes()                                {return visionTimes;}
-    protected VisionStatus      setVisionTimes(ArrayList<Double> visionTimes)   {this.visionTimes = visionTimes; return this;}
-
-    private ArrayList<AprilTag> visibleTags = new ArrayList<AprilTag>();
-    public ArrayList<AprilTag>  getVisibleTags()                                {return visibleTags;}
-    protected VisionStatus      setVisibleTags(ArrayList<AprilTag> visibleTags) {this.visibleTags = visibleTags; return this;}
-
+            return new MatBuilder<>(Nat.N3(), Nat.N1()).fill(xyStdDev, xyStdDev, thetaStdDev);
+        }
+    }
+    private ArrayList<VisionData>   visionData = new ArrayList<VisionData>();
+    public ArrayList<VisionData>    getVisionData()                                 {return visionData;}
+    protected VisionStatus          setVisionData(ArrayList<VisionData> visionData) {this.visionData = visionData; return this;}
+    
     // Camera 1
     private Transform3d turretToCamera1 = 
         new Transform3d(
             new Translation3d(
                 Units.inchesToMeters(11.33),
-                Units.inchesToMeters(+5.806),
+                Units.inchesToMeters(-5.806),
                 Units.inchesToMeters(20.375)
             ),
             new Rotation3d(
                 0,
                 0,
-                Units.degreesToRadians(-20.0)
+                Units.degreesToRadians(+20.0)
             )
         ); //TODO
     public Transform3d  getTurretToCamera1()    {return turretToCamera1;};
@@ -171,13 +186,13 @@ public class VisionStatus extends StatusBase {
         new Transform3d(
             new Translation3d(
                 Units.inchesToMeters(11.33),
-                Units.inchesToMeters(-5.806),
+                Units.inchesToMeters(+5.806),
                 Units.inchesToMeters(20.375)
             ),
             new Rotation3d(
                 0,
                 0,
-                Units.degreesToRadians(+20.0)
+                Units.degreesToRadians(-20.0)
             )
         ); //TODO
     public Transform3d  getTurretToCamera2()    {return turretToCamera2;}
@@ -248,11 +263,10 @@ public class VisionStatus extends StatusBase {
         logger.recordOutput(prefix + "Limelight/Latest Cube Area (Deg)",    getLatestCubeArea());
         
         // AprilTags
-        logger.recordOutput(prefix + "AprilTags/Robot to Camera/1", new Pose3d().transformBy(getRobotToCamera1()));
-        logger.recordOutput(prefix + "AprilTags/Robot to Camera/2", new Pose3d().transformBy(getRobotToCamera2()));
-        logger.recordOutput(prefix + "AprilTags/Vision Poses", AdvantageUtil.deconstructPose2ds(visionPoses));
-        logger.recordOutput(prefix + "AprilTags/Target Poses", AdvantageUtil.deconstructPose2ds(targetPoses));
-        
+        // logger.recordOutput(prefix + "AprilTags/Robot to Camera/1", new Pose3d().transformBy(getRobotToCamera1()));
+        // logger.recordOutput(prefix + "AprilTags/Robot to Camera/2", new Pose3d().transformBy(getRobotToCamera2()));
+        logger.recordOutput(prefix + "AprilTags/Field to Camera", new Pose3d[]{new Pose3d(OdometryStatus.getInstance().getRobotPose()).transformBy(getRobotToCamera1()), new Pose3d(OdometryStatus.getInstance().getRobotPose()).transformBy(getRobotToCamera2())});
+        AdvantageUtil.recordVisionData(logger, prefix + "AprilTags", visionData);
     }
 
     @Override protected void processTable() {}

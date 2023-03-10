@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.vision.VisionStatus.LimelightPipeline;
+import frc.robot.subsystems.vision.VisionStatus.VisionData;
 
 public class VisionLoop extends LoopBase {
     private static VisionLoop instance;
@@ -45,54 +46,46 @@ public class VisionLoop extends LoopBase {
         double currentTime = Timer.getFPGATimestamp();
 
         // AprilTags
-        ArrayList<Pose2d>   targetPoses = new ArrayList<Pose2d>();
-        ArrayList<Pose2d>   visionPoses = new ArrayList<Pose2d>();
-        ArrayList<Double>   visionTimes = new ArrayList<Double>();
-        ArrayList<AprilTag> visibleTags = new ArrayList<AprilTag>();
-        PhotonPipelineResult cameraResult;
-
         // Camera 1
-        cameraResult = status.getCamera1Result();
-        if (cameraResult != null) {
-            for(PhotonTrackedTarget target : cameraResult.targets) {
+        ArrayList<VisionData> camera1Data = new ArrayList<VisionData>();
+        if (status.getCamera1Result() != null) {
+            for(PhotonTrackedTarget target : status.getCamera1Result().targets) {
                 Optional<Pose3d> fiducialPose = aprilTagFieldLayout.getTagPose(target.getFiducialId());
                 if (fiducialPose.isEmpty()) {continue;}
                 
-                Pose3d targetPose = fiducialPose.get();
-                Pose3d botPose = targetPose
-                                    .transformBy(target.getBestCameraToTarget().inverse())
-                                    .transformBy(status.getRobotToCamera1().inverse());
-                
-                targetPoses.add((new Pose3d()).transformBy(target.getBestCameraToTarget()).toPose2d());
-                visionPoses.add(botPose.toPose2d());
-                visionTimes.add(cameraResult.getTimestampSeconds());
-                visibleTags.add(new AprilTag(target.getFiducialId(), fiducialPose.get()));
+                camera1Data.add(
+                    new VisionData(
+                        new AprilTag(target.getFiducialId(), fiducialPose.get()), 
+                        target.getBestCameraToTarget(), 
+                        status.getRobotToCamera1(), 
+                        status.getCamera1Result().getTimestampSeconds()
+                    )
+                );
             }
         }
         // Camera 2
-        cameraResult = status.getCamera2Result();
-        if (cameraResult != null) {
-            for(PhotonTrackedTarget target : cameraResult.targets) {
+        ArrayList<VisionData> camera2Data = new ArrayList<VisionData>();
+        if (status.getCamera2Result() != null) {
+            for(PhotonTrackedTarget target : status.getCamera2Result().targets) {
                 Optional<Pose3d> fiducialPose = aprilTagFieldLayout.getTagPose(target.getFiducialId());
                 if (fiducialPose.isEmpty()) {continue;}
                 
-                Pose3d targetPose = fiducialPose.get();
-                Pose3d botPose = targetPose
-                                    .transformBy(target.getBestCameraToTarget().inverse())
-                                    .transformBy(status.getRobotToCamera2().inverse());
-                
-                targetPoses.add((new Pose3d()).transformBy(target.getBestCameraToTarget()).toPose2d());
-                visionPoses.add(botPose.toPose2d());
-                visionTimes.add(cameraResult.getTimestampSeconds());
-                visibleTags.add(new AprilTag(target.getFiducialId(), fiducialPose.get()));
+                camera2Data.add(
+                    new VisionData(
+                        new AprilTag(target.getFiducialId(), fiducialPose.get()), 
+                        target.getBestCameraToTarget(), 
+                        status.getRobotToCamera2(), 
+                        status.getCamera2Result().getTimestampSeconds()
+                    )
+                );
             }
         }
-        
-        status.setTargetPoses(targetPoses)
-              .setVisionPoses(visionPoses)
-              .setVisionTimes(visionTimes)
-              .setVisibleTags(visibleTags);
+        ArrayList<VisionData> cameraData = new ArrayList<VisionData>();
+        cameraData.addAll(camera1Data);
+        cameraData.addAll(camera2Data);
 
+        status.setVisionData(cameraData);
+        
         // Limelight
         if(newCommand.getTargetPipeline() != null)
         {

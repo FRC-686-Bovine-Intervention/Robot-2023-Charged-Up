@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.DoubleStream;
+import java.util.stream.LongStream;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -17,6 +19,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.trajectory.Trajectory;
+import frc.robot.subsystems.vision.VisionStatus.VisionData;
 
 public class AdvantageUtil {
     public static double[] deconstruct(Pose3d pose)
@@ -81,5 +85,32 @@ public class AdvantageUtil {
         logger.recordOutput(prefix + "/position", matrix.get(0,0));
         logger.recordOutput(prefix + "/velocity", matrix.get(0,1));
         logger.recordOutput(prefix + "/acceleration", matrix.get(0,2));
+    }
+
+    public static void recordAprilTags(Logger logger, String prefix, List<AprilTag> aprilTags) {
+        long[] tagIDs = new long[0];
+        ArrayList<Pose3d> tagPoses = new ArrayList<Pose3d>();
+        for(AprilTag tag : aprilTags) {
+            tagIDs = LongStream.concat(Arrays.stream(tagIDs), Arrays.stream(new long[]{tag.ID})).toArray();
+            tagPoses.add(tag.pose);
+        }
+        logger.recordOutput(prefix + "/IDs", tagIDs);
+        logger.recordOutput(prefix + "/Poses", deconstructPose3ds(tagPoses));
+    }
+
+    public static void recordVisionData(Logger logger, String prefix, List<VisionData> visionData) {
+        ArrayList<AprilTag> aprilTags = new ArrayList<AprilTag>();
+        ArrayList<Pose2d> visionPoses = new ArrayList<Pose2d>();
+        double[] kalmanError = new double[0];
+
+        for(VisionData data : visionData) {
+            aprilTags.add(data.aprilTag());
+            visionPoses.add(data.getRobotPose());
+            kalmanError = DoubleStream.concat(Arrays.stream(kalmanError), Arrays.stream(new double[]{data.getKalmanError()})).toArray();
+        }
+
+        recordAprilTags(logger, prefix + "/Visible Tags", aprilTags);
+        logger.recordOutput(prefix + "/Vision Poses", deconstructPose2ds(visionPoses));
+        logger.recordOutput(prefix + "/Kalman Error", kalmanError);
     }
 }
