@@ -12,6 +12,7 @@ public class DriveLoop extends LoopBase {
     private final DriveStatus status;
 
     public static final double kDriveWatchdogTimerThreshold = 0.500;
+    private static final double kDisabledCoastTimerThreshold = 2;
 
     private DriveLoop()
     {
@@ -36,9 +37,14 @@ public class DriveLoop extends LoopBase {
         status.setCommand(driveCommand);
     }
 
+    private final Timer disabledTimer = new Timer();
     @Override
     public void Disabled() {
-        DriveCommand disabledCommand = DriveCommand.COAST();
+        disabledTimer.start();
+        if(status.EnabledState.IsInitState)
+            disabledTimer.reset();
+
+        DriveCommand disabledCommand = disabledTimer.hasElapsed(kDisabledCoastTimerThreshold) ? DriveCommand.COAST() : DriveCommand.BRAKE();
 
         setMotors(disabledCommand);
         setNeutralMode(disabledCommand);

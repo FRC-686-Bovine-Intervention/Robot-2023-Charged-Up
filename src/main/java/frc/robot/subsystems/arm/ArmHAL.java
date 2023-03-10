@@ -112,12 +112,8 @@ public class ArmHAL {
             turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kRelativePIDId, 0);
             turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, kAbsolutePIDId, 0);
             // if (turretMotor.getSelectedSensorPosition(kRelativePIDId) == 0) { // Reset relative to absolute only on power on
-                System.out.println("ARM HAL Rel before sync: " + turretMotor.getSelectedSensorPosition(kRelativePIDId));
-                System.out.println("ARM HAL Abs before sync: " + turretMotor.getSelectedSensorPosition(kAbsolutePIDId));
                 turretMotor.setSelectedSensorPosition(turretMotor.getSelectedSensorPosition(kAbsolutePIDId) - kTurretEncoderZeroingCalib, kRelativePIDId, 0);
                 // turretMotor.getSensorCollection().syncQuadratureWithPulseWidth(0, 0, true);
-                System.out.println("ARM HAL Rel after sync: " + turretMotor.getSelectedSensorPosition(kRelativePIDId));
-                System.out.println("ARM HAL Abs after sync: " + turretMotor.getSelectedSensorPosition(kAbsolutePIDId));
             // }
             // enable turret soft limits
             turretMotor.configForwardSoftLimitThreshold(+kTurretSoftLimitDeg / kTurretEncoderUnitsToDegrees);

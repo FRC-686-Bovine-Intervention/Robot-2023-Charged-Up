@@ -146,12 +146,14 @@ public class VisionStatus extends StatusBase {
             return OdometryStatus.getInstance().getRobotPose().getTranslation().getDistance(getRobotPose().getTranslation());
         }
         public Matrix<N3, N1> getStdDevs() {
-            double xyCoefficient = 0.01;
-            double thetaCoefficient = 0.01;
+            double xyCoefficient = 0.1;
+            double thetaCoefficient = 0.1;
+            double xyBias = 0.1;
+            double thetaBias = 0.1;
             
             double distance = getKalmanError();
-            double xyStdDev = xyCoefficient * distance * distance;
-            double thetaStdDev = thetaCoefficient * distance * distance;
+            double xyStdDev = xyCoefficient * distance * distance + xyBias;
+            double thetaStdDev = thetaCoefficient * distance * distance + thetaBias;
 
             return new MatBuilder<>(Nat.N3(), Nat.N1()).fill(xyStdDev, xyStdDev, thetaStdDev);
         }
@@ -165,13 +167,13 @@ public class VisionStatus extends StatusBase {
         new Transform3d(
             new Translation3d(
                 Units.inchesToMeters(11.33),
-                Units.inchesToMeters(-5.806),
+                Units.inchesToMeters(+5.806),
                 Units.inchesToMeters(20.375)
             ),
             new Rotation3d(
                 0,
                 0,
-                Units.degreesToRadians(+20.0)
+                Units.degreesToRadians(-20.0)
             )
         ); //TODO
     public Transform3d  getTurretToCamera1()    {return turretToCamera1;};
@@ -186,13 +188,13 @@ public class VisionStatus extends StatusBase {
         new Transform3d(
             new Translation3d(
                 Units.inchesToMeters(11.33),
-                Units.inchesToMeters(+5.806),
+                Units.inchesToMeters(-5.806),
                 Units.inchesToMeters(20.375)
             ),
             new Rotation3d(
                 0,
                 0,
-                Units.degreesToRadians(-20.0)
+                Units.degreesToRadians(+20.0)
             )
         ); //TODO
     public Transform3d  getTurretToCamera2()    {return turretToCamera2;}
