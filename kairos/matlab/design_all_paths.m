@@ -17,3 +17,5 @@ design_path_3_6
 design_path_3_7
 
 design_path_4_5
+
+plot_all_paths

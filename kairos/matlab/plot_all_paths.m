@@ -1,3 +1,4 @@
+inchesPerMeter = 100/2.54;
 
 % plot flags
 inchesFlag = true;
@@ -38,7 +39,7 @@ for startIdx = 0:7
         % Read trajectory
         filename = sprintf('arm_path_%d_%d.json', startIdx, finalIdx);
         s = jsondecode(fileread(['..\..\src\main\deploy\paths\' filename]));
-        totalTime = max(s.totalTime, 0) * grannyFactor;
+        totalTime = max(s.totalTime, 0);
         theta1 = s.theta1;
         theta2 = s.theta2;
         points = [theta1.'; theta2.'];
