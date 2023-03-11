@@ -6,7 +6,7 @@ if ~exist(filename, 'file')
     filename = fullfile('..\..\src\main\deploy\paths\', sprintf('arm_path_%d_%d.json', startIdx, finalIdx));
 end
 s = jsondecode(fileread(filename));
-orig_T = max(s.totalTime, 0);
+orig_T = max(s.totalTime, 0) * 1.5;
 orig_points = [s.theta1.'; s.theta2.'];
 % remove extraneous loop
 orig_points = orig_points(:,[1 6:end]);
@@ -18,7 +18,7 @@ points = [theta1; theta2];
 
 % Make Trajectory ====================================
 
-points = make_spline_trajectory(points, orig_points, orig_T);
+points = make_spline_trajectory(startIdx, finalIdx, points, orig_points, orig_T);
 
 % write new spline trajectory
 s.theta1 = points(1,:);

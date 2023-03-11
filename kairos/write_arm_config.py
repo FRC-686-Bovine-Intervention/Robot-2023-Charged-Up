@@ -33,10 +33,10 @@ if __name__ == "__main__":
                       }
                   },
                   "wrist": {
-                      "mass": 0,#(((4.4 + (1 + 7/16)) * lb).to("kg")).value.tolist(),
+                      "mass": ((1.4 * lb).to("kg")).value.tolist(),
                       "length": ((9.0 * inch).to("meter")).value.tolist(),
-                      "moi": 0.019,
-                      "cgRadius": ((2.5 * inch).to("meter")).value.tolist()
+                      "moi": 0.8,
+                      "cgRadius": ((1.5 * inch).to("meter")).value.tolist()
                   },
                   "cone": {
                       "mass": (((1 + 7/16) * lb).to("kg")).value.tolist(),

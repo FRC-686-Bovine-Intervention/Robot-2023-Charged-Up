@@ -1,4 +1,4 @@
-function points = make_spline_trajectory(points, orig_points, orig_T)
+function points = make_spline_trajectory(startPos, finalPos, points, orig_points, orig_T)
 
 grannyFactor = 1;
 inchesPerMeter = 39.3701;
@@ -144,7 +144,7 @@ t = 0:clockPeriod:orig_T;
 [position, velocity, acceleration, jerk] = sample(t, orig_T, orig_points);
 [torque, voltage, current] = dynamics.feedforward(position, velocity, acceleration);
 
-title_str = 'Original 0-7 Path';
+title_str = sprintf('Original %d-%d Path', startPos, finalPos);
 fig = figure(1);
 plot_state(fig, t, position, velocity, acceleration, jerk, degreesFlag, title_str);
 fig = figure(2);
@@ -168,7 +168,7 @@ t = 0:clockPeriod:T;
 [position, velocity, acceleration, jerk] = sample(t, T, points);
 [torque, voltage, current] = dynamics.feedforward(position, velocity, acceleration);
 
-title_str = 'test spline';
+title_str = sprintf('Spline %d-%d Path', startPos, finalPos);
 fig = figure(11);
 plot_state(fig, t, position, velocity, acceleration, jerk, degreesFlag, title_str);
 fig = figure(12);
