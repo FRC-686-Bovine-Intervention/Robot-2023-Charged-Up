@@ -2,6 +2,7 @@ package frc.robot.subsystems.driverAssist;
 
 import java.util.ArrayList;
 
+import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -10,6 +11,7 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
+import frc.robot.RamseteFollower;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveCommand;
 import frc.robot.subsystems.drive.DriveStatus;
@@ -41,6 +43,9 @@ public class DriverAssistLoop extends LoopBase {
     private double prevPitch = 0;
     private double prevLoopTimestamp = 0;
     private double startEncoderDist = 0;
+
+    private final RamseteController ramseteController = new RamseteController(2, 0.7);
+    private RamseteFollower ramseteFollower;
     
     @Override
     public void Update() {
@@ -106,10 +111,12 @@ public class DriverAssistLoop extends LoopBase {
                     TrajectoryConfig trajectoryConfig = new TrajectoryConfig(1.0, 2.0);
                     
                     status.setTrajectory(TrajectoryGenerator.generateTrajectory(waypoints, trajectoryConfig));
+
+                    ramseteFollower = new RamseteFollower(ramseteController).setTrajectory(status.getTrajectory());
                 }
 
                 // TODO: actually set drive command
-                status.setDriveCommand(DriveCommand.COAST());
+                status.setDriveCommand(ramseteFollower.getDriveCommand());
             break;
 
             case AutoIntake:

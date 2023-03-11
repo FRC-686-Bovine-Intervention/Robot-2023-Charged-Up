@@ -24,13 +24,21 @@ public class DriverInteractionStatus extends StatusBase {
         public int getRawPOV(int POVID)             {return joystick == null ? -1    : joystick.getPOV(POVID);}
         public int getRawPOV()                      {return getRawPOV(0);}
     }
-
+/*
+ * MainAction (Context based: Deploy intake, Align early, Substation grab, Arm release)
+ * Undo (Context based: Extend → Align → Hold, Hold locking, Defense ↔ Substation)
+ * AutoDrive (Context based: Auto balance, Driver assist to substation)
+ * InvertDrive
+ * 
+ * Node Buttons (Field oriented)
+ */
     public enum DriverControlButtons{
         InvertControls  (Thrustmaster.kLeftThumbButton),
         Trigger         (Thrustmaster.kTriggerButton),
         AutoBalance     (Thrustmaster.kBottomThumbButton),
         DriverAssist    (Thrustmaster.kRightThumbButton),
         Substation      (Thrustmaster.kTopButton3),
+
         ButtonBoard1_1  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton1_1),
         ButtonBoard1_2  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton1_2),
         ButtonBoard1_3  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton1_3),
