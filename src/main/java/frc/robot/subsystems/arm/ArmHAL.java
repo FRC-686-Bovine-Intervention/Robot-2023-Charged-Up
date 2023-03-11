@@ -159,9 +159,16 @@ public class ArmHAL {
     }
 
     // Turret
-    public ArmHAL setTurretPower(double power){
+    public ArmHAL setTurretPower(double power) {
         if (turretMotor != null) {
             turretMotor.set(ControlMode.PercentOutput, power);
+        }
+        return this;
+    }
+
+    public ArmHAL setTurretNeutralMode(NeutralMode neutralMode) {
+        if (turretMotor != null) {
+            turretMotor.setNeutralMode(neutralMode);
         }
         return this;
     }
