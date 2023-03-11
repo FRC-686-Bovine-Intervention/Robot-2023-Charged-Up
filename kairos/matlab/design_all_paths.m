@@ -1,4 +1,5 @@
 design_path_0_1
+design_path_0_2
 design_path_0_4
 design_path_0_5
 design_path_0_6
@@ -17,5 +18,11 @@ design_path_3_6
 design_path_3_7
 
 design_path_4_5
+
+design_path_8_2
+design_path_8_4
+design_path_8_5
+design_path_8_6
+design_path_8_7
 
 plot_all_paths

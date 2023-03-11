@@ -1,7 +1,7 @@
 import json
 from unyt import meter, inch, lb, kg
 
-if __name__ == "__main__":
+def main():
 
     arm_config = {"frame_width_inches": 24.0,
                   "bumper_width_inches": 30.5,
@@ -34,7 +34,7 @@ if __name__ == "__main__":
                   },
                   "wrist": {
                       "mass": ((2.8 * lb).to("kg")).value.tolist(),
-                      "length": ((9.0 * inch).to("meter")).value.tolist(),
+                      "length": (((20.5 - 14.0) * inch).to("meter")).value.tolist(),
                       "moi": 0.8,
                       "cgRadius": ((1.5 * inch).to("meter")).value.tolist()
                   },
@@ -48,3 +48,6 @@ if __name__ == "__main__":
 
     with open("src/main/deploy/arm_config.json", "w") as outfile:
         json.dump(arm_config, outfile, indent=2)
+
+if __name__ == '__main__':
+    main()

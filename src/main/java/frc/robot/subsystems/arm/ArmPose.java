@@ -19,7 +19,8 @@ public record ArmPose(
     SCORE_MID_CUBE(0, null),
     SCORE_HIGH_CUBE(0, null),
     SCORE_MID_CONE(0, null),
-    SCORE_HIGH_CONE(0, null);
+    SCORE_HIGH_CONE(0, null),
+    AUTO_START(0, null);
 
     private ArmPose pose;
     private int fileIdx;
@@ -89,6 +90,9 @@ public record ArmPose(
       SCORE_HIGH_CONE.pose = new ArmPose(new Translation2d(jsonPresets.score_high_cone().getX(), jsonPresets.score_high_cone().getY()),
                                           jsonPresets.score_high_cone().getTheta1(), jsonPresets.score_high_cone().getTheta2());
 
-    }
+      AUTO_START.fileIdx = jsonPresets.auto_start().getFileIdx();
+      AUTO_START.pose = new ArmPose(new Translation2d(jsonPresets.auto_start().getX(), jsonPresets.auto_start().getY()),
+                                          jsonPresets.auto_start().getTheta1(), jsonPresets.auto_start().getTheta2());
+}
   }
 }

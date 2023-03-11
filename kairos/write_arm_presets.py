@@ -4,7 +4,7 @@ from ArmPresets import ArmPresetPoses
 from ArmKinematics import ArmKinematics
 from unyt import meter, inch
 
-if __name__ == "__main__":
+def main():
     arm_config = json.loads(open("src/main/deploy/arm_config.json", "r").read())
 
     kinematics = ArmKinematics(arm_config["origin"][0], arm_config["origin"][1], arm_config["shoulder"]["length"],
@@ -26,3 +26,6 @@ if __name__ == "__main__":
 
     with open("src/main/deploy/arm_preset_poses.json", "w") as outfile:
         json.dump(preset_pose_inches, outfile, indent=2)
+
+if __name__ == "__main__":
+    main()

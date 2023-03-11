@@ -12,8 +12,14 @@ from Plotter import plot
 from Solver import Solver
 from ArmKinematics import ArmKinematics
 from unyt import meter, inch
+import write_arm_config
+import write_arm_presets
 
 if __name__ == "__main__":
+    write_arm_config.main()
+    write_arm_presets.main()
+
+
     arm_config = json.loads(open("src/main/deploy/arm_config.json", "r").read())
     solver_config = json.loads(open("src/main/deploy/solver_config.json", "r").read())
     constraints = json.loads(open("src/main/deploy/constraints.json", "r").read())

@@ -29,6 +29,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.FieldDimensions;
 import frc.robot.lib.util.GeomUtil;
@@ -42,6 +44,7 @@ import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.arm.ArmTrajectory;
 import frc.robot.subsystems.arm.json.ArmConfigJson;
 import frc.robot.subsystems.arm.json.ArmPathsJson;
+import frc.robot.subsystems.arm.json.ArmPresetsJson;
 
 public class ArmTrajectoryTest {
     
@@ -181,6 +184,11 @@ public class ArmTrajectoryTest {
         MockedStatic<ArmStatus> mockStatusStatic = mockStatic(ArmStatus.class);
         mockStatusStatic.when(ArmStatus::getInstance).thenReturn(mockStatus);
 
+        // Get presets from JSON
+        File presetFile = new File(Filesystem.getDeployDirectory(), ArmPresetsJson.jsonFilename);
+        ArmPresetsJson presets = ArmPresetsJson.loadJson(presetFile);
+        ArmPose.Preset.writePresets(presets);
+                
         ArmTrajectory[][] armTrajectories = new ArmTrajectory[ArmPose.Preset.values().length+1][ArmPose.Preset.values().length+1];
         // Get paths from JSON
         // also create trajectories for each path
@@ -224,6 +232,9 @@ public class ArmTrajectoryTest {
         Pose2d robotXY = new Pose2d(new Translation2d(1.8,1.0), new Rotation2d(0.0));
         double turretToRobotAngleDeg = 0.0;
         Pose3d turretXY = getTurretPose(robotXY, turretToRobotAngleDeg);
+
+        MockedStatic<DriverStation> mockDS = mockStatic(DriverStation.class);
+        mockDS.when(DriverStation::getAlliance).thenReturn(Alliance.Blue);
 
         when(mockStatus.getShoulderAngleRad()).thenReturn(startPos.getShoulderAngleRad());
         when(mockStatus.getElbowAngleRad()).thenReturn(startPos.getElbowAngleRad());
