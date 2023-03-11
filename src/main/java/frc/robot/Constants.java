@@ -23,12 +23,16 @@ public class Constants {
     // Arm Hardware
     public final static int kTurretMotorID =            21;
     
+    public final static String kShoulderMotorCanBus = "canivore";
     public final static int kShoulderMotorID =          22;
     public final static int kShoulderAnalogInputPort =  0;
+    public final static String kShoulderEncoderCanBus = "canivore";
     public final static int kShoulderEncoderId =        24;
 
+    public final static String kElbowMotorCanBus = "canivore";
     public final static int kElbowMotorID =             23;
     public final static int kElbowAnalogInputPort =     1;
+    public final static String kElbowEncoderCanBus = "canivore";
     public final static int kElbowEncoderId =           25;
 
     public final static int kClawSolenoidID =           1;

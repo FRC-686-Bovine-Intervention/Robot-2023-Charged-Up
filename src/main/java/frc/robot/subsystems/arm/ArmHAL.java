@@ -8,6 +8,7 @@ import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Solenoid;
 import frc.robot.Constants;
@@ -78,25 +79,25 @@ public class ArmHAL {
         if(RobotBase.isReal())
         {
             turretMotor = new TalonSRX(Constants.kTurretMotorID);
-            shoulderMotor = null;//new WPI_TalonFX(Constants.kShoulderMotorID);
-            elbowMotor    = null;//new WPI_TalonFX(Constants.kElbowMotorID);    
-            shoulderPotAndEncoderHAL = null;//new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, kShoulderPotentiometerNTurns, 
-                                                            //  kShoulderPotentiometerGearRatio, kShoulderPotNormalizedVoltageAtCalib, kShoulderAngleAtCalibration, 
-                                                            //  kShoulderPotInverted, kShoulderEncInverted);            
-            elbowPotAndEncoderHAL    = null;//new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, kElbowPotentiometerNTurns, 
-                                                            // kElbowPotentiometerGearRatio, kElbowPotNormalizedVoltageAtCalib, kElbowAngleAtCalibration, 
-                                                            // kElbowPotInverted, kElbowEncInverted); 
-            clawSolenoid = null;//new Solenoid(PneumaticsModuleType.CTREPCM, Constants.kClawSolenoidID);
+            shoulderMotor = new WPI_TalonFX(Constants.kShoulderMotorID, Constants.kShoulderMotorCanBus);
+            elbowMotor    = new WPI_TalonFX(Constants.kElbowMotorID, Constants.kElbowMotorCanBus);    
+            shoulderPotAndEncoderHAL = new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, Constants.kShoulderEncoderCanBus, kShoulderPotentiometerNTurns, 
+                                                             kShoulderPotentiometerGearRatio, kShoulderPotNormalizedVoltageAtCalib, kShoulderAngleAtCalibration, 
+                                                             kShoulderPotInverted, kShoulderEncInverted);            
+            elbowPotAndEncoderHAL    = new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, Constants.kElbowEncoderCanBus, kElbowPotentiometerNTurns, 
+                                                            kElbowPotentiometerGearRatio, kElbowPotNormalizedVoltageAtCalib, kElbowAngleAtCalibration, 
+                                                            kElbowPotInverted, kElbowEncInverted); 
+            clawSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.kClawSolenoidID);
         }
         else
         {
             turretMotor = null;
             shoulderMotor = null;
             elbowMotor    = null;            
-            shoulderPotAndEncoderHAL = new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, kShoulderPotentiometerNTurns, 
+            shoulderPotAndEncoderHAL = new PotAndEncoder.HAL(Constants.kShoulderAnalogInputPort, Constants.kShoulderEncoderId, Constants.kShoulderEncoderCanBus, kShoulderPotentiometerNTurns, 
                                                              kShoulderPotentiometerGearRatio, kShoulderPotNormalizedVoltageAtCalib, kShoulderAngleAtCalibration, 
                                                              kShoulderPotInverted, kShoulderEncInverted);            
-            elbowPotAndEncoderHAL    = new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, kElbowPotentiometerNTurns, 
+            elbowPotAndEncoderHAL    = new PotAndEncoder.HAL(Constants.kElbowAnalogInputPort, Constants.kElbowEncoderId, Constants.kElbowEncoderCanBus, kElbowPotentiometerNTurns, 
                                                             kElbowPotentiometerGearRatio, kElbowPotNormalizedVoltageAtCalib, kElbowAngleAtCalibration, 
                                                             kElbowPotInverted, kElbowEncInverted); 
             clawSolenoid = null;

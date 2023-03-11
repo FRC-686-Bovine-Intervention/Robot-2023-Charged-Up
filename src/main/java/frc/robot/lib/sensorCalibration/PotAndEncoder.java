@@ -261,13 +261,13 @@ public class PotAndEncoder {
         double potScale;
         double potOffset;
     
-        public HAL(int potAnalogInputPort, int encPort, double potNTurns, double potGearRatio, double potNormalizedVoltageAtCalib, double outputAngleDegAtCalibration, boolean potInverted, boolean encInverted)
+        public HAL(int potAnalogInputPort, int encPort, String encCanBus, double potNTurns, double potGearRatio, double potNormalizedVoltageAtCalib, double outputAngleDegAtCalibration, boolean potInverted, boolean encInverted)
         {
             potScale = potInverted ? -potNTurns*360.0 : potNTurns*360.0;
             potOffset = potGearRatio*outputAngleDegAtCalibration - potScale*potNormalizedVoltageAtCalib;
             pot = new AnalogPotentiometer(potAnalogInputPort, potScale, potOffset);
 
-            enc = new CANCoder(encPort);
+            enc = new CANCoder(encPort, encCanBus);
             enc.configFactoryDefault();
             enc.configSensorDirection(encInverted);  // false: CCW, true: CW while looking from sensor to shaft
         }
