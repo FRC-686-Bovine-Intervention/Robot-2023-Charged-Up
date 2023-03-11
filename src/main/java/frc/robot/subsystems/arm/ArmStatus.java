@@ -3,6 +3,8 @@ package frc.robot.subsystems.arm;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -46,25 +48,27 @@ public class ArmStatus extends StatusBase {
     }
 
     public enum NodeEnum {
-        BottomLeft      (0,0,ArmPose.Preset.SCORE_HYBRID),
-        BottomCenter    (1,0,ArmPose.Preset.SCORE_HYBRID),
-        BottomRight     (2,0,ArmPose.Preset.SCORE_HYBRID),
-        MiddleLeft      (0,1,ArmPose.Preset.SCORE_MID_CONE),
-        MiddleCenter    (1,1,ArmPose.Preset.SCORE_MID_CUBE),
-        MiddleRight     (2,1,ArmPose.Preset.SCORE_MID_CONE),
-        TopLeft         (0,2,ArmPose.Preset.SCORE_HIGH_CONE),
-        TopCenter       (1,2,ArmPose.Preset.SCORE_HIGH_CUBE),
-        TopRight        (2,2,ArmPose.Preset.SCORE_HIGH_CONE);
+        BottomLeft      (0,0,ArmPose.Preset.SCORE_HYBRID, false),
+        BottomCenter    (1,0,ArmPose.Preset.SCORE_HYBRID, false),
+        BottomRight     (2,0,ArmPose.Preset.SCORE_HYBRID, false),
+        MiddleLeft      (0,1,ArmPose.Preset.SCORE_MID_CONE, true),
+        MiddleCenter    (1,1,ArmPose.Preset.SCORE_MID_CUBE, false),
+        MiddleRight     (2,1,ArmPose.Preset.SCORE_MID_CONE, true),
+        TopLeft         (0,2,ArmPose.Preset.SCORE_HIGH_CONE, true),
+        TopCenter       (1,2,ArmPose.Preset.SCORE_HIGH_CUBE, false),
+        TopRight        (2,2,ArmPose.Preset.SCORE_HIGH_CONE, true);
 
         public static final NodeEnum DEFAULT = MiddleCenter;
 
         public final int xPos;
         public final int yPos;
+        public final boolean isCone;
         public final ArmPose.Preset armPreset;
-        NodeEnum(int xPos, int yPos, ArmPose.Preset armPreset) {
+        NodeEnum(int xPos, int yPos, ArmPose.Preset armPreset, boolean isCone) {
             this.xPos = xPos;
             this.yPos = yPos;
             this.armPreset = armPreset;
+            this.isCone = isCone;
         }
         public NodeEnum fromGridPose(int xPos, int yPos) {
             for (NodeEnum node : NodeEnum.values()) {
@@ -91,6 +95,10 @@ public class ArmStatus extends StatusBase {
     public ArmState     getArmState()                   {return armState;}
     protected ArmStatus setArmState(ArmState armState)  {this.armState = armState; return this;}
 
+    private boolean     stateLocked = false;
+    public boolean      getStateLocked()                    {return stateLocked;}
+    protected ArmStatus setStateLocked(boolean stateLocked) {this.stateLocked = stateLocked; return this;}
+
     private NodeEnum    targetNode = NodeEnum.DEFAULT;
     public NodeEnum     getTargetNode()                     {return targetNode;}
     protected ArmStatus setTargetNode(NodeEnum targetNode)  {this.targetNode = targetNode; return this;}
@@ -115,6 +123,10 @@ public class ArmStatus extends StatusBase {
     private MotorControlMode    turretControlMode = MotorControlMode.PercentOutput;
     public MotorControlMode     getTurretControlMode()                                      {return turretControlMode;}
     protected ArmStatus         setTurretControlMode(MotorControlMode turretControlMode)    {this.turretControlMode = turretControlMode; return this;}
+
+    private NeutralMode turretNeutralMode = NeutralMode.Brake;
+    public NeutralMode  getTurretNeutralMode()                              {return turretNeutralMode;}
+    protected ArmStatus setTurretNeutralMode(NeutralMode turretNeutralMode) {this.turretNeutralMode = turretNeutralMode; return this;}
 
     private boolean     turretLockout;
     public boolean      getTurretLockout()                      {return turretLockout;}
@@ -371,9 +383,11 @@ public class ArmStatus extends StatusBase {
         // Generic
         command.recordOutputs(logger, prefix + "Command");
         logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
+        logger.recordOutput(prefix + "Hold|Align Locked", stateLocked);
 
         // Turret
-        HAL.setTurretPower(turretPower);
+        HAL.setTurretPower(turretPower)
+           .setTurretNeutralMode(turretNeutralMode);
 
         logger.recordOutput(prefix + "Turret/Power",                getTurretPower());
         logger.recordOutput(prefix + "Turret/PID Output",           getTurretPIDOutput());

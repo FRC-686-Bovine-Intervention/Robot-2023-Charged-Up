@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -53,6 +55,7 @@ public class ArmLoop extends LoopBase {
     private final ArmStatus status = ArmStatus.getInstance();
     private final Intake intake = Intake.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
+    private final OdometryStatus odometryStatus = OdometryStatus.getInstance();
 
     private static final double kTurretMaxAngularVelocity = 45;
     private static final double kTurretMaxAngularAcceleration = kTurretMaxAngularVelocity * 2;
@@ -80,7 +83,7 @@ public class ArmLoop extends LoopBase {
 
     private ArmState prevState;
 
-    private static final double kDisabledTimerThreshold = 5;
+    private static final double kDisabledResetTimerThreshold = 5;
 
     // private final String configJson;
     private final ArmPresetsJson presets;
@@ -276,6 +279,7 @@ public class ArmLoop extends LoopBase {
         stateTimer.start();
 
         status.setTurretPower(0.0)
+              .setTurretNeutralMode(NeutralMode.Brake)
               .setShoulderPower(0)
               .setElbowPower(0);
 
@@ -347,7 +351,7 @@ public class ArmLoop extends LoopBase {
                       .setTargetTurretAngleDeg(0)
                       .setTargetArmPose(ArmPose.Preset.DEFENSE);
                 if(intakeStatus.getIntakeState() == IntakeState.Hold)
-                    status.setArmState(ArmState.IdentifyPiece);
+                    status.setArmState(ArmState.Grab);
             break;
 
             case IdentifyPiece:
@@ -359,12 +363,14 @@ public class ArmLoop extends LoopBase {
             
             case Grab:
                 // Move turret to target pos
-                status.setTurretControlMode(MotorControlMode.PID);
+                status.setTurretControlMode(MotorControlMode.PercentOutput)
+                      .setTurretPower(0)
+                      .setTurretNeutralMode(NeutralMode.Coast);
                 // Extend arm to grab piece
-                if(turretPID.atGoal())
-                {
+                // if(turretPID.atGoal())
+                // {
                     status.setTargetArmPose(ArmPose.Preset.INTAKE);
-                    if(status.getCurrentArmTrajectory() == null)
+                    if(status.getCurrentArmPose() == status.getTargetArmPose())
                     {
                         // Grab piece
                         status.setClawGrabbing(true);
@@ -374,14 +380,26 @@ public class ArmLoop extends LoopBase {
                         if(trajectoryTimer.hasElapsed(status.getCurrentArmTrajectory().getTotalTime() + 0.5))
                             status.setArmState(ArmState.Hold);
                     }
-                }
+                // }
             break;
 
             case Hold:
                 intake.setCommand(new IntakeCommand(IntakeState.Defense));
                 // Move arm to hold position
-                status.setTargetArmPose(ArmPose.Preset.DEFENSE);
+                status.setTargetArmPose(ArmPose.Preset.DEFENSE)
+                      .setTargetTurretAngleDeg(0);
                 // Check if robot is in community, if so jump to Align
+                if(stateTimer.get() == 0)
+                    status.setStateLocked(false);
+
+                if(newCommand.getArmState() == ArmState.Hold)
+                    status.setStateLocked(true);
+
+                if(FieldDimensions.chargeStation.withinBounds(odometryStatus.getRobotPose()))
+                    status.setStateLocked(true);
+                    
+                if(!status.getStateLocked() && FieldDimensions.communityWithoutChargeStation.withinBounds(odometryStatus.getRobotPose()))
+                    status.setArmState(ArmState.Align);
             break;
 
             case Align:
@@ -398,6 +416,14 @@ public class ArmLoop extends LoopBase {
                 status.setTargetTurretAngleDeg((DriverStation.getAlliance() == Alliance.Red ? 0 : 180) - unwrappedTurretAngleDeg);
                 
                 // Check if robot is in not in community, if so jump to Hold
+                if(stateTimer.get() == 0)
+                    status.setStateLocked(false);
+
+                if(newCommand.getArmState() == ArmState.Align)
+                    status.setStateLocked(true);
+
+                if(!status.getStateLocked() && !FieldDimensions.communityWithoutChargeStation.withinBounds(odometryStatus.getRobotPose()))
+                    status.setArmState(ArmState.Hold);
                 // Check if driver has selected node, if so jump to Extend
             break;
 
@@ -447,8 +473,9 @@ public class ArmLoop extends LoopBase {
                 turretPID.reset(status.getTurretAngleDeg());
             }
             largeTurretError = true;
-        } else
+        } else {
             largeTurretError = false;
+        }
         status.setTurretPIDOutput(turretPID.calculate(status.getTurretAngleDeg()));
         if(status.getTurretControlMode() == MotorControlMode.PID)
             status.setTurretPower(status.getTurretPIDOutput());
@@ -673,16 +700,17 @@ public class ArmLoop extends LoopBase {
 
 
     private final Timer disabledTimer = new Timer();
-
     @Override
     protected void Disabled() {
+        trajectoryTimer.stop(); // Pause trajectory so it can continue on re-enable (Autonomous to Tele-op)
         disabledTimer.start();
         if(status.EnabledState.IsInitState)
             disabledTimer.reset();
         status.setTurretPower(0.0);
-        if(disabledTimer.hasElapsed(kDisabledTimerThreshold))
-        {
-            status.setArmState(ArmState.DEFAULT); //TODO: Add disable time threshold
+        if(disabledTimer.hasElapsed(kDisabledResetTimerThreshold)) {
+            status.setArmState(ArmState.DEFAULT)
+                  .setCurrentArmPose(null)
+                  .setCurrentArmTrajectory(null);
         }
         internalDisableTimer.reset();
     }

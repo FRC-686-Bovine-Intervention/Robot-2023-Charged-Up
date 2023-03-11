@@ -207,36 +207,37 @@ public class VisionStatus extends StatusBase {
     @Override
     protected void updateInputs() {
         setCommand(vision.getVisionCommand());
+
         setCamera1Result(HAL.getCamera1Result());
         setCamera2Result(HAL.getCamera2Result());
 
-
-        // setCurrentPipeline(LimelightPipeline.getFromIndex(HAL.getCurrentPipeline()));
-
-        // setTargetXAngle(HAL.getTargetXAngle());
-        // setTargetYAngle(HAL.getTargetYAngle());
-        // setCurrentArea(HAL.getCurrentArea());
-        // setTargetExists(HAL.getTargetExists()); CRASH
+        setCurrentPipeline(LimelightPipeline.getFromIndex(HAL.getCurrentPipeline()));
+        setTargetXAngle(HAL.getTargetXAngle());
+        setTargetYAngle(HAL.getTargetYAngle());
+        setCurrentArea(HAL.getCurrentArea());
+        setTargetExists(HAL.getTargetExists());
     }
 
     @Override
     protected void exportToTable(LogTable table) {
-        // Packet camPacket = new Packet(0);
-        // if (camera1Result != null)
-        //     camPacket = camera1Result.populatePacket(camPacket);
-        // table.put("AprilTags/Camera 1 Results", camPacket.getData());
+        if (camera1Result != null) {
+            Packet camPacket = new Packet(camera1Result.getPacketSize());
+            camPacket = camera1Result.populatePacket(camPacket);
+            table.put("AprilTags/Camera 1 Results", camPacket.getData());
+        }
 
-        // camPacket = new Packet(0);
-        // if (camera2Result != null)
-        //     camPacket = camera2Result.populatePacket(camPacket);
-        // table.put("AprilTags/Camera 2 Results", camPacket.getData());
+        if (camera2Result != null) {
+            Packet camPacket = new Packet(camera2Result.getPacketSize());
+            camPacket = camera2Result.populatePacket(camPacket);
+            table.put("AprilTags/Camera 2 Results", camPacket.getData());
+        }
 
-        // table.put("Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null");
+        table.put("Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null");
 
-        // table.put("Limelight/Target X Angle (Deg)", targetXAngle);
-        // table.put("Limelight/Target Y Angle (Deg)", targetYAngle);
-        // table.put("Limelight/Current Area (Deg)", currentArea);
-        // table.put("Limelight/Target Exists", targetExists);
+        table.put("Limelight/Target X Angle (Deg)", targetXAngle);
+        table.put("Limelight/Target Y Angle (Deg)", targetYAngle);
+        table.put("Limelight/Current Area (Deg)", currentArea);
+        table.put("Limelight/Target Exists", targetExists);
     }
 
     @Override

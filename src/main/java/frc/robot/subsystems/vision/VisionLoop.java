@@ -4,16 +4,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.wpilibj.Timer;
-import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.vision.VisionStatus.LimelightPipeline;
 import frc.robot.subsystems.vision.VisionStatus.VisionData;
@@ -23,9 +19,7 @@ public class VisionLoop extends LoopBase {
     public static VisionLoop getInstance(){if(instance == null){instance = new VisionLoop();}return instance;}
 
     private final VisionStatus status = VisionStatus.getInstance();
-    private final ArmStatus armStatus = ArmStatus.getInstance();
 
-    private static final double kPipelineToggleDelay = 2;
     private final AprilTagFieldLayout aprilTagFieldLayout;
 
     private VisionLoop() {
@@ -38,12 +32,9 @@ public class VisionLoop extends LoopBase {
         }
     }
 
-    private double pipelineStartTimestamp;
-    
     @Override
     public void Update() {
         VisionCommand newCommand = status.getCommand();
-        double currentTime = Timer.getFPGATimestamp();
 
         // AprilTags
         // Camera 1
@@ -90,7 +81,6 @@ public class VisionLoop extends LoopBase {
         if(newCommand.getTargetPipeline() != null)
         {
             status.setTargetPipeline(newCommand.getTargetPipeline());
-            pipelineStartTimestamp = currentTime;
         }
         else if(status.getTargetPipeline() == LimelightPipeline.Pole)
         {
@@ -105,7 +95,6 @@ public class VisionLoop extends LoopBase {
                 case Cube:  status.setTargetPipeline(LimelightPipeline.Cone);   break;
                 default:    break;
             }
-            pipelineStartTimestamp = currentTime;
         }
 
         if(status.getTargetExists())
