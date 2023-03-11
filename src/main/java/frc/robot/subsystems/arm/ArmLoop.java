@@ -43,6 +43,7 @@ import frc.robot.subsystems.intake.IntakeCommand;
 import frc.robot.subsystems.intake.IntakeStatus;
 import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
 import frc.robot.subsystems.odometry.OdometryStatus;
+import frc.robot.util.AllianceFlipUtil;
 
 public class ArmLoop extends LoopBase {
     private static ArmLoop instance;
@@ -467,31 +468,35 @@ public class ArmLoop extends LoopBase {
         ArmTrajectory baseTrajectory = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
 
         // find closest node
-        Translation2d nodeXY = getClosestNodeXY(targetNode, turretXY);
+        Optional<Translation2d> optNodeXY = getClosestNodeXY(targetNode, turretXY);
 
-        // calculate turret angle to target
-        Translation2d turretToTarget = nodeXY.minus(turretXY);
-        double targetAngle = turretToTarget.getAngle().getRadians();
-        double robotAngle = OdometryStatus.getInstance().getRobotPose().getRotation().getRadians();
-        double turretAngleToTarget = targetAngle - robotAngle;
+        if (optNodeXY.isPresent()) {
+            Translation2d nodeXY = optNodeXY.get();
 
-        // extend the distance of the base trajectory
-        double finalShoulderAngleRad = finalPos.getShoulderAngleRad();
-        double finalElbowAngleRad = finalPos.getElbowAngleRad();
+            // calculate turret angle to target
+            Translation2d turretToTarget = nodeXY.minus(turretXY);
+            double targetAngle = turretToTarget.getAngle().getRadians();
+            double robotAngle = OdometryStatus.getInstance().getRobotPose().getRotation().getRadians();
+            double turretAngleToTarget = targetAngle - robotAngle;
 
-        // calculate turret distance
-        double x = turretToTarget.getNorm();
-        double z = Units.inchesToMeters(finalPos.getZ());
-        Optional<Vector<N2>> theta = kinematics.inverse(new Translation2d(x,z));
-        if (theta.isPresent()) {
-            finalShoulderAngleRad = theta.get().get(0,0);
-            finalElbowAngleRad = theta.get().get(1,0);
+            // extend the distance of the base trajectory
+            double finalShoulderAngleRad = finalPos.getShoulderAngleRad();
+            double finalElbowAngleRad = finalPos.getElbowAngleRad();
+
+            // calculate turret distance
+            double x = turretToTarget.getNorm();
+            double z = Units.inchesToMeters(finalPos.getZ());
+            Optional<Vector<N2>> theta = kinematics.inverse(new Translation2d(x,z));
+            if (theta.isPresent()) {
+                finalShoulderAngleRad = theta.get().get(0,0);
+                finalElbowAngleRad = theta.get().get(1,0);
+            }
+
+            // set outputs
+            status.setTargetTurretAngleDeg(turretAngleToTarget);
+            status.setCurrentArmTrajectory(baseTrajectory.interpolateEndPoints(startShoulderAngleRad, startElbowAngleRad, finalShoulderAngleRad, finalElbowAngleRad));
+            trajectoryTimer.reset();
         }
-
-        // set outputs
-        status.setTargetTurretAngleDeg(turretAngleToTarget);
-        status.setCurrentArmTrajectory(baseTrajectory.interpolateEndPoints(startShoulderAngleRad, startElbowAngleRad, finalShoulderAngleRad, finalElbowAngleRad));
-        trajectoryTimer.reset();
     }
 
 
@@ -629,15 +634,15 @@ public class ArmLoop extends LoopBase {
 
     
 
-    public Translation2d getClosestNodeXY(ArmStatus.NodeEnum _targetNode, Translation2d turretLoc) {
+    public Optional<Translation2d> getClosestNodeXY(ArmStatus.NodeEnum _targetNode, Translation2d turretLoc) {
         // target node selects which node in a 3x3 grid
         // this function finds the closest node out of the 3 possible choices
 
         int startingRow = _targetNode.xPos;
 
-        double minDist = Double.MAX_VALUE;
+        double minDist = xMaxSetpoint;
         Translation3d nodeTranslation3d = new Translation3d();   
-        Translation2d bestTranslation = null;
+        Optional<Translation2d> bestTranslation = Optional.empty();
 
         for (int row = startingRow; row < FieldDimensions.Grids.nodeRowCount; row+=3) {
             switch (_targetNode.yPos) {
@@ -654,11 +659,11 @@ public class ArmLoop extends LoopBase {
                     nodeTranslation3d = new Translation3d();
             }
 
-            Translation2d nodeLocation = GeomUtil.translation3dTo2dXY(nodeTranslation3d);
+            Translation2d nodeLocation = AllianceFlipUtil.apply(GeomUtil.translation3dTo2dXY(nodeTranslation3d));
             double dist = turretLoc.getDistance(nodeLocation);
             if (dist < minDist) {
                 minDist = dist;
-                bestTranslation = nodeLocation;
+                bestTranslation = Optional.of(nodeLocation);
             }
         }
 
