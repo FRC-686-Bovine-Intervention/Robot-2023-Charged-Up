@@ -33,11 +33,10 @@ public class DriverInteractionStatus extends StatusBase {
  * Node Buttons (Field oriented)
  */
     public enum DriverControlButtons{
-        InvertControls  (Thrustmaster.kLeftThumbButton),
-        Trigger         (Thrustmaster.kTriggerButton),
-        AutoBalance     (Thrustmaster.kBottomThumbButton),
-        DriverAssist    (Thrustmaster.kRightThumbButton),
-        Substation      (Thrustmaster.kTopButton3),
+        MainAction      (Thrustmaster.kTriggerButton),
+        Undo            (Thrustmaster.kTopButton3),
+        AutoDrive       (Thrustmaster.kRightThumbButton),
+        InvertDrive     (Thrustmaster.kLeftThumbButton),
 
         ButtonBoard1_1  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton1_1),
         ButtonBoard1_2  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton1_2),
