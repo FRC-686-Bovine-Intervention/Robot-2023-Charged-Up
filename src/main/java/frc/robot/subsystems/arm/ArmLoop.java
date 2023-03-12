@@ -127,6 +127,8 @@ public class ArmLoop extends LoopBase {
     public static final double kRelativeMaxAngleRad = Math.toRadians(160.0);    // don't let grabber smash into proximal arm
     public static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
 
+    private static final double kMaxElbowPlusClawLength = Units.inchesToMeters(26.0); 
+
     private final double xMinSetpoint = Units.inchesToMeters(0.0);
     private final double xMaxSetpoint;  // calculated
     private final double zMinSetpoint = Units.inchesToMeters(0.0);
@@ -191,8 +193,8 @@ public class ArmLoop extends LoopBase {
         }
 
 
-
-        xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches() + 48.0);
+        double clawLengthPastToolCenterPoint = kMaxElbowPlusClawLength - config.elbow().length() - config.wrist().length();
+        xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches() + 48.0 - clawLengthPastToolCenterPoint);
         finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
         setpointState = finalTrajectoryState;
     }
@@ -650,6 +652,7 @@ public class ArmLoop extends LoopBase {
 
         status.setShoulderAngleRadSetpoint(shoulderAngleSetpoint)
               .setElbowAngleRadSetpoint(elbowAngleSetpoint)
+              .setSetpointTrajState(setpointState)
               .setShoulderFeedforward(voltages.get(0,0))
               .setElbowFeedforward(voltages.get(1,0))
               .setShoulderPIDOutput(shoulderPIDOutput)
