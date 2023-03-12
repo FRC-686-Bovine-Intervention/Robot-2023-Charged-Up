@@ -26,7 +26,7 @@ public class DriverInteractionStatus extends StatusBase {
     }
 /*
  * MainAction (Context based: Deploy intake, Align early, Substation grab, Arm release)
- * Undo (Context based: Extend → Align → Hold, Hold locking, Defense ↔ Substation)
+ * Undo (Context based: Adjust → Align → Hold, Hold locking, Defense ↔ Substation)
  * AutoDrive (Context based: Auto balance, Driver assist to substation)
  * InvertDrive
  * 

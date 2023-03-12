@@ -89,7 +89,7 @@ public class DriverInteractionLoop extends LoopBase {
             
             case Release:
                 if(armStatus.EnabledState.IsEnabled)
-                        break;
+                    break;
                 if(!DriverControlButtons.MainAction.getButton())
                     intakeCommand.setIntakeState(IntakeState.Defense);
             break;
@@ -98,8 +98,8 @@ public class DriverInteractionLoop extends LoopBase {
 
         ArmCommand armCommand = new ArmCommand();
 
-        armCommand.setXAdjustment(DriverControlAxes.ThrustmasterX.getAxis());
-        armCommand.setZAdjustment(DriverControlAxes.ThrustmasterY.getAxis());
+        // armCommand.setXAdjustment(DriverControlAxes.ThrustmasterX.getAxis());
+        // armCommand.setZAdjustment(DriverControlAxes.ThrustmasterY.getAxis());
 
         if(DriverControlButtons.ButtonBoard1_1.getRisingEdge())
             armCommand.setTargetNode(NodeEnum.BottomLeft);
@@ -156,11 +156,15 @@ public class DriverInteractionLoop extends LoopBase {
                     armCommand.setArmState(ArmState.Release);
                 else if(armCommand.getTargetNode() != null)
                     armCommand.setArmState(ArmState.Extend);
+                else if(DriverControlButtons.Undo.getRisingEdge())
+                    armCommand.setArmState(ArmState.Align);
             break;
             
             case SubstationExtend:
                 if(DriverControlButtons.MainAction.getRisingEdge())
                     armCommand.setArmState(ArmState.SubstationGrab);
+                if(DriverControlButtons.Undo.getRisingEdge())
+                    armCommand.setArmState(ArmState.Defense);
             break;
 
             default: break;

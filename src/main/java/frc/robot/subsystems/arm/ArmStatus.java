@@ -44,7 +44,7 @@ public class ArmStatus extends StatusBase {
         SubstationExtend,   // Driver has decided to grab a piece from the substation
         SubstationGrab;     // Driver is ready to grab piece from the substation
 
-        public static final ArmState DEFAULT = ZeroTurret; //TODO TurretDebug
+        public static final ArmState DEFAULT = Defense;
     }
 
     public enum NodeEnum {
@@ -147,7 +147,7 @@ public class ArmStatus extends StatusBase {
 
     private ArmPose.Preset  currentArmPose = null;
     public ArmPose.Preset   getCurrentArmPose()                                 {return currentArmPose;}
-    protected ArmStatus     setCurrentArmPose(ArmPose.Preset currentArmPose)    {this.currentArmPose = currentArmPose; return this;}
+    public ArmStatus        setCurrentArmPose(ArmPose.Preset currentArmPose)    {this.currentArmPose = currentArmPose; return this;}
 
     private ArmTrajectory   currentArmTrajectory = null;
     public ArmTrajectory    getCurrentArmTrajectory()                                   {return currentArmTrajectory;}
@@ -386,12 +386,14 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Hold|Align Locked", stateLocked);
 
         // Turret
-        HAL.setTurretPower(turretPower)
-           .setTurretNeutralMode(turretNeutralMode);
+        if(!turretLockout)
+            HAL.setTurretPower(turretPower);
+        HAL.setTurretNeutralMode(turretNeutralMode);
 
         logger.recordOutput(prefix + "Turret/Power",                getTurretPower());
         logger.recordOutput(prefix + "Turret/PID Output",           getTurretPIDOutput());
         logger.recordOutput(prefix + "Turret/Control Mode",         turretControlMode != null ? turretControlMode.name() : "null");
+        logger.recordOutput(prefix + "Turret/Neutral Mode",         turretNeutralMode != null ? turretNeutralMode.name() : "null");
         logger.recordOutput(prefix + "Turret/Position (deg)",       getTurretAngleDeg());
         logger.recordOutput(prefix + "Turret/Target Angle (deg)",   getTargetTurretAngleDeg());
         logger.recordOutput(prefix + "Turret/Encoder/Relative",     HAL.getTurretRelative());

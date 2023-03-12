@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.auto.actions.Action;
 import frc.robot.auto.actions.RamseteFollowerAction;
+import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.odometry.Odometry;
 import frc.robot.subsystems.odometry.OdometryCommand;
@@ -27,6 +28,7 @@ public class AutoManagerLoop extends LoopBase {
                   .setAutoRunning(true)
                   .setActionIndex(-1);
             Odometry.getInstance().setCommand(new OdometryCommand().setResetPose(status.getCurrentAutoMode().initialPose));
+            ArmStatus.getInstance().setCurrentArmPose(status.getCurrentAutoMode().initialArmPose);
             autoTimer.start();
         }
         if(status.getActionIndex() < 0) {
