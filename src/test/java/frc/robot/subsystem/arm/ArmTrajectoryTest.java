@@ -26,6 +26,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
@@ -239,7 +240,9 @@ public class ArmTrajectoryTest {
         when(mockStatus.getShoulderAngleRad()).thenReturn(startPos.getShoulderAngleRad());
         when(mockStatus.getElbowAngleRad()).thenReturn(startPos.getElbowAngleRad());
         when(mockStatus.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]);       
-        ArmLoop.getInstance().startTrajectory(startPos, finalPos, targetNode, turretXY);
+        when(mockStatus.getTargetNode()).thenReturn(targetNode);
+        when(mockStatus.getTurretToField()).thenReturn(turretXY);
+        ArmLoop.getInstance().startTrajectory(startPos, finalPos);
 
         ArgumentCaptor<Double> turretCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<ArmTrajectory> trajCaptor = ArgumentCaptor.forClass(ArmTrajectory.class);
@@ -274,8 +277,10 @@ public class ArmTrajectoryTest {
 
         when(mockStatus.getShoulderAngleRad()).thenReturn(startPos.getShoulderAngleRad());
         when(mockStatus.getElbowAngleRad()).thenReturn(startPos.getElbowAngleRad());
-        when(mockStatus.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]);       
-        ArmLoop.getInstance().startTrajectory(startPos, finalPos, targetNode, turretXY);
+        when(mockStatus.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]); 
+        when(mockStatus.getTargetNode()).thenReturn(targetNode);
+        when(mockStatus.getTurretToField()).thenReturn(turretXY);              
+        ArmLoop.getInstance().startTrajectory(startPos, finalPos);
 
         verify(mockStatus, times(2)).setTargetTurretAngleDeg(turretCaptor.capture());
         turretAngleToTarget = turretCaptor.getValue();   // relative to robot
@@ -307,8 +312,10 @@ public class ArmTrajectoryTest {
 
         when(mockStatus.getShoulderAngleRad()).thenReturn(startPos.getShoulderAngleRad());
         when(mockStatus.getElbowAngleRad()).thenReturn(startPos.getElbowAngleRad());
-        when(mockStatus.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]);       
-        ArmLoop.getInstance().startTrajectory(startPos, finalPos, targetNode, turretXY);
+        when(mockStatus.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]);   
+        when(mockStatus.getTargetNode()).thenReturn(targetNode);
+        when(mockStatus.getTurretToField()).thenReturn(turretXY);            
+        ArmLoop.getInstance().startTrajectory(startPos, finalPos);
 
         verify(mockStatus, times(3)).setTargetTurretAngleDeg(turretCaptor.capture());
         turretAngleToTarget = turretCaptor.getValue();   // relative to robot
