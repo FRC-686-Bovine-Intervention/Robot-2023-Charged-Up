@@ -73,8 +73,8 @@ public class ArmTest {
         ArmPose.Preset.writePresets(presets);
 
         assertEquals(0, ArmPose.Preset.DEFENSE.getFileIdx());
-        assertEquals(12.0, ArmPose.Preset.DEFENSE.getX(), kEps);
-        assertEquals(25.0, ArmPose.Preset.DEFENSE.getZ(), kEps);
+        assertEquals(13.916, ArmPose.Preset.DEFENSE.getX(), kEps);
+        assertEquals(32.975, ArmPose.Preset.DEFENSE.getZ(), kEps);
         
         assertEquals(0, ArmPose.Preset.DEFENSE.getFileIdx());
         assertEquals(1, ArmPose.Preset.INTAKE.getFileIdx());

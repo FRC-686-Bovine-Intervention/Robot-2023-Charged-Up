@@ -462,7 +462,7 @@ public class ArmLoop extends LoopBase {
         runTurret();
 
         if(status.getCurrentArmPose() != null && status.getTargetArmPose() != status.getCurrentArmPose())
-            startTrajectory(status.getCurrentArmPose(), status.getTargetArmPose(), status.getTargetNode(), status.getTurretToField());
+            startTrajectory(status.getCurrentArmPose(), status.getTargetArmPose());
     }
 
     private boolean largeTurretError = false;
@@ -484,41 +484,48 @@ public class ArmLoop extends LoopBase {
 
 
 
-    public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos, ArmStatus.NodeEnum targetNode, Pose3d turretPose3d) {
-        Translation2d turretXY = GeomUtil.translation3dTo2dXY(turretPose3d.getTranslation());
-        
+    public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos) {
+
+        Translation2d turretXY = GeomUtil.translation3dTo2dXY(status.getTurretToField().getTranslation());
+        double turretAngleToTarget = 0.0;
+
         // get current arm positions
         double startShoulderAngleRad = status.getShoulderAngleRad();
         double startElbowAngleRad = status.getElbowAngleRad();
 
+        double finalShoulderAngleRad = finalPos.getShoulderAngleRad();
+        double finalElbowAngleRad = finalPos.getElbowAngleRad();
+
         // get pre-planned trajectory
         ArmTrajectory baseTrajectory = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
 
-        // find closest node
-        Optional<Translation2d> optNodeXY = getClosestNodeXY(targetNode, turretXY);
+        // if trying to score, find closest node
+        if ((finalPos.ordinal() >= ArmPose.Preset.SCORE_HYBRID.ordinal()) && 
+            (finalPos.ordinal() <= ArmPose.Preset.SCORE_HIGH_CONE.ordinal())) {
 
-        if (optNodeXY.isPresent()) {
-            Translation2d nodeXY = optNodeXY.get();
+            ArmStatus.NodeEnum targetNode = status.getTargetNode();
 
-            // calculate turret angle to target
-            Translation2d turretToTarget = nodeXY.minus(turretXY);
-            double targetAngle = turretToTarget.getAngle().getRadians();
-            double robotAngle = OdometryStatus.getInstance().getRobotPose().getRotation().getRadians();
-            double turretAngleToTarget = targetAngle - robotAngle;
+            // find closest node
+            Optional<Translation2d> optNodeXY = getClosestNodeXY(targetNode, turretXY);
 
-            // extend the distance of the base trajectory
-            double finalShoulderAngleRad = finalPos.getShoulderAngleRad();
-            double finalElbowAngleRad = finalPos.getElbowAngleRad();
+            if (optNodeXY.isPresent()) {
+                Translation2d nodeXY = optNodeXY.get();
 
-            // calculate turret distance
-            double x = turretToTarget.getNorm();
-            double z = Units.inchesToMeters(finalPos.getZ());
-            Optional<Vector<N2>> theta = kinematics.inverse(new Translation2d(x,z));
-            if (theta.isPresent()) {
-                finalShoulderAngleRad = theta.get().get(0,0);
-                finalElbowAngleRad = theta.get().get(1,0);
+                // calculate turret angle to target
+                Translation2d turretToTarget = nodeXY.minus(turretXY);
+                double targetAngle = turretToTarget.getAngle().getRadians();
+                double robotAngle = OdometryStatus.getInstance().getRobotPose().getRotation().getRadians();
+                turretAngleToTarget = targetAngle - robotAngle;
+
+                // extend the distance of the base trajectory
+                double x = turretToTarget.getNorm();
+                double z = Units.inchesToMeters(finalPos.getZ());
+                Optional<Vector<N2>> theta = kinematics.inverse(new Translation2d(x,z));
+                if (theta.isPresent()) {
+                    finalShoulderAngleRad = theta.get().get(0,0);
+                    finalElbowAngleRad = theta.get().get(1,0);
+                }
             }
-
             // set outputs
             status.setTargetTurretAngleDeg(turretAngleToTarget);
             status.setCurrentArmTrajectory(baseTrajectory.interpolateEndPoints(startShoulderAngleRad, startElbowAngleRad, finalShoulderAngleRad, finalElbowAngleRad));
