@@ -239,11 +239,11 @@ public class ArmStatus extends StatusBase {
 
         // check forward limits
         if ((shoulderAngleRad > shoulderMaxAngleRad) || (relativeAngle > ArmLoop.kRelativeMaxAngleRad)) {
-            power = Math.max(power, 0.0);   // still allow movement in reverse direction
+            power = Math.min(power, 0.0);   // still allow movement in reverse direction
         }
         // check reverse limits
         if ((shoulderAngleRad < shoulderMinAngleRad) || (relativeAngle < ArmLoop.kRelativeMinAngleRad)) {
-            power = Math.min(power, 0.0);   // still allow movement in forward direction
+            power = Math.max(power, 0.0);   // still allow movement in forward direction
         }
         if(Math.signum(power) == Math.signum(shoulderAngleRad + Units.degreesToRadians(90))) {
             power += Math.signum(power) * kShoulderMinPower;
@@ -318,11 +318,11 @@ public class ArmStatus extends StatusBase {
 
         // check forward limits
         if ((elbowAngleRad > elbowMaxAngleRad) || (relativeAngle > ArmLoop.kRelativeMaxAngleRad)) {
-            power = Math.max(power, 0.0);   // still allow movement in reverse direction
+            power = Math.min(power, 0.0);   // still allow movement in reverse direction
         }
         // check reverse limits
         if ((elbowAngleRad < elbowMinAngleRad) || (relativeAngle < ArmLoop.kRelativeMinAngleRad)) {
-            power = Math.min(power, 0.0);   // still allow movement in forward direction
+            power = Math.max(power, 0.0);   // still allow movement in forward direction
         }
         return power;
     }
