@@ -34,7 +34,7 @@ def main():
                   },
                   "wrist": {
                       "mass": ((2.8 * lb).to("kg")).value.tolist(),
-                      "length": (((20.5 - 14.0) * inch).to("meter")).value.tolist(),
+                      "length": (((19.0 - 14.0) * inch).to("meter")).value.tolist(),
                       "moi": 0.8,
                       "cgRadius": ((1.5 * inch).to("meter")).value.tolist()
                   },

@@ -26,9 +26,9 @@ class ArmPresetPoses:
 
         # preset = [None] * ((ArmPresetEnum.SCORE_HIGH_CONE).value+1)
         preset = {
-            "auto_start":        {"fileIdx": ArmPresetEnum.AUTO_START, "xy": np.array([12.0, 24.0]).tolist()},
-            "defense":           {"fileIdx": ArmPresetEnum.DEFENSE, "xy": np.array([12.0, 25.0]).tolist()},
-            "intake":            {"fileIdx": ArmPresetEnum.INTAKE, "xy": np.array([14.0, 20.0]).tolist()},
+            "auto_start":        {"fileIdx": ArmPresetEnum.AUTO_START, "xy": np.array([13.483, 37.597]).tolist()},
+            "defense":           {"fileIdx": ArmPresetEnum.DEFENSE, "xy": np.array([13.916, 32.975]).tolist()},
+            "intake":            {"fileIdx": ArmPresetEnum.INTAKE, "xy": np.array([13.790, 18.725]).tolist()},
             "double_substation": {"fileIdx": ArmPresetEnum.DOUBLE_SUBSTATION, "xy": [54.0, 41.0]},
             "score_hybrid":      {"fileIdx": ArmPresetEnum.SCORE_HYBRID, "xy": (np.array([bumper_width_inches/2 + shelf_depth/2, 0]) + np.array([0, scoring_margin])).tolist()},
             "score_mid_cube":    {"fileIdx": ArmPresetEnum.SCORE_MID_CUBE, "xy": (np.array([bumper_width_inches/2 + 14.25  + shelf_depth/2, 23.5]) + np.array([0, scoring_margin])).tolist()},
