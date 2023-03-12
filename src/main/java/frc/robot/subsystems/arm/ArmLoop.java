@@ -528,9 +528,9 @@ public class ArmLoop extends LoopBase {
             }
             // set outputs
             status.setTargetTurretAngleDeg(turretAngleToTarget);
-            status.setCurrentArmTrajectory(baseTrajectory.interpolateEndPoints(startShoulderAngleRad, startElbowAngleRad, finalShoulderAngleRad, finalElbowAngleRad));
-            trajectoryTimer.reset();
         }
+        status.setCurrentArmTrajectory(baseTrajectory.interpolateEndPoints(startShoulderAngleRad, startElbowAngleRad, finalShoulderAngleRad, finalElbowAngleRad));
+        trajectoryTimer.reset();
     }
 
 
