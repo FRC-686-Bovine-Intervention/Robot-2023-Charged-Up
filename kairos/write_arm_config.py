@@ -25,7 +25,7 @@ def main():
                       "moi": 0.013,
                       "cgRadius": ((2.5 * inch).to("meter")).value.tolist(),
                       "minAngle": -1.57,
-                      "maxAngle": 1.047,
+                      "maxAngle": 1.2217,
                       "motor": {
                           "type": "falcon",
                           "count": 1,

@@ -11,8 +11,8 @@ orig_points = [s.theta1.'; s.theta2.'];
 orig_theta1 = orig_points(1,:);
 orig_theta2 = orig_points(2,:);
 
-theta1 = [orig_theta1(1)*180/pi  -65.5  orig_theta1(end)*180/pi] * pi/180;
-theta2 = [orig_theta2(1)*180/pi   44.3  orig_theta2(end)*180/pi] * pi/180;
+theta1 = [orig_theta1(1)  -65.5*pi/180  orig_theta1(end)];
+theta2 = [orig_theta2(1)   44.3*pi/180  orig_theta2(end)];
 
 points = [theta1; theta2];
 
