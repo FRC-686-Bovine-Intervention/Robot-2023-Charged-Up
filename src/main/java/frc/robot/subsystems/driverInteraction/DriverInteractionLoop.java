@@ -69,7 +69,7 @@ public class DriverInteractionLoop extends LoopBase {
         switch(intakeStatus.getIntakeState())
         {
             case Defense:
-                if(!armStatus.EnabledState.IsEnabled && armStatus.getArmState() != ArmState.Defense)
+                if(armStatus.EnabledState.IsEnabled && armStatus.getArmState() != ArmState.Defense)
                     break;
                 if(DriverControlButtons.MainAction.getRisingEdge())
                     intakeCommand.setIntakeState(IntakeState.Grab);
@@ -141,12 +141,14 @@ public class DriverInteractionLoop extends LoopBase {
                 if(DriverControlButtons.MainAction.getRisingEdge())
                     armCommand.setArmState(ArmState.Align);
                 if(DriverControlButtons.Undo.getRisingEdge())
-                    armCommand.setArmState(ArmState.Hold); // Locks State
+                    armCommand.setArmState(ArmState.Defense);
             break;
             
             case Align:
-                if(DriverControlButtons.Undo.getRisingEdge())
+                if(DriverControlButtons.MainAction.getRisingEdge())
                     armCommand.setArmState(ArmState.Align); // Locks State
+                if(DriverControlButtons.Undo.getRisingEdge())
+                    armCommand.setArmState(ArmState.Hold);
                 if(armCommand.getTargetNode() != null)
                     armCommand.setArmState(ArmState.Extend);
             break;

@@ -20,7 +20,7 @@ public class IntakeStatus extends StatusBase {
         Defense (0,     false,  IdleMode.kCoast),
         Grab    (1,     true,   IdleMode.kCoast),
         Hold    (0.2,   false,  IdleMode.kBrake),
-        Release (-0.7,  false,  IdleMode.kCoast);
+        Release (-1,  false,  IdleMode.kCoast);
         public final double intakePower;
         public final boolean intakeDeployed;
         public final IdleMode intakeNeutralMode;

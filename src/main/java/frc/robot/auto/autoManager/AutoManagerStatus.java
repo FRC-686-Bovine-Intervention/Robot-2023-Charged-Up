@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.auto.modes.AutoMode;
+import frc.robot.auto.modes.BlankAutoMode;
 import frc.robot.auto.modes.DriveStraightAuto;
 import frc.robot.auto.modes.RamseteFollowerTestAuto;
 import frc.robot.auto.modes.WallSideTwoPieceAuto;
@@ -22,6 +23,7 @@ public class AutoManagerStatus extends StatusBase {
     public static AutoManagerStatus getInstance(){if(instance == null){instance = new AutoManagerStatus();}return instance;}
 
     public enum AutoModesEnum{
+        Blank("Blank Mode", BlankAutoMode.class),
         RamseteFollowerTest("Ramsete Follower", RamseteFollowerTestAuto.class),
         DriveStraightAuto("Drive Straight", DriveStraightAuto.class),
         WallSideTwoPiece("Double Wall Side", WallSideTwoPieceAuto.class),

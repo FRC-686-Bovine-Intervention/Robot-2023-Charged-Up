@@ -93,7 +93,7 @@ public class ArmStatus extends StatusBase {
 
     private ArmState    armState = ArmState.DEFAULT;
     public ArmState     getArmState()                   {return armState;}
-    protected ArmStatus setArmState(ArmState armState)  {this.armState = armState; return this;}
+    public ArmStatus    setArmState(ArmState armState)  {this.armState = armState; return this;}
 
     private boolean     stateLocked = false;
     public boolean      getStateLocked()                    {return stateLocked;}
@@ -162,8 +162,9 @@ public class ArmStatus extends StatusBase {
     protected ArmStatus     setSetpointTrajState(Matrix<N2, N3> setpointTrajState)  {this.setpointTrajState = setpointTrajState; return this;}
 
     private boolean         internalDisable = false;
+    private String          internalDisableReason = "";
     public boolean          getInternalDisable()                        {return internalDisable;}
-    protected ArmStatus     setInternalDisable(boolean internalDisable) {this.internalDisable = internalDisable; return this;}
+    protected ArmStatus     setInternalDisable(boolean internalDisable, String reason) {this.internalDisable = internalDisable; this.internalDisableReason = reason; return this;}
 
     private double          xThrottle;
     public double           getXThrottle()                  {return xThrottle;}
@@ -340,7 +341,7 @@ public class ArmStatus extends StatusBase {
     protected ArmStatus setElbowPIDOutput(double elbowPIDOutput)    {this.elbowPIDOutput = elbowPIDOutput; return this;}
 
     // Claw
-    private boolean     clawGrabbing;
+    private boolean     clawGrabbing = true;
     public boolean      getClawGrabbing()                       {return clawGrabbing;}
     protected ArmStatus setClawGrabbing(boolean clawGrabbing)   {this.clawGrabbing = clawGrabbing; return this;}
 
@@ -385,10 +386,18 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
         logger.recordOutput(prefix + "Hold|Align Locked", stateLocked);
 
+        // Claw
+        HAL.setClawGrabbing(clawGrabbing);
+        logger.recordOutput(prefix + "Claw Grabbing", clawGrabbing);
+
         // Turret
-        if(!turretLockout)
-            HAL.setTurretPower(turretPower);
-        HAL.setTurretNeutralMode(turretNeutralMode);
+        if(!turretLockout) {
+            HAL.setTurretPower(turretPower)
+               .setTurretNeutralMode(turretNeutralMode);
+        } else {
+            HAL.setTurretPower(0)
+               .setTurretNeutralMode(NeutralMode.Coast);
+        }
 
         logger.recordOutput(prefix + "Turret/Power",                getTurretPower());
         logger.recordOutput(prefix + "Turret/PID Output",           getTurretPIDOutput());
@@ -408,7 +417,8 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Z",  zThrottle);
         logger.recordOutput(prefix + "Arm/Adjustments/X",           xAdjustment);
         logger.recordOutput(prefix + "Arm/Adjustments/Z",           zAdjustment);
-        logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable",     internalDisable);
+        logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable",         internalDisable);
+        logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable Reason",  internalDisableReason);
         logger.recordOutput(prefix + "Arm/Trajectory/Current Trajectory",   currentArmTrajectory != null ? "Start pose: " + currentArmTrajectory.getStartString() + " Final pose: " + currentArmTrajectory.getFinalString() : "null");
         AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta1", getCurrentTrajState().extractRowVector(0));
         AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta2", getCurrentTrajState().extractRowVector(1));

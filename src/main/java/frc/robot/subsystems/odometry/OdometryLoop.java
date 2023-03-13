@@ -22,7 +22,7 @@ public class OdometryLoop extends LoopBase {
     private final VisionStatus visionStatus = VisionStatus.getInstance();
 
     private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(DriveHAL.kTrackWidthInches));
-    private final DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, new Rotation2d(), 0, 0, new Pose2d(),
+    private final DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, Rotation2d.fromDegrees(180), 0, 0, new Pose2d(),
         new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), // Drivetrain measurement standard deviations. X, Y, theta.
         new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.2, 0.2, 0.2)); // Vision measurement standard deviations. X, Y, and theta.
 
