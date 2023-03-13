@@ -28,6 +28,11 @@ for o=1:numel(f)
 
         [theta1, theta2]   = arm_kinematics.inverse_kinematics(x,y);
         [theta1_alt, theta2_alt] = arm_kinematics.inverse_kinematics(x,y,1);
+
+        theta1 = unwrap(theta1);
+        theta2 = unwrap(theta2);
+        theta1_alt = unwrap(theta1_alt);
+        theta2_alt = unwrap(theta2_alt);
         
         theta1 = theta1(~isnan(theta1)) * angleScale;
         theta2 = theta2(~isnan(theta2)) * angleScale;

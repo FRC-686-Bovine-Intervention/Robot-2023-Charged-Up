@@ -32,4 +32,4 @@ field.dbl_substation_front_corner.y   = field.dbl_substation.y + 4.0;
 field.DOUBLE_SUBTATION.x         = field.dbl_substation_front_corner.x + field.dbl_substation_shelf_depth/2;
 field.DOUBLE_SUBTATION.y         = field.dbl_substation_front_corner.y;
 
-field.back_wall.x = bumper_width_inches/2 + 54.25;
+field.back_wall.x = bumper_width_inches/2 + 48;

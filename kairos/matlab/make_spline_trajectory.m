@@ -145,10 +145,10 @@ t = 0:clockPeriod:orig_T;
 [torque, voltage, current] = dynamics.feedforward(position, velocity, acceleration);
 
 title_str = sprintf('Original %d-%d Path', startPos, finalPos);
-fig = figure(1);
-plot_state(fig, t, position, velocity, acceleration, jerk, degreesFlag, title_str);
-fig = figure(2);
-plot_dynamics(fig, t, torque, voltage, current, title_str);
+% fig = figure(1);
+% plot_state(fig, t, position, velocity, acceleration, jerk, degreesFlag, title_str);
+% fig = figure(2);
+% plot_dynamics(fig, t, torque, voltage, current, title_str);
 
 [elbow_loc.x, elbow_loc.y, tip_loc.x, tip_loc.y] = kinematics.forward_kinematics(position(1,:), position(2,:));
 obstaclesJson = jsondecode(fileread('..\..\src\main\deploy\constraints.json'));
@@ -168,11 +168,11 @@ t = 0:clockPeriod:T;
 [position, velocity, acceleration, jerk] = sample(t, T, points);
 [torque, voltage, current] = dynamics.feedforward(position, velocity, acceleration);
 
-title_str = sprintf('Spline %d-%d Path', startPos, finalPos);
-fig = figure(11);
-plot_state(fig, t, position, velocity, acceleration, jerk, degreesFlag, title_str);
-fig = figure(12);
-plot_dynamics(fig, t, torque, voltage, current, title_str);
+% title_str = sprintf('Spline %d-%d Path', startPos, finalPos);
+% fig = figure(11);
+% plot_state(fig, t, position, velocity, acceleration, jerk, degreesFlag, title_str);
+% fig = figure(12);
+% plot_dynamics(fig, t, torque, voltage, current, title_str);
 
 [elbow_loc.x, elbow_loc.y, tip_loc.x, tip_loc.y] = kinematics.forward_kinematics(position(1,:), position(2,:));
 obstaclesJson = jsondecode(fileread('..\..\src\main\deploy\constraints.json'));

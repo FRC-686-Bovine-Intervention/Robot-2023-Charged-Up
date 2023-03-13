@@ -11,8 +11,10 @@ orig_points = [s.theta1.'; s.theta2.'];
 % remove extraneous loop
 orig_points = orig_points(:,[1 6:end]);
 
-theta1 = [orig_points(1,1)*180/pi  -143.3 -58.8  orig_points(1,end)*180/pi] * pi/180;
-theta2 = [orig_points(2,1)*180/pi    16.7  46.9  orig_points(2,end)*180/pi] * pi/180;
+[corner1_theta1, corner1_theta2, corner2_theta1, corner2_theta2] = get_safe_path_corners();
+
+theta1 = [orig_points(1,1)  -110.0*pi/180 corner2_theta1  orig_points(1,end)];
+theta2 = [orig_points(2,1)    43.0*pi/180 corner2_theta2  orig_points(2,end)];
 
 points = [theta1; theta2];
 
