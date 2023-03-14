@@ -5,6 +5,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
+import frc.robot.RobotConfiguration;
 import frc.robot.joysticks.ButtonBoard3x3;
 import frc.robot.joysticks.Thrustmaster;
 import frc.robot.subsystems.framework.StatusBase;
@@ -127,4 +128,5 @@ public class DriverInteractionStatus extends StatusBase {
     @Override protected void exportToTable(LogTable table) {}
     @Override protected void importFromTable(LogTable table) {}
     @Override protected void processTable() {}
+    @Override protected void loadConfiguration(RobotConfiguration configuration) {}
 }

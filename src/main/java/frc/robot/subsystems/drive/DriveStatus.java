@@ -11,6 +11,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import frc.robot.RobotConfiguration;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class DriveStatus extends StatusBase {
@@ -86,6 +87,8 @@ public class DriveStatus extends StatusBase {
         Subsystem = Drive.getInstance();
         EnabledEntry = Shuffleboard.getTab("Drivetrain").add("Enabled", true).withWidget(BuiltInWidgets.kToggleSwitch).getEntry();
     }
+    
+    @Override protected void loadConfiguration(RobotConfiguration configuration) {}
 
     @Override
     protected void updateInputs() {
@@ -97,6 +100,7 @@ public class DriveStatus extends StatusBase {
         setHeadingDeg(HAL.getHeadingDeg());
         setPitchDeg(HAL.getPitchDeg());
     }
+
     @Override
     protected void exportToTable(LogTable table) {
         table.put("Encoded Distance (In)/Left",   getLeftDistanceInches());
@@ -109,6 +113,7 @@ public class DriveStatus extends StatusBase {
         table.put("Motor PID Error/Left",         getLeftMotorPIDError());
         table.put("Motor PID Error/Right",        getRightMotorPIDError());
     }
+
     @Override
     protected void importFromTable(LogTable table) {
         setLeftDistanceInches       (table.getDouble("Encoded Distance (In)/Left",    getLeftDistanceInches()));
@@ -121,8 +126,9 @@ public class DriveStatus extends StatusBase {
         setLeftMotorPIDError        (table.getDouble("Motor PID Error/Left",          getLeftMotorPIDError()));
         setRightMotorPIDError       (table.getDouble("Motor PID Error/Right",         getRightMotorPIDError()));
     }
-    @Override
-    protected void processTable() {}
+
+    @Override protected void processTable() {}
+
     @Override
     protected void processOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "Control Mode",                    getTalonMode().name());

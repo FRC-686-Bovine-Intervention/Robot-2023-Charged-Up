@@ -15,8 +15,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import frc.robot.AdvantageUtil;
+import frc.robot.RobotConfiguration;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
+import frc.robot.lib.util.AdvantageUtil;
 import frc.robot.subsystems.framework.StatusBase;
 import frc.robot.subsystems.odometry.OdometryStatus;
 
@@ -344,6 +345,12 @@ public class ArmStatus extends StatusBase {
     private boolean     clawGrabbing = true;
     public boolean      getClawGrabbing()                       {return clawGrabbing;}
     protected ArmStatus setClawGrabbing(boolean clawGrabbing)   {this.clawGrabbing = clawGrabbing; return this;}
+
+    @Override
+    protected void loadConfiguration(RobotConfiguration configuration) {
+        setArmState(configuration.armState);
+        setCurrentArmPose(configuration.armPose);
+    }
 
     @Override
     public void updateInputs() {

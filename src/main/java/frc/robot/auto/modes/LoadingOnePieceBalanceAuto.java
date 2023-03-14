@@ -12,9 +12,12 @@ import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import frc.robot.FieldDimensions;
+import frc.robot.RobotConfiguration;
 import frc.robot.auto.actions.DriveOnChargeStationEdgeAction;
 import frc.robot.auto.actions.DriverAssistCommandAction;
 import frc.robot.auto.actions.RamseteFollowerAction;
+import frc.robot.subsystems.arm.ArmPose;
+import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.driverAssist.DriverAssistCommand;
 import frc.robot.subsystems.driverAssist.DriverAssistStatus.DriverAssistState;
 import frc.robot.util.AllianceFlipUtil;
@@ -97,7 +100,7 @@ public class LoadingOnePieceBalanceAuto extends AutoMode {
     private static final Trajectory traj3;
 
     public LoadingOnePieceBalanceAuto() {
-        initialPose = traj1.getInitialPose();
+        startConfiguration = new RobotConfiguration(traj1.getInitialPose(), ArmPose.Preset.AUTO_START, ArmState.Hold);
 
         RamseteController ramseteController = new RamseteController(2, 0.7);
 

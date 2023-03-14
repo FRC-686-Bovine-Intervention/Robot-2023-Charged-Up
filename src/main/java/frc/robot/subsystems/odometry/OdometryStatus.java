@@ -6,9 +6,11 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
-import frc.robot.AdvantageUtil;
 import frc.robot.FieldDimensions;
+import frc.robot.RobotConfiguration;
+import frc.robot.lib.util.AdvantageUtil;
 import frc.robot.subsystems.framework.StatusBase;
+import frc.robot.util.AllianceFlipUtil;
 
 public class OdometryStatus extends StatusBase {
     private static OdometryStatus instance;
@@ -32,7 +34,8 @@ public class OdometryStatus extends StatusBase {
     public WheelSpeeds      getRobotSpeedMeterPerSec()                      {return new WheelSpeeds(Units.inchesToMeters(robotSpeed.left), Units.inchesToMeters(robotSpeed.right));}
     public OdometryStatus   setRobotSpeedInPerSec(WheelSpeeds robotSpeed)   {this.robotSpeed = robotSpeed; return this;}
 
-    @Override protected void updateInputs() {
+    @Override
+    protected void updateInputs() {
         setCommand(odometry.getCommand());
     }
 
@@ -42,11 +45,16 @@ public class OdometryStatus extends StatusBase {
         logger.recordOutput(prefix + "Robot Speed (M|Sec)/Left", getRobotSpeedMeterPerSec().left);
         logger.recordOutput(prefix + "Robot Speed (M|Sec)/Right", getRobotSpeedMeterPerSec().right);
 
-        logger.recordOutput(prefix + "Pose Bounding Boxes/In Community", FieldDimensions.community.withinBounds(robotPose));
-        logger.recordOutput(prefix + "Pose Bounding Boxes/In Community without Charge Station", FieldDimensions.communityWithoutChargeStation.withinBounds(robotPose));
-        logger.recordOutput(prefix + "Pose Bounding Boxes/In Charge Station", FieldDimensions.chargeStation.withinBounds(robotPose));
+        logger.recordOutput(prefix + "Pose Bounding Boxes/In Community", FieldDimensions.community.withinBounds(AllianceFlipUtil.apply(robotPose)));
+        logger.recordOutput(prefix + "Pose Bounding Boxes/In Community without Charge Station", FieldDimensions.communityWithoutChargeStation.withinBounds(AllianceFlipUtil.apply(robotPose)));
+        logger.recordOutput(prefix + "Pose Bounding Boxes/In Charge Station", FieldDimensions.chargeStation.withinBounds(AllianceFlipUtil.apply(robotPose)));
 
         odometry.setCommand(new OdometryCommand());
+    }
+
+    @Override
+    protected void loadConfiguration(RobotConfiguration configuration) {
+        odometry.getCommand().setResetPose(configuration.robotPose);
     }
     
     @Override protected void exportToTable(LogTable table) {}

@@ -2,8 +2,9 @@ package frc.robot.subsystems.framework;
 
 import java.util.ArrayList;
 
-public class SubsystemController
-{
+import frc.robot.RobotConfiguration;
+
+public class SubsystemController {
     private static SubsystemController instance;
     public static SubsystemController getInstance() {if(instance == null){instance = new SubsystemController();}return instance;} 
     
@@ -50,6 +51,13 @@ public class SubsystemController
             sub.Status.runPreLoop();
             sub.Loop.onStop();
             sub.Status.runPostLoop();
+        }
+        return this;
+    }
+
+    public SubsystemController loadConfiguration(RobotConfiguration configuration) {
+        for (SubsystemBase sub : subsystems) {
+            sub.Status.loadConfiguration(configuration);
         }
         return this;
     }

@@ -8,6 +8,7 @@ import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.framework.LoopBase;
+import frc.robot.subsystems.framework.SubsystemController;
 import frc.robot.subsystems.odometry.Odometry;
 import frc.robot.subsystems.odometry.OdometryCommand;
 
@@ -29,9 +30,7 @@ public class AutoManagerLoop extends LoopBase {
             status.setCurrentAutoMode(status.getNewAutomode())
                   .setAutoRunning(true)
                   .setActionIndex(-1);
-            Odometry.getInstance().setCommand(new OdometryCommand().setResetPose(status.getCurrentAutoMode().initialPose));
-            ArmStatus.getInstance().setCurrentArmPose(status.getCurrentAutoMode().initialArmPose)
-                                   .setArmState(ArmState.Hold);
+            SubsystemController.getInstance().loadConfiguration(status.getCurrentAutoMode().startConfiguration);
             autoTimer.start();
         }
         if(status.getActionIndex() < 0) {

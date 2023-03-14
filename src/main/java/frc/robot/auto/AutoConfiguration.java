@@ -2,10 +2,6 @@ package frc.robot.auto;
 
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import frc.robot.subsystems.arm.ArmPose;
-import frc.robot.subsystems.arm.ArmStatus.ArmState;
-
 public class AutoConfiguration {
     public enum StartPosition {
         Wall,
@@ -18,24 +14,31 @@ public class AutoConfiguration {
     }
     public final StartPosition startingPosition;
     public final GamePiece startingPiece;
-    public final GamePiece
-    public final Pose2d initialPose;
-    public final ArmPose.Preset initialArmPose;
-    public final ArmState initalArmState;
+    public final GamePiece[] stagedPieces;
 
     public AutoConfiguration() {
-        this(new Pose2d(), ArmPose.Preset.AUTO_START, ArmState.Hold);
+        this(StartPosition.Wall);
     }
-    public AutoConfiguration(Pose2d initialPose, ArmPose.Preset initialArmPose, ArmState initalArmState) {
-        this.initialPose = initialPose;
-        this.initialArmPose = initialArmPose;
-        this.initalArmState = initalArmState;
+    public AutoConfiguration(StartPosition startingPosition) {
+        this(startingPosition, GamePiece.Cone);
+    }
+    public AutoConfiguration(StartPosition startingPosition, GamePiece startingPiece) {
+        this(startingPosition, startingPiece, new GamePiece[]{GamePiece.Cone,GamePiece.Cone,GamePiece.Cone,GamePiece.Cone});
+    }
+    public AutoConfiguration(StartPosition startingPosition, GamePiece startingPiece, GamePiece[] stagedPieces) {
+        this.startingPosition = startingPosition;
+        this.startingPiece = startingPiece;
+        this.stagedPieces = stagedPieces;
     }
 
     public AutoConfiguration log(Logger logger, String prefix) {
-        logger.recordOutput(prefix + "/Initial Robot Pose", initialPose);
-        logger.recordOutput(prefix + "/Initial Arm Pose", initialArmPose != null ? initialArmPose.name() : "null");
-        logger.recordOutput(prefix + "/Initial Arm State", initalArmState != null ? initalArmState.name() : "null");
+        String[] stagedNames = new String[stagedPieces.length];
+        for(int i = 0; i < stagedNames.length; i++) {
+            stagedNames[i] = stagedPieces[i] != null ? stagedPieces[i].name() : "null";
+        }
+        logger.recordOutput(prefix + "/Starting Position", startingPosition != null ? startingPosition.name() : "null");
+        logger.recordOutput(prefix + "/Starting Piece", startingPiece != null ? startingPiece.name() : "null");
+        logger.recordOutput(prefix + "/Staged Pieces", stagedNames);
         return this;
     }
 }

@@ -18,6 +18,7 @@ import frc.robot.subsystems.driverAssist.DriverAssist;
 import frc.robot.subsystems.framework.SubsystemController;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.odometry.Odometry;
+import frc.robot.subsystems.vision.Vision;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to

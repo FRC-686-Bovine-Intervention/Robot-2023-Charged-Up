@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import frc.robot.RobotConfiguration;
 import frc.robot.auto.AutoConfiguration;
 import frc.robot.auto.modes.AutoMode;
 import frc.robot.auto.modes.BlankAutoMode;
@@ -153,4 +154,5 @@ public class AutoManagerStatus extends StatusBase {
     }
 
     @Override protected void processTable() {}
+    @Override protected void loadConfiguration(RobotConfiguration configuration) {}
 }
