@@ -28,4 +28,4 @@ points = make_spline_trajectory(startIdx, finalIdx, points, orig_points, spline_
 s.theta1 = points(1,:);
 s.theta2 = points(2,:);
 
-write_spline_trajectory(startIdx, finalIdx, s);
+write_spline_trajectory(startIdx, finalIdx, s, false);

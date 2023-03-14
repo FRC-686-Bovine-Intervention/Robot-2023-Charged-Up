@@ -94,7 +94,6 @@ public class ArmLoop extends LoopBase {
     private final Timer trajectoryTimer = new Timer();
 
     private Matrix<N2,N3> setpointState = null;     
-    private Matrix<N2,N3> prevSetpointState = null;
     private Matrix<N2,N3> finalTrajectoryState = null;
 
     private final PIDController shoulderPID = 
@@ -572,9 +571,8 @@ public class ArmLoop extends LoopBase {
         double shoulderAngleRad = status.getShoulderAngleRad();
         double elbowAngleRad = status.getElbowAngleRad();
         
-        prevSetpointState = setpointState;
-        double shoulderAngleSetpoint = prevSetpointState.get(0,0);
-        double elbowAngleSetpoint = prevSetpointState.get(1,0);            
+        // default setpoint: stay where you are
+        setpointState = ArmTrajectory.getFixedState(shoulderAngleRad, elbowAngleRad);
 
         Vector<N2> voltages = VecBuilder.fill(0,0);
         double shoulderPIDOutput = 0;
@@ -584,7 +582,6 @@ public class ArmLoop extends LoopBase {
         // if internally disabled, set the setpoint to the current position (don't move when enabling)
         if (status.getInternalDisable()) {
             setpointState = ArmTrajectory.getFixedState(shoulderAngleRad, elbowAngleRad);
-            prevSetpointState = setpointState;
             status.setCurrentArmTrajectory(null);
         } else {
             // move arm!
@@ -633,6 +630,8 @@ public class ArmLoop extends LoopBase {
             voltages = dynamics.feedforward(setpointState);
 
             // calculate feedback voltages (current location compared to where we wanted to go to last cycle)
+            double shoulderAngleSetpoint = setpointState.get(0,0);
+            double elbowAngleSetpoint = setpointState.get(1,0);            
             shoulderPIDOutput = shoulderPID.calculate(shoulderAngleRad, shoulderAngleSetpoint);
             elbowPIDOutput = elbowPID.calculate(elbowAngleRad, elbowAngleSetpoint) ;
             
@@ -640,6 +639,9 @@ public class ArmLoop extends LoopBase {
             status.setShoulderVoltage(voltages.get(0,0) + shoulderPIDOutput)
                   .setElbowVoltage   (voltages.get(1,0) + elbowPIDOutput);
         }
+
+        double shoulderAngleSetpoint = setpointState.get(0,0);
+        double elbowAngleSetpoint = setpointState.get(1,0);            
 
         // trigger emergency stop if necessary
         internalDisableTimer.start();

@@ -5,6 +5,7 @@ design_path_0_5
 design_path_0_6
 design_path_0_7
 
+design_path_1_0
 design_path_1_4
 design_path_1_5
 design_path_1_6
