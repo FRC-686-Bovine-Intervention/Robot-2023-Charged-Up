@@ -82,13 +82,13 @@ public class DriverAssistLoop extends LoopBase {
                 double output = 0;
                 if(status.getUsingProportional())
                 {
-                    output = Math.max(Math.min(estimatedPitch*0.25/15, 0.25),-0.25);
+                    output = Math.max(Math.min(estimatedPitch*0.125/15, 0.25),-0.25);
                 }
                 else
                 {
                     output = Math.signum(driveStatus.getPitchDeg()) * 0.25;
                     // if(Math.signum(driveStatus.getPitchDeg()) != Math.signum(prevPitch))
-                    if(Math.abs(averageEncoderDist - startEncoderDist) >= 24 + 15)
+                    if(Math.abs(averageEncoderDist - startEncoderDist) >= 24)
                         status.setUsingProportional(true);
                 }
                 driveCommand.setWheelSpeed(new WheelSpeeds(output,output));

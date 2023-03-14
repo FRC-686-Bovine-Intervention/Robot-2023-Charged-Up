@@ -43,7 +43,7 @@ public class ArmTrajectory {
   }
 
   /** slow down factor for arm movements */
-  private static double grannyFactor = 5;//TODO: TRAJECTORYDEBUG 1.0; // default to full speed motions
+  private static double grannyFactor = 2.5;//TODO: TRAJECTORYDEBUG 1.0; // default to full speed motions
 
   public double getGrannyFactor() {
     return grannyFactor;

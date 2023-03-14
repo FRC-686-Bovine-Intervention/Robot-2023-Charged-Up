@@ -51,7 +51,8 @@ public class IntakeLoop extends LoopBase {
 
         status.setDeploySolenoid(status.getIntakeState().intakeDeployed)
               .setIntakePower(status.getIntakeState().intakePower)
-              .setIntakeNeutralMode(status.getIntakeState().intakeNeutralMode);
+              .setIntakeNeutralMode(status.getIntakeState().intakeNeutralMode)
+              .setIntakeStallCurrentLimit(status.getIntakeState().currentLimit);
     }
 
     private double disabledTimestamp;

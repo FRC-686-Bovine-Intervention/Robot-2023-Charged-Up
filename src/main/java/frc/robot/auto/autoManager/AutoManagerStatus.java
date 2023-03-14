@@ -11,11 +11,14 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import frc.robot.auto.AutoConfiguration;
 import frc.robot.auto.modes.AutoMode;
 import frc.robot.auto.modes.BlankAutoMode;
+import frc.robot.auto.modes.CenterOnePieceBalanceAuto;
+import frc.robot.auto.modes.LoadingOnePieceBalanceAuto;
 import frc.robot.auto.modes.DriveStraightAuto;
 import frc.robot.auto.modes.RamseteFollowerTestAuto;
-import frc.robot.auto.modes.WallSideTwoPieceAuto;
+import frc.robot.auto.modes.WallSideOnePieceBalanceAuto;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class AutoManagerStatus extends StatusBase {
@@ -26,7 +29,10 @@ public class AutoManagerStatus extends StatusBase {
         Blank("Blank Mode", BlankAutoMode.class),
         RamseteFollowerTest("Ramsete Follower", RamseteFollowerTestAuto.class),
         DriveStraightAuto("Drive Straight", DriveStraightAuto.class),
-        WallSideTwoPiece("Double Wall Side", WallSideTwoPieceAuto.class),
+        WallSideTwoPiece("Double Wall", WallSideOnePieceBalanceAuto.class),
+        WallSideOnePieceBalance("Single Balance Wall", WallSideOnePieceBalanceAuto.class),
+        CenterOnePieceBalance("Single Balance Center", CenterOnePieceBalanceAuto.class),
+        LoadingOnePieceBalance("Single Balance Loading", LoadingOnePieceBalanceAuto.class),
         ;
         public final String autoName;
         public final Class<? extends AutoMode> autoMode;
@@ -75,7 +81,11 @@ public class AutoManagerStatus extends StatusBase {
     public Class<? extends AutoMode> getAutomode()                                  {return selectedAutoMode.autoMode;}
     public AutoMode getNewAutomode() {
         try {
-            return getAutomode().getConstructor().newInstance();
+            try {
+                return getAutomode().getConstructor(AutoConfiguration.class).newInstance();
+            } catch(NoSuchMethodException e) {
+                return getAutomode().getConstructor().newInstance();
+            }
         } catch (InvocationTargetException e) {
             
         } catch (Exception e) {
@@ -99,6 +109,10 @@ public class AutoManagerStatus extends StatusBase {
     private Trajectory actionTrajectory;
     public Trajectory getActionTrajectory() {return actionTrajectory;}
     public AutoManagerStatus setActionTrajectory(Trajectory actionTrajectory) {this.actionTrajectory = actionTrajectory; return this;}
+
+    private AutoConfiguration   autoConfiguration = new AutoConfiguration();
+    public AutoConfiguration    getAutoConfiguration()                                      {return autoConfiguration;}
+    protected AutoManagerStatus setAutoConfiguration(AutoConfiguration autoConfiguration)   {this.autoConfiguration = autoConfiguration; return this;}
     
     @Override
     protected void updateInputs() {

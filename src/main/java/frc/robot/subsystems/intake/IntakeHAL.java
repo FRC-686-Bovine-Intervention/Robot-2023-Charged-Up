@@ -57,6 +57,12 @@ public class IntakeHAL {
             intakeMotor.setIdleMode(mode);
         return this;
     }
+    public IntakeHAL setIntakeStallCurrentLimit(int stallCurrentLimit)
+    {
+        if(intakeMotor != null)
+            intakeMotor.setSmartCurrentLimit(stallCurrentLimit, kFreeCurrentLimit);
+        return this;
+    }
     public IntakeHAL setDeploySolenoid(boolean intakeDeployed)
     {
         if(deploySolenoid != null)
