@@ -150,7 +150,7 @@ public class PotAndEncoderTest {
         PotAndEncoder.Status status = null;
 
         final long movePeriod = 100;
-        final long dwellPeriod = Math.round(config.averagingBufferMaxSize * 1.25);
+        final long dwellPeriod = config.averagingBufferMaxSize + config.movingBufferMaxSize + 1;
 
         double dwellList[] = { -134.2847, 
             148.8153,
@@ -169,6 +169,7 @@ public class PotAndEncoderTest {
 
         for (int dwellCnt = 1; dwellCnt <= numDwells; dwellCnt++)
         {
+            // move arm for movePeriod
             double deltaAngle = (dwellList[dwellCnt] - dwellList[dwellCnt-1]) / (double)movePeriod;
             for (int k=0; k<movePeriod; k++)
             {
@@ -185,6 +186,7 @@ public class PotAndEncoderTest {
                 assertTrue(status.calibrated);            
             }
 
+            // stop arm for dwellPeriod
             outputAngleDeg = dwellList[dwellCnt];
             when(hal.getReading()).thenReturn(mockHALReading(outputAngleDeg));
             for (int k=0; k<dwellPeriod; k++)
