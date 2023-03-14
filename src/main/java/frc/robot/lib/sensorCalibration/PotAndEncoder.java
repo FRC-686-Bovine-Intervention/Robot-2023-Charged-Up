@@ -350,7 +350,7 @@ public class PotAndEncoder {
                 double outputAngleDegAtCalibration, double potentiometerNormalizedVoltageAtCalib, double absoluteEncoderAngleDegAtCalib, 
                 boolean potInverted, boolean encInverted, HAL HAL) {
             this(potentiometerGearRatio, encoderGearRatio, potentiometerNTurns, outputAngleDegAtCalibration, potentiometerNormalizedVoltageAtCalib, absoluteEncoderAngleDegAtCalib, 
-            potInverted, encInverted, HAL, 20, 200);
+            potInverted, encInverted, HAL, 20, 50);
         }
         public Config(double potentiometerGearRatio, double encoderGearRatio, double potentiometerNTurns, 
                 double outputAngleDegAtCalibration, double potentiometerNormalizedVoltageAtCalib, double absoluteEncoderAngleDegAtCalib,
