@@ -67,7 +67,10 @@ public class DriverInteractionStatus extends StatusBase {
         ThrustmasterX       (Thrustmaster.kXAxisID,         Thrustmaster.kXAxisInvert),
         ThrustmasterY       (Thrustmaster.kYAxisID,         Thrustmaster.kYAxisInvert),
         ThrustmasterRotation(Thrustmaster.kZRotateAxisID,   Thrustmaster.kZRotateAxisInvert),
-        ThrustmasterSlider  (Thrustmaster.kSliderAxisID,    Thrustmaster.kSliderAxisInvert);
+        ThrustmasterSlider  (Thrustmaster.kSliderAxisID,    Thrustmaster.kSliderAxisInvert),
+        ButtonBoardX        (Joysticks.ButtonBoard,         ButtonBoard3x3.kXAxisID),
+        ButtonBoardY        (Joysticks.ButtonBoard,         ButtonBoard3x3.kYAxisID),
+        ;
 
         private final Joysticks joystick;
         private final int axisID;

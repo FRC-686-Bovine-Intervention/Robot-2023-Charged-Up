@@ -174,7 +174,7 @@ public class VisionStatus extends StatusBase {
             new Rotation3d(
                 0,
                 0,
-                Units.degreesToRadians(-20.0)
+                Units.degreesToRadians(-30.0)
             )
         ); //TODO
     public Transform3d  getTurretToCamera1()    {return turretToCamera1;};
@@ -195,7 +195,7 @@ public class VisionStatus extends StatusBase {
             new Rotation3d(
                 0,
                 0,
-                Units.degreesToRadians(+20.0)
+                Units.degreesToRadians(+30.0)
             )
         ); //TODO
     public Transform3d  getTurretToCamera2()    {return turretToCamera2;}

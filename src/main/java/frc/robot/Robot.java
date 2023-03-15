@@ -15,6 +15,7 @@ import frc.robot.auto.autoManager.AutoManager;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.driverAssist.DriverAssist;
+import frc.robot.subsystems.driverInteraction.DriverInteraction;
 import frc.robot.subsystems.framework.SubsystemController;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.odometry.Odometry;
@@ -48,7 +49,7 @@ public class Robot extends LoggedRobot {
 
     subsystemController = SubsystemController.getInstance();
     subsystemController.register(AutoManager.getInstance());
-    // subsystemController.register(DriverInteraction.getInstance());
+    subsystemController.register(DriverInteraction.getInstance());
     subsystemController.register(DriverAssist.getInstance());
     subsystemController.register(Vision.getInstance());
     subsystemController.register(Arm.getInstance());

@@ -121,6 +121,14 @@ public class ArmStatus extends StatusBase {
     public double       getTurretPIDOutput()                        {return turretPIDOutput;}
     protected ArmStatus setTurretPIDOutput(double turretPIDOutput)  {this.turretPIDOutput = turretPIDOutput; return this;}
 
+    private double      turretPIDPosition;
+    public double       getTurretPIDPosition()                          {return turretPIDPosition;}
+    protected ArmStatus setTurretPIDPosition(double turretPIDPosition)  {this.turretPIDPosition = turretPIDPosition; return this;}
+
+    private double      turretPIDVelocity;
+    public double       getTurretPIDVelocity()                          {return turretPIDVelocity;}
+    protected ArmStatus setTurretPIDVelocity(double turretPIDVelocity)  {this.turretPIDVelocity = turretPIDVelocity; return this;}
+
     private MotorControlMode    turretControlMode = MotorControlMode.PercentOutput;
     public MotorControlMode     getTurretControlMode()                                      {return turretControlMode;}
     protected ArmStatus         setTurretControlMode(MotorControlMode turretControlMode)    {this.turretControlMode = turretControlMode; return this;}
@@ -407,7 +415,9 @@ public class ArmStatus extends StatusBase {
         }
 
         logger.recordOutput(prefix + "Turret/Power",                getTurretPower());
-        logger.recordOutput(prefix + "Turret/PID Output",           getTurretPIDOutput());
+        logger.recordOutput(prefix + "Turret/PID/Output",           getTurretPIDOutput());
+        logger.recordOutput(prefix + "Turret/PID/Position",         getTurretPIDPosition());
+        logger.recordOutput(prefix + "Turret/PID/Velocity",         getTurretPIDVelocity());
         logger.recordOutput(prefix + "Turret/Control Mode",         turretControlMode != null ? turretControlMode.name() : "null");
         logger.recordOutput(prefix + "Turret/Neutral Mode",         turretNeutralMode != null ? turretNeutralMode.name() : "null");
         logger.recordOutput(prefix + "Turret/Position (deg)",       getTurretAngleDeg());

@@ -98,8 +98,8 @@ public class DriverInteractionLoop extends LoopBase {
 
         ArmCommand armCommand = new ArmCommand();
 
-        // armCommand.setXAdjustment(DriverControlAxes.ThrustmasterX.getAxis());
-        // armCommand.setZAdjustment(DriverControlAxes.ThrustmasterY.getAxis());
+        armCommand.setXAdjustment(DriverControlAxes.ButtonBoardX.getAxis());
+        armCommand.setZAdjustment(DriverControlAxes.ButtonBoardY.getAxis());
 
         if(DriverControlButtons.ButtonBoard1_1.getRisingEdge())
             armCommand.setTargetNode(NodeEnum.BottomLeft);
