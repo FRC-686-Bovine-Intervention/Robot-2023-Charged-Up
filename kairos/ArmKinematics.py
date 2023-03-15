@@ -17,10 +17,10 @@ class ArmKinematics:
         r1 = self._arm_length[0]    # PROXIMAL
         r2 = self._arm_length[1]    # DISTAL
 
-        x1 = []
-        y1 = []
-        x2 = []
-        y2 = []
+        x1 = [None] * len(theta)
+        y1 = [None] * len(theta)
+        x2 = [None] * len(theta)
+        y2 = [None] * len(theta)
 
         for k in range(0, len(theta)):
             theta1 = theta[k][0]

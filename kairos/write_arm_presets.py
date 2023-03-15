@@ -10,22 +10,20 @@ def main():
     kinematics = ArmKinematics(arm_config["origin"][0], arm_config["origin"][1], arm_config["shoulder"]["length"],
                                arm_config["elbow"]["length"] + arm_config["wrist"]["length"])
 
-    bumper_width_inches = arm_config["bumper_width_inches"]
-    preset_pose_inches = ArmPresetPoses.get_preset_poses(bumper_width_inches)
+    preset_poses = ArmPresetPoses.get_preset_poses(arm_config["bumper_width_inches"])
 
     # convert all Imperial inputs to Metric
-    preset_poses = preset_pose_inches.copy()
     for key in preset_poses:
-        xy_inch = preset_poses[key]["xy"]
-        xy_m = (xy_inch * inch).to("meter").value
 
-        [theta1, theta2, valid] = kinematics.inverse_kinematics([xy_m[0]], [xy_m[1]])
+        theta1 = preset_poses[key]["theta1"]
+        theta2 = preset_poses[key]["theta2"]
+        theta = [[theta1, theta2]]
+        [elbow, endEffector] = kinematics.forward_kinematics(theta)
 
-        preset_pose_inches[key]["theta1"] = theta1[0]
-        preset_pose_inches[key]["theta2"] = theta2[0]
+        preset_poses[key]["xy"] = ([endEffector[0][0], endEffector[1][0]] * meter).to("inch").value.tolist()
 
     with open("src/main/deploy/arm_preset_poses.json", "w") as outfile:
-        json.dump(preset_pose_inches, outfile, indent=2)
+        json.dump(preset_poses, outfile, indent=2)
 
 if __name__ == "__main__":
     main()
