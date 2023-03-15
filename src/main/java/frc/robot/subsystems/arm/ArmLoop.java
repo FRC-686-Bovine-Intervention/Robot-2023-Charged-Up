@@ -571,8 +571,8 @@ public class ArmLoop extends LoopBase {
         double shoulderAngleRad = status.getShoulderAngleRad();
         double elbowAngleRad = status.getElbowAngleRad();
         
-        // default setpoint: stay where you are
-        setpointState = ArmTrajectory.getFixedState(shoulderAngleRad, elbowAngleRad);
+        // default setpoint
+        setpointState = finalTrajectoryState;
 
         Vector<N2> voltages = VecBuilder.fill(0,0);
         double shoulderPIDOutput = 0;
