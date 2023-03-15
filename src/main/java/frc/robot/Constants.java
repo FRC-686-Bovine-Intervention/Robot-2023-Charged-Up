@@ -1,7 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.math.util.Units;
-
 public class Constants {
     private static Constants instance = null;
     public static Constants getInstance() {if(instance == null){instance = new Constants();}return instance;}

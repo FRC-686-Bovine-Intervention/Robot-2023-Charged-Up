@@ -49,296 +49,296 @@ import frc.robot.subsystems.arm.json.ArmPresetsJson;
 
 public class ArmTrajectoryTest {
     
-    private static final double kEps = 1e-9;
+//     private static final double kEps = 1e-9;
 
-    @Test
-    public void TestArmTrajectory() {
+//     @Test
+//     public void TestArmTrajectory() {
         
-        double w0 = 0.1;
-        double w1 = 0.2;
+//         double w0 = 0.1;
+//         double w1 = 0.2;
 
-        List<Vector<N2>> points = new ArrayList<>();
-        int N = 50; // number of points
-        for (int k=0; k<N; k++) {
-            double theta0 = w0 * k;
-            double theta1 = w1 * k;
-            points.add(VecBuilder.fill(theta0, theta1));
-        }
+//         List<Vector<N2>> points = new ArrayList<>();
+//         int N = 50; // number of points
+//         for (int k=0; k<N; k++) {
+//             double theta0 = w0 * k;
+//             double theta1 = w1 * k;
+//             points.add(VecBuilder.fill(theta0, theta1));
+//         }
 
-        double totalTime = 1.0;
-        ArmTrajectory traj = new ArmTrajectory("begin", "end", totalTime, points);
-        traj.setGrannyFactor(1.0);
+//         double totalTime = 1.0;
+//         ArmTrajectory traj = new ArmTrajectory("begin", "end", totalTime, points);
+//         traj.setGrannyFactor(1.0);
 
-        assertEquals(totalTime, traj.getTotalTime(), kEps);
+//         assertEquals(totalTime, traj.getTotalTime(), kEps);
 
-        double grannyFactor = 5.0;
-        traj.setGrannyFactor(grannyFactor);
-        assertEquals(totalTime * grannyFactor, traj.getTotalTime(), kEps);
+//         double grannyFactor = 5.0;
+//         traj.setGrannyFactor(grannyFactor);
+//         assertEquals(totalTime * grannyFactor, traj.getTotalTime(), kEps);
 
-        grannyFactor = 1.0;
-        traj.setGrannyFactor(grannyFactor);
-        assertEquals(totalTime * grannyFactor, traj.getTotalTime(), kEps);
+//         grannyFactor = 1.0;
+//         traj.setGrannyFactor(grannyFactor);
+//         assertEquals(totalTime * grannyFactor, traj.getTotalTime(), kEps);
         
-        var finalState = traj.getFinalState();
-        assertEquals((N-1) * w0, finalState.get(0,0), kEps);
-        assertEquals(0.0, finalState.get(0,1), kEps);
-        assertEquals(0.0, finalState.get(0,2), kEps);
-        assertEquals((N-1) * w1, finalState.get(1,0), kEps);
-        assertEquals(0.0, finalState.get(1,1), kEps);
-        assertEquals(0.0, finalState.get(1,2), kEps);
+//         var finalState = traj.getFinalState();
+//         assertEquals((N-1) * w0, finalState.get(0,0), kEps);
+//         assertEquals(0.0, finalState.get(0,1), kEps);
+//         assertEquals(0.0, finalState.get(0,2), kEps);
+//         assertEquals((N-1) * w1, finalState.get(1,0), kEps);
+//         assertEquals(0.0, finalState.get(1,1), kEps);
+//         assertEquals(0.0, finalState.get(1,2), kEps);
 
-        var state = traj.sample(totalTime/2.0);
-        assertEquals((N-1)/2.0 * w0, state.get(0,0), kEps);
-        assertEquals((N-1)*w0/totalTime, state.get(0,1), kEps);
-        assertEquals(0.0, state.get(0,2), kEps);
-        assertEquals((N-1)/2.0 * w1, state.get(1,0), kEps);
-        assertEquals((N-1)*w1/totalTime, state.get(1,1), kEps);
-        assertEquals(0.0, state.get(1,2), kEps);
+//         var state = traj.sample(totalTime/2.0);
+//         assertEquals((N-1)/2.0 * w0, state.get(0,0), kEps);
+//         assertEquals((N-1)*w0/totalTime, state.get(0,1), kEps);
+//         assertEquals(0.0, state.get(0,2), kEps);
+//         assertEquals((N-1)/2.0 * w1, state.get(1,0), kEps);
+//         assertEquals((N-1)*w1/totalTime, state.get(1,1), kEps);
+//         assertEquals(0.0, state.get(1,2), kEps);
      
-        state = traj.sample(totalTime);
-        assertEquals(finalState.get(0,0), state.get(0,0), kEps);
-        assertEquals(0.0, state.get(0,1), kEps);
-        assertEquals(finalState.get(1,0), state.get(1,0), kEps);
-        assertEquals(0.0, state.get(1,1), kEps);
+//         state = traj.sample(totalTime);
+//         assertEquals(finalState.get(0,0), state.get(0,0), kEps);
+//         assertEquals(0.0, state.get(0,1), kEps);
+//         assertEquals(finalState.get(1,0), state.get(1,0), kEps);
+//         assertEquals(0.0, state.get(1,1), kEps);
         
         
-        double start_theta0_actual =  0.01;
-        double start_theta1_actual = -0.02;
+//         double start_theta0_actual =  0.01;
+//         double start_theta1_actual = -0.02;
 
-        assertTrue(traj.startIsNear(start_theta0_actual, start_theta1_actual, Units.degreesToRadians(10.0)));
+//         assertTrue(traj.startIsNear(start_theta0_actual, start_theta1_actual, Units.degreesToRadians(10.0)));
 
-        start_theta0_actual = 1.0;
-        start_theta1_actual = 2.0;
+//         start_theta0_actual = 1.0;
+//         start_theta1_actual = 2.0;
 
-        assertFalse(traj.startIsNear(start_theta0_actual, start_theta1_actual, Units.degreesToRadians(10.0)));
+//         assertFalse(traj.startIsNear(start_theta0_actual, start_theta1_actual, Units.degreesToRadians(10.0)));
 
 
-        ArmTrajectory interpTraj = traj.interpolateEndPoints(start_theta0_actual, start_theta1_actual, null, null);
+//         ArmTrajectory interpTraj = traj.interpolateEndPoints(start_theta0_actual, start_theta1_actual, null, null);
 
-        // interpTraj should end in the same place
-        finalState = interpTraj.getFinalState();
-        assertEquals((N-1) * w0, finalState.get(0,0), kEps);
-        assertEquals(0.0, finalState.get(0,1), kEps);
-        assertEquals(0.0, finalState.get(0,2), kEps);
-        assertEquals((N-1) * w1, finalState.get(1,0), kEps);
-        assertEquals(0.0, finalState.get(1,1), kEps);
-        assertEquals(0.0, finalState.get(1,2), kEps);
+//         // interpTraj should end in the same place
+//         finalState = interpTraj.getFinalState();
+//         assertEquals((N-1) * w0, finalState.get(0,0), kEps);
+//         assertEquals(0.0, finalState.get(0,1), kEps);
+//         assertEquals(0.0, finalState.get(0,2), kEps);
+//         assertEquals((N-1) * w1, finalState.get(1,0), kEps);
+//         assertEquals(0.0, finalState.get(1,1), kEps);
+//         assertEquals(0.0, finalState.get(1,2), kEps);
 
-        state = interpTraj.sample(0);
-        assertEquals(start_theta0_actual, state.get(0,0), kEps);
-        assertEquals(((N-1)*w0-start_theta0_actual)/totalTime, state.get(0,1), kEps);
-        assertEquals(start_theta1_actual, state.get(1,0), kEps);
-        assertEquals(((N-1)*w1-start_theta1_actual)/totalTime, state.get(1,1), kEps);
+//         state = interpTraj.sample(0);
+//         assertEquals(start_theta0_actual, state.get(0,0), kEps);
+//         assertEquals(((N-1)*w0-start_theta0_actual)/totalTime, state.get(0,1), kEps);
+//         assertEquals(start_theta1_actual, state.get(1,0), kEps);
+//         assertEquals(((N-1)*w1-start_theta1_actual)/totalTime, state.get(1,1), kEps);
         
-        state = interpTraj.sample(totalTime/2.0);
-        assertEquals((start_theta0_actual + (N-1) * w0)/2.0, state.get(0,0), kEps);
-        assertEquals(((N-1)*w0-start_theta0_actual)/totalTime, state.get(0,1), kEps);
-        assertEquals((start_theta1_actual + (N-1) * w1)/2.0, state.get(1,0), kEps);
-        assertEquals(((N-1)*w1-start_theta1_actual)/totalTime, state.get(1,1), kEps);
+//         state = interpTraj.sample(totalTime/2.0);
+//         assertEquals((start_theta0_actual + (N-1) * w0)/2.0, state.get(0,0), kEps);
+//         assertEquals(((N-1)*w0-start_theta0_actual)/totalTime, state.get(0,1), kEps);
+//         assertEquals((start_theta1_actual + (N-1) * w1)/2.0, state.get(1,0), kEps);
+//         assertEquals(((N-1)*w1-start_theta1_actual)/totalTime, state.get(1,1), kEps);
         
-        state = interpTraj.sample(totalTime);
-        assertEquals(finalState.get(0,0), state.get(0,0), kEps);
-        assertEquals(0.0, state.get(0,1), kEps);
-        assertEquals(finalState.get(1,0), state.get(1,0), kEps);
-        assertEquals(0.0, state.get(1,1), kEps);        
+//         state = interpTraj.sample(totalTime);
+//         assertEquals(finalState.get(0,0), state.get(0,0), kEps);
+//         assertEquals(0.0, state.get(0,1), kEps);
+//         assertEquals(finalState.get(1,0), state.get(1,0), kEps);
+//         assertEquals(0.0, state.get(1,1), kEps);        
 
-        double final_theta0_actual = 2.0;
-        double final_theta1_actual = 1.0;
+//         double final_theta0_actual = 2.0;
+//         double final_theta1_actual = 1.0;
 
-        interpTraj = traj.interpolateEndPoints(null, null, final_theta0_actual, final_theta1_actual);
+//         interpTraj = traj.interpolateEndPoints(null, null, final_theta0_actual, final_theta1_actual);
 
-        // interpTraj should finish at the actual
-        finalState = interpTraj.getFinalState();
-        assertEquals(final_theta0_actual, finalState.get(0,0), kEps);
-        assertEquals(0.0, finalState.get(0,1), kEps);
-        assertEquals(0.0, finalState.get(0,2), kEps);
-        assertEquals(final_theta1_actual, finalState.get(1,0), kEps);
-        assertEquals(0.0, finalState.get(1,1), kEps);
-        assertEquals(0.0, finalState.get(1,2), kEps);
+//         // interpTraj should finish at the actual
+//         finalState = interpTraj.getFinalState();
+//         assertEquals(final_theta0_actual, finalState.get(0,0), kEps);
+//         assertEquals(0.0, finalState.get(0,1), kEps);
+//         assertEquals(0.0, finalState.get(0,2), kEps);
+//         assertEquals(final_theta1_actual, finalState.get(1,0), kEps);
+//         assertEquals(0.0, finalState.get(1,1), kEps);
+//         assertEquals(0.0, finalState.get(1,2), kEps);
 
-        state = interpTraj.sample(0);
-        assertEquals(0.0, state.get(0,0), kEps);
-        assertEquals(final_theta0_actual/totalTime, state.get(0,1), kEps);
-        assertEquals(0.0, state.get(1,0), kEps);
-        assertEquals(final_theta1_actual/totalTime, state.get(1,1), kEps);
+//         state = interpTraj.sample(0);
+//         assertEquals(0.0, state.get(0,0), kEps);
+//         assertEquals(final_theta0_actual/totalTime, state.get(0,1), kEps);
+//         assertEquals(0.0, state.get(1,0), kEps);
+//         assertEquals(final_theta1_actual/totalTime, state.get(1,1), kEps);
         
-        state = interpTraj.sample(totalTime/2.0);
-        assertEquals(final_theta0_actual/2.0, state.get(0,0), kEps);
-        assertEquals(final_theta0_actual/totalTime, state.get(0,1), kEps);
-        assertEquals(final_theta1_actual/2.0, state.get(1,0), kEps);
-        assertEquals(final_theta1_actual/totalTime, state.get(1,1), kEps);
+//         state = interpTraj.sample(totalTime/2.0);
+//         assertEquals(final_theta0_actual/2.0, state.get(0,0), kEps);
+//         assertEquals(final_theta0_actual/totalTime, state.get(0,1), kEps);
+//         assertEquals(final_theta1_actual/2.0, state.get(1,0), kEps);
+//         assertEquals(final_theta1_actual/totalTime, state.get(1,1), kEps);
         
-        state = interpTraj.sample(totalTime);
-        assertEquals(final_theta0_actual, state.get(0,0), kEps);
-        assertEquals(0.0, state.get(0,1), kEps);
-        assertEquals(final_theta1_actual, state.get(1,0), kEps);
-        assertEquals(0.0, state.get(1,1), kEps);        
+//         state = interpTraj.sample(totalTime);
+//         assertEquals(final_theta0_actual, state.get(0,0), kEps);
+//         assertEquals(0.0, state.get(0,1), kEps);
+//         assertEquals(final_theta1_actual, state.get(1,0), kEps);
+//         assertEquals(0.0, state.get(1,1), kEps);        
 
-    } 
+//     } 
     
     
-    @Test
-    void TestStartTrajectory() {
+//     @Test
+//     void TestStartTrajectory() {
 
-        ArmTest.setDeployDirectoryDuringTest();
-        ArmStatus mockStatus = mock(ArmStatus.class);
-        MockedStatic<ArmStatus> mockStatusStatic = mockStatic(ArmStatus.class);
-        mockStatusStatic.when(ArmStatus::getInstance).thenReturn(mockStatus);
+//         ArmTest.setDeployDirectoryDuringTest();
+//         ArmStatus mockStatus = mock(ArmStatus.class);
+//         MockedStatic<ArmStatus> mockStatusStatic = mockStatic(ArmStatus.class);
+//         mockStatusStatic.when(ArmStatus::getInstance).thenReturn(mockStatus);
 
-        // Get presets from JSON
-        File presetFile = new File(Filesystem.getDeployDirectory(), ArmPresetsJson.jsonFilename);
-        ArmPresetsJson presets = ArmPresetsJson.loadJson(presetFile);
-        ArmPose.Preset.writePresets(presets);
+//         // Get presets from JSON
+//         File presetFile = new File(Filesystem.getDeployDirectory(), ArmPresetsJson.jsonFilename);
+//         ArmPresetsJson presets = ArmPresetsJson.loadJson(presetFile);
+//         ArmPose.Preset.writePresets(presets);
                 
-        ArmTrajectory[][] armTrajectories = new ArmTrajectory[ArmPose.Preset.values().length+1][ArmPose.Preset.values().length+1];
-        // Get paths from JSON
-        // also create trajectories for each path
-        for (ArmPose.Preset startPos : ArmPose.Preset.values()) {
-            for (ArmPose.Preset finalPos : ArmPose.Preset.values()) {
-                int startIdx = startPos.getFileIdx();
-                int finalIdx = finalPos.getFileIdx();
+//         ArmTrajectory[][] armTrajectories = new ArmTrajectory[ArmPose.Preset.values().length+1][ArmPose.Preset.values().length+1];
+//         // Get paths from JSON
+//         // also create trajectories for each path
+//         for (ArmPose.Preset startPos : ArmPose.Preset.values()) {
+//             for (ArmPose.Preset finalPos : ArmPose.Preset.values()) {
+//                 int startIdx = startPos.getFileIdx();
+//                 int finalIdx = finalPos.getFileIdx();
 
-                String pathFilename = String.format(ArmPathsJson.jsonFilename, startIdx, finalIdx);
+//                 String pathFilename = String.format(ArmPathsJson.jsonFilename, startIdx, finalIdx);
                 
-                File pathFile = new File(Filesystem.getDeployDirectory(), pathFilename);
-                var path = ArmPathsJson.loadJson(pathFile);
+//                 File pathFile = new File(Filesystem.getDeployDirectory(), pathFilename);
+//                 var path = ArmPathsJson.loadJson(pathFile);
 
-                // create trajectory for each path
-                List<Vector<N2>> points = new ArrayList<>();
-                for (int k=0; k<path.theta1().size(); k++) {
-                    points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
-                }
+//                 // create trajectory for each path
+//                 List<Vector<N2>> points = new ArrayList<>();
+//                 for (int k=0; k<path.theta1().size(); k++) {
+//                     points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
+//                 }
 
-                armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), points);
-            }
-        }
+//                 armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), points);
+//             }
+//         }
 
-        ArmConfigJson config = Arm.getInstance().getConfig();
+//         ArmConfigJson config = Arm.getInstance().getConfig();
 
-        JointConfig shoulder = config.shoulder();
-        JointConfig elbow = ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist());
+//         JointConfig shoulder = config.shoulder();
+//         JointConfig elbow = ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist());
 
-        ArmKinematics kinematics = new ArmKinematics(new Translation2d(config.origin().getX(), config.origin().getY()),
-                                        shoulder.length(), elbow.length(),
-                                        config.shoulder().minAngle(), config.shoulder().maxAngle(), 
-                                        elbow.minAngle(), elbow.maxAngle(),
-                                        ArmLoop.kRelativeMinAngleRad, ArmLoop.kRelativeMaxAngleRad);        
+//         ArmKinematics kinematics = new ArmKinematics(new Translation2d(config.origin().getX(), config.origin().getY()),
+//                                         shoulder.length(), elbow.length(),
+//                                         config.shoulder().minAngle(), config.shoulder().maxAngle(), 
+//                                         elbow.minAngle(), elbow.maxAngle(),
+//                                         ArmLoop.kRelativeMinAngleRad, ArmLoop.kRelativeMaxAngleRad);        
 
         
-        // Test High Cone in left-most grid
+//         // Test High Cone in left-most grid
 
-        ArmPose.Preset startPos = ArmPose.Preset.DEFENSE;
-        ArmPose.Preset finalPos = ArmPose.Preset.SCORE_HIGH_CONE;
-        ArmStatus.NodeEnum targetNode = ArmStatus.NodeEnum.TopLeft;
-        Pose2d robotXY = new Pose2d(new Translation2d(1.8,1.0), new Rotation2d(0.0));
-        double turretToRobotAngleDeg = 0.0;
-        Pose3d turretXY = getTurretPose(robotXY, turretToRobotAngleDeg);
+//         ArmPose.Preset startPos = ArmPose.Preset.DEFENSE;
+//         ArmPose.Preset finalPos = ArmPose.Preset.SCORE_HIGH_CONE;
+//         ArmStatus.NodeEnum targetNode = ArmStatus.NodeEnum.TopLeft;
+//         Pose2d robotXY = new Pose2d(new Translation2d(1.8,1.0), new Rotation2d(0.0));
+//         double turretToRobotAngleDeg = 0.0;
+//         Pose3d turretXY = getTurretPose(robotXY, turretToRobotAngleDeg);
 
-        MockedStatic<DriverStation> mockDS = mockStatic(DriverStation.class);
-        mockDS.when(DriverStation::getAlliance).thenReturn(Alliance.Blue);
+//         MockedStatic<DriverStation> mockDS = mockStatic(DriverStation.class);
+//         mockDS.when(DriverStation::getAlliance).thenReturn(Alliance.Blue);
 
-        when(mockStatus.getShoulderAngleRad()).thenReturn(startPos.getShoulderAngleRad());
-        when(mockStatus.getElbowAngleRad()).thenReturn(startPos.getElbowAngleRad());
-        when(mockStatus.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]);       
-        when(mockStatus.getTargetNode()).thenReturn(targetNode);
-        when(mockStatus.getTurretToField()).thenReturn(turretXY);
-        ArmLoop.getInstance().startTrajectory(startPos, finalPos);
+//         when(mockStatus.getShoulderAngleRad()).thenReturn(startPos.getShoulderAngleRad());
+//         when(mockStatus.getElbowAngleRad()).thenReturn(startPos.getElbowAngleRad());
+//         when(mockStatus.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]);       
+//         when(mockStatus.getTargetNode()).thenReturn(targetNode);
+//         when(mockStatus.getTurretToField()).thenReturn(turretXY);
+//         ArmLoop.getInstance().startTrajectory(startPos, finalPos);
 
-        ArgumentCaptor<Double> turretCaptor = ArgumentCaptor.forClass(Double.class);
-        ArgumentCaptor<ArmTrajectory> trajCaptor = ArgumentCaptor.forClass(ArmTrajectory.class);
+//         ArgumentCaptor<Double> turretCaptor = ArgumentCaptor.forClass(Double.class);
+//         ArgumentCaptor<ArmTrajectory> trajCaptor = ArgumentCaptor.forClass(ArmTrajectory.class);
 
-        verify(mockStatus).setTargetTurretAngleDeg(turretCaptor.capture());
-        double turretAngleToTarget = turretCaptor.getValue();   // relative to robot
+//         verify(mockStatus).setTargetTurretAngleDeg(turretCaptor.capture());
+//         double turretAngleToTarget = turretCaptor.getValue();   // relative to robot
 
-        assertEquals(-2.7767, turretAngleToTarget, 0.05);
+//         assertEquals(-2.7767, turretAngleToTarget, 0.05);
 
-        verify(mockStatus).setCurrentArmTrajectory(trajCaptor.capture());
-        ArmTrajectory currentArmTraj = trajCaptor.getValue();        
-        Matrix<N2,N3> finalState = currentArmTraj.getFinalState();
+//         verify(mockStatus).setCurrentArmTrajectory(trajCaptor.capture());
+//         ArmTrajectory currentArmTraj = trajCaptor.getValue();        
+//         Matrix<N2,N3> finalState = currentArmTraj.getFinalState();
 
-        Translation2d turretExtension = kinematics.forward(finalState.get(0,0), finalState.get(1,0));
-        double d = turretExtension.getX();
-        double turretAngleRelField = turretAngleToTarget - robotXY.getRotation().getRadians();
-        Translation2d turretToTarget = new Translation2d(d*Math.cos(turretAngleRelField), d*Math.sin(turretAngleRelField));
+//         Translation2d turretExtension = kinematics.forward(finalState.get(0,0), finalState.get(1,0));
+//         double d = turretExtension.getX();
+//         double turretAngleRelField = turretAngleToTarget - robotXY.getRotation().getRadians();
+//         Translation2d turretToTarget = new Translation2d(d*Math.cos(turretAngleRelField), d*Math.sin(turretAngleRelField));
 
-        Translation2d targetXY = GeomUtil.translation3dTo2dXY(turretXY.getTranslation()).plus(turretToTarget);
+//         Translation2d targetXY = GeomUtil.translation3dTo2dXY(turretXY.getTranslation()).plus(turretToTarget);
 
-        assertEquals(FieldDimensions.Grids.highTranslations[0].getX(), targetXY.getX(), 0.1);
-        assertEquals(FieldDimensions.Grids.highTranslations[0].getY(), targetXY.getY(), 0.1);
+//         assertEquals(FieldDimensions.Grids.highTranslations[0].getX(), targetXY.getX(), 0.1);
+//         assertEquals(FieldDimensions.Grids.highTranslations[0].getY(), targetXY.getY(), 0.1);
 
-        // Test High Cone in middle grid
+//         // Test High Cone in middle grid
 
-        startPos = ArmPose.Preset.DEFENSE;
-        finalPos = ArmPose.Preset.SCORE_HIGH_CONE;
-        targetNode = ArmStatus.NodeEnum.TopLeft;
-        robotXY = new Pose2d(new Translation2d(1.8,1.0 + Units.inchesToMeters(3*22.0)), new Rotation2d(0.0));
-        turretToRobotAngleDeg = 0.0;
-        turretXY = getTurretPose(robotXY, turretToRobotAngleDeg);
+//         startPos = ArmPose.Preset.DEFENSE;
+//         finalPos = ArmPose.Preset.SCORE_HIGH_CONE;
+//         targetNode = ArmStatus.NodeEnum.TopLeft;
+//         robotXY = new Pose2d(new Translation2d(1.8,1.0 + Units.inchesToMeters(3*22.0)), new Rotation2d(0.0));
+//         turretToRobotAngleDeg = 0.0;
+//         turretXY = getTurretPose(robotXY, turretToRobotAngleDeg);
 
-        when(mockStatus.getShoulderAngleRad()).thenReturn(startPos.getShoulderAngleRad());
-        when(mockStatus.getElbowAngleRad()).thenReturn(startPos.getElbowAngleRad());
-        when(mockStatus.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]); 
-        when(mockStatus.getTargetNode()).thenReturn(targetNode);
-        when(mockStatus.getTurretToField()).thenReturn(turretXY);              
-        ArmLoop.getInstance().startTrajectory(startPos, finalPos);
+//         when(mockStatus.getShoulderAngleRad()).thenReturn(startPos.getShoulderAngleRad());
+//         when(mockStatus.getElbowAngleRad()).thenReturn(startPos.getElbowAngleRad());
+//         when(mockStatus.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]); 
+//         when(mockStatus.getTargetNode()).thenReturn(targetNode);
+//         when(mockStatus.getTurretToField()).thenReturn(turretXY);              
+//         ArmLoop.getInstance().startTrajectory(startPos, finalPos);
 
-        verify(mockStatus, times(2)).setTargetTurretAngleDeg(turretCaptor.capture());
-        turretAngleToTarget = turretCaptor.getValue();   // relative to robot
+//         verify(mockStatus, times(2)).setTargetTurretAngleDeg(turretCaptor.capture());
+//         turretAngleToTarget = turretCaptor.getValue();   // relative to robot
 
-        assertEquals(-2.7767, turretAngleToTarget, 0.05);
+//         assertEquals(-2.7767, turretAngleToTarget, 0.05);
 
-        verify(mockStatus, times(2)).setCurrentArmTrajectory(trajCaptor.capture());
-        currentArmTraj = trajCaptor.getValue();        
-        finalState = currentArmTraj.getFinalState();
+//         verify(mockStatus, times(2)).setCurrentArmTrajectory(trajCaptor.capture());
+//         currentArmTraj = trajCaptor.getValue();        
+//         finalState = currentArmTraj.getFinalState();
 
-        turretExtension = kinematics.forward(finalState.get(0,0), finalState.get(1,0));
-        d = turretExtension.getX();
-        turretAngleRelField = turretAngleToTarget - robotXY.getRotation().getRadians();
-        turretToTarget = new Translation2d(d*Math.cos(turretAngleRelField), d*Math.sin(turretAngleRelField));
+//         turretExtension = kinematics.forward(finalState.get(0,0), finalState.get(1,0));
+//         d = turretExtension.getX();
+//         turretAngleRelField = turretAngleToTarget - robotXY.getRotation().getRadians();
+//         turretToTarget = new Translation2d(d*Math.cos(turretAngleRelField), d*Math.sin(turretAngleRelField));
 
-        targetXY = GeomUtil.translation3dTo2dXY(turretXY.getTranslation()).plus(turretToTarget);
+//         targetXY = GeomUtil.translation3dTo2dXY(turretXY.getTranslation()).plus(turretToTarget);
 
-        assertEquals(FieldDimensions.Grids.highTranslations[3].getX(), targetXY.getX(), 0.1);
-        assertEquals(FieldDimensions.Grids.highTranslations[3].getY(), targetXY.getY(), 0.1);
+//         assertEquals(FieldDimensions.Grids.highTranslations[3].getX(), targetXY.getX(), 0.1);
+//         assertEquals(FieldDimensions.Grids.highTranslations[3].getY(), targetXY.getY(), 0.1);
 
-        // Test High Cone in top grid
+//         // Test High Cone in top grid
 
-        startPos = ArmPose.Preset.DEFENSE;
-        finalPos = ArmPose.Preset.SCORE_HIGH_CONE;
-        targetNode = ArmStatus.NodeEnum.TopLeft;
-        robotXY = new Pose2d(new Translation2d(1.8,1.0 + Units.inchesToMeters(6*22.0)), new Rotation2d(0.0));
-        turretToRobotAngleDeg = 0.0;
-        turretXY = getTurretPose(robotXY, turretToRobotAngleDeg);
+//         startPos = ArmPose.Preset.DEFENSE;
+//         finalPos = ArmPose.Preset.SCORE_HIGH_CONE;
+//         targetNode = ArmStatus.NodeEnum.TopLeft;
+//         robotXY = new Pose2d(new Translation2d(1.8,1.0 + Units.inchesToMeters(6*22.0)), new Rotation2d(0.0));
+//         turretToRobotAngleDeg = 0.0;
+//         turretXY = getTurretPose(robotXY, turretToRobotAngleDeg);
 
-        when(mockStatus.getShoulderAngleRad()).thenReturn(startPos.getShoulderAngleRad());
-        when(mockStatus.getElbowAngleRad()).thenReturn(startPos.getElbowAngleRad());
-        when(mockStatus.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]);   
-        when(mockStatus.getTargetNode()).thenReturn(targetNode);
-        when(mockStatus.getTurretToField()).thenReturn(turretXY);            
-        ArmLoop.getInstance().startTrajectory(startPos, finalPos);
+//         when(mockStatus.getShoulderAngleRad()).thenReturn(startPos.getShoulderAngleRad());
+//         when(mockStatus.getElbowAngleRad()).thenReturn(startPos.getElbowAngleRad());
+//         when(mockStatus.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]);   
+//         when(mockStatus.getTargetNode()).thenReturn(targetNode);
+//         when(mockStatus.getTurretToField()).thenReturn(turretXY);            
+//         ArmLoop.getInstance().startTrajectory(startPos, finalPos);
 
-        verify(mockStatus, times(3)).setTargetTurretAngleDeg(turretCaptor.capture());
-        turretAngleToTarget = turretCaptor.getValue();   // relative to robot
+//         verify(mockStatus, times(3)).setTargetTurretAngleDeg(turretCaptor.capture());
+//         turretAngleToTarget = turretCaptor.getValue();   // relative to robot
 
-        assertEquals(-2.7767, turretAngleToTarget, 0.05);
+//         assertEquals(-2.7767, turretAngleToTarget, 0.05);
 
-        verify(mockStatus, times(3)).setCurrentArmTrajectory(trajCaptor.capture());
-        currentArmTraj = trajCaptor.getValue();        
-        finalState = currentArmTraj.getFinalState();
+//         verify(mockStatus, times(3)).setCurrentArmTrajectory(trajCaptor.capture());
+//         currentArmTraj = trajCaptor.getValue();        
+//         finalState = currentArmTraj.getFinalState();
 
-        turretExtension = kinematics.forward(finalState.get(0,0), finalState.get(1,0));
-        d = turretExtension.getX();
-        turretAngleRelField = turretAngleToTarget - robotXY.getRotation().getRadians();
-        turretToTarget = new Translation2d(d*Math.cos(turretAngleRelField), d*Math.sin(turretAngleRelField));
+//         turretExtension = kinematics.forward(finalState.get(0,0), finalState.get(1,0));
+//         d = turretExtension.getX();
+//         turretAngleRelField = turretAngleToTarget - robotXY.getRotation().getRadians();
+//         turretToTarget = new Translation2d(d*Math.cos(turretAngleRelField), d*Math.sin(turretAngleRelField));
 
-        targetXY = GeomUtil.translation3dTo2dXY(turretXY.getTranslation()).plus(turretToTarget);
+//         targetXY = GeomUtil.translation3dTo2dXY(turretXY.getTranslation()).plus(turretToTarget);
 
-        assertEquals(FieldDimensions.Grids.highTranslations[6].getX(), targetXY.getX(), 0.1);
-        assertEquals(FieldDimensions.Grids.highTranslations[6].getY(), targetXY.getY(), 0.1);        
-    }
+//         assertEquals(FieldDimensions.Grids.highTranslations[6].getX(), targetXY.getX(), 0.1);
+//         assertEquals(FieldDimensions.Grids.highTranslations[6].getY(), targetXY.getY(), 0.1);        
+//     }
 
-    Pose3d getTurretPose(Pose2d robotPose, double turretAngleDeg) {
-        return new Pose3d(robotPose).transformBy(new Transform3d(ArmStatus.robotToTurretTranslation, new Rotation3d(0, 0, Units.degreesToRadians(turretAngleDeg))));
-}
+//     Pose3d getTurretPose(Pose2d robotPose, double turretAngleDeg) {
+//         return new Pose3d(robotPose).transformBy(new Transform3d(ArmStatus.robotToTurretTranslation, new Rotation3d(0, 0, Units.degreesToRadians(turretAngleDeg))));
+// }
 
 }

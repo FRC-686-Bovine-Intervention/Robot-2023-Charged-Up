@@ -5,9 +5,9 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.RobotConfiguration;
 import frc.robot.auto.AutoConfiguration;
-import frc.robot.auto.AutoTrajectories;
 import frc.robot.auto.AutoConfiguration.GamePiece;
 import frc.robot.auto.AutoConfiguration.StartPosition;
+import frc.robot.auto.AutoTrajectories;
 import frc.robot.auto.actions.ArmCommandAction;
 import frc.robot.auto.actions.IntakeCommandAction;
 import frc.robot.auto.actions.ParallelAction;
@@ -38,29 +38,14 @@ public class TwoPieceAuto extends AutoMode {
         RamseteController ramseteController = new RamseteController(2, 0.7);
 
         addAction(new ArmCommandAction(new ArmCommand(ArmState.Extend).setTargetNode(config.startingPiece == GamePiece.Cube ? NodeEnum.TopCenter : (config.startingPosition == StartPosition.Loading ? NodeEnum.TopWall : NodeEnum.TopLoading))));
-        addAction(new WaitUntilAction() {
-            @Override
-            public boolean Condition() {
-                return armStatus.getArmState() == ArmState.Adjust;
-            }
-        });
+        addAction(new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Hold));
         addAction(new ArmCommandAction(new ArmCommand(ArmState.Release)));
-        addAction(new WaitUntilAction() {
-            @Override
-            public boolean Condition() {
-                return armStatus.getCurrentArmPose() == ArmPose.Preset.DEFENSE;
-            }
-        });
+        addAction(new WaitUntilAction(() -> armStatus.getCurrentArmPose() == ArmPose.Preset.DEFENSE));
         addAction(new RamseteFollowerAction(trajectories[0], ramseteController));
         addAction(new ParallelAction(
             new SeriesAction(
                 new IntakeCommandAction(new IntakeCommand(IntakeState.Grab)),
-                new WaitUntilAction() {
-                    @Override
-                    public boolean Condition() {
-                        return armStatus.getArmState() == ArmState.Hold;
-                    };
-                },
+                new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Hold),
                 new ArmCommandAction(new ArmCommand(ArmState.Align))
             ),
             new SeriesAction(
@@ -78,12 +63,7 @@ public class TwoPieceAuto extends AutoMode {
             }
         }
         addAction(new ArmCommandAction(new ArmCommand(ArmState.Extend).setTargetNode(secondNode)));
-        addAction(new WaitUntilAction() {
-            @Override
-            public boolean Condition() {
-                return armStatus.getArmState() == ArmState.Adjust;
-            }
-        });
+        addAction(new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Adjust));
         addAction(new ArmCommandAction(new ArmCommand(ArmState.Release)));
     }
 }

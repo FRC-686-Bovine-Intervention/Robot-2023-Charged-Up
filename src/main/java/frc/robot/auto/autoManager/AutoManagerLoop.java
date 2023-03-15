@@ -2,6 +2,8 @@ package frc.robot.auto.autoManager;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import frc.robot.auto.AutoConfiguration;
+import frc.robot.auto.AutoConfiguration.GamePiece;
 import frc.robot.auto.actions.Action;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.framework.SubsystemController;
@@ -28,7 +30,7 @@ public class AutoManagerLoop extends LoopBase {
             autoTimer.start();
         }
         if(status.getActionIndex() < 0) {
-            if(autoTimer.hasElapsed(status.getInitialDelay()))
+            if(autoTimer.hasElapsed(status.getAutoConfiguration().initialDelay))
                 status.setActionIndex(0);
         } else {
             checkAutoFinished();
@@ -52,11 +54,18 @@ public class AutoManagerLoop extends LoopBase {
 
     @Override
     protected void Disabled() {
-        // if(status.getSelectedAutoMode() != status.getNT_SelectedAutoMode()) {
-        //     status.setCurrentAutoMode(status.getNewAutomode());
-        // }
-        status.setInitialDelay(status.getNT_InitialDelay())
-              .setSelectedAutoMode(status.getNT_SelectedAutoMode());
+        status.setSelectedAutoMode(status.getNT_SelectedAutoMode());
+        status.setAutoConfiguration(new AutoConfiguration(
+            status.getNT_StartingPose(),
+            status.getNT_StartingPiece(),
+            new GamePiece[]{
+                status.getNT_StagedPiece0(),
+                status.getNT_StagedPiece1(),
+                status.getNT_StagedPiece2(),
+                status.getNT_StagedPiece3()
+            },
+            status.getNT_InitialDelay()
+        ));
     }
     @Override
     protected void Update() {

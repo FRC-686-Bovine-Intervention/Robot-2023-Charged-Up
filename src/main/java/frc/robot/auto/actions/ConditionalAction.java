@@ -1,29 +1,53 @@
 package frc.robot.auto.actions;
 
-public abstract class ConditionalAction extends Action {
-    private final Action action;
+import java.util.function.Supplier;
 
-    public ConditionalAction(Action action) {
-        this.action = action;
+public class ConditionalAction extends Action {
+    private final Supplier<Boolean> condition;
+
+    private Action TrueAction;
+    private Action FalseAction;
+
+    private boolean valueAtStart;
+
+    public ConditionalAction(Supplier<Boolean> condition) {
+        this.condition = condition;
+    }
+
+    public ConditionalAction trueAction(Action trueAction) {
+        TrueAction = trueAction;
+        return this;
+    }
+
+    public ConditionalAction falseAction(Action falseAction) {
+        FalseAction = falseAction;
+        return this;
     }
 
     @Override
     protected void start() {
-        if(!Condition())
-            setFinished(true);
+        valueAtStart = (condition.get() != null ? condition.get() : false);
     }
 
     @Override
     protected void run() {
-        action.onLoop();
-        setFinished(action.getEvaluatedDone());
+        if(valueAtStart) {
+            TrueAction.onLoop();
+            setFinished(TrueAction.getEvaluatedDone());
+        } else {
+            FalseAction.onLoop();
+            setFinished(FalseAction.getEvaluatedDone());
+        }
     }
 
     @Override
     protected void done() {
-        if(!action.getEvaluatedDone())
-            action.done();
+        if(valueAtStart) {
+            if(!TrueAction.getEvaluatedDone())
+                TrueAction.done();
+        } else {
+            if(!FalseAction.getEvaluatedDone())
+                FalseAction.done();
+        }
     }
-    
-    public abstract boolean Condition();
 }

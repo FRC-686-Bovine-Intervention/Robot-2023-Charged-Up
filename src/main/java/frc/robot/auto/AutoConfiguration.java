@@ -16,6 +16,7 @@ public class AutoConfiguration {
     public final StartPosition startingPosition;
     public final GamePiece startingPiece;
     public final GamePiece[] stagedPieces;
+    public final double initialDelay;
 
     public AutoConfiguration() {
         this(StartPosition.Wall);
@@ -24,12 +25,13 @@ public class AutoConfiguration {
         this(startingPosition, GamePiece.Cone);
     }
     public AutoConfiguration(StartPosition startingPosition, GamePiece startingPiece) {
-        this(startingPosition, startingPiece, new GamePiece[]{GamePiece.Cone,GamePiece.Cone,GamePiece.Cone,GamePiece.Cone});
+        this(startingPosition, startingPiece, new GamePiece[]{GamePiece.Cone,GamePiece.Cone,GamePiece.Cone,GamePiece.Cone}, 0);
     }
-    public AutoConfiguration(StartPosition startingPosition, GamePiece startingPiece, GamePiece[] stagedPieces) {
+    public AutoConfiguration(StartPosition startingPosition, GamePiece startingPiece, GamePiece[] stagedPieces, double initialDelay) {
         this.startingPosition = startingPosition;
         this.startingPiece = startingPiece;
         this.stagedPieces = stagedPieces;
+        this.initialDelay = initialDelay;
     }
 
     public AutoConfiguration log(Logger logger, String prefix) {
@@ -40,6 +42,7 @@ public class AutoConfiguration {
         logger.recordOutput(prefix + "/Starting Position", startingPosition != null ? startingPosition.name() : "null");
         logger.recordOutput(prefix + "/Starting Piece", startingPiece != null ? startingPiece.name() : "null");
         logger.recordOutput(prefix + "/Staged Pieces", stagedNames);
+        logger.recordOutput(prefix + "/Initial Delay", initialDelay);
         return this;
     }
 }
