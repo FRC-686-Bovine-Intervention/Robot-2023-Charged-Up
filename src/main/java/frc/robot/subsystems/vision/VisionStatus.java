@@ -19,7 +19,8 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import frc.robot.AdvantageUtil;
+import frc.robot.RobotConfiguration;
+import frc.robot.lib.util.AdvantageUtil;
 import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.framework.StatusBase;
 import frc.robot.subsystems.odometry.OdometryStatus;
@@ -273,4 +274,5 @@ public class VisionStatus extends StatusBase {
     }
 
     @Override protected void processTable() {}
+    @Override protected void loadConfiguration(RobotConfiguration configuration) {}
 }

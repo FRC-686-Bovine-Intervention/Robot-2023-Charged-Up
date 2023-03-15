@@ -15,8 +15,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import frc.robot.AdvantageUtil;
+import frc.robot.RobotConfiguration;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
+import frc.robot.lib.util.AdvantageUtil;
 import frc.robot.subsystems.framework.StatusBase;
 import frc.robot.subsystems.odometry.OdometryStatus;
 
@@ -48,15 +49,15 @@ public class ArmStatus extends StatusBase {
     }
 
     public enum NodeEnum {
-        BottomLeft      (0,0,ArmPose.Preset.SCORE_HYBRID, false),
+        BottomWall      (0,0,ArmPose.Preset.SCORE_HYBRID, false),
         BottomCenter    (1,0,ArmPose.Preset.SCORE_HYBRID, false),
-        BottomRight     (2,0,ArmPose.Preset.SCORE_HYBRID, false),
-        MiddleLeft      (0,1,ArmPose.Preset.SCORE_MID_CONE, true),
+        BottomLoading   (2,0,ArmPose.Preset.SCORE_HYBRID, false),
+        MiddleWall      (0,1,ArmPose.Preset.SCORE_MID_CONE, true),
         MiddleCenter    (1,1,ArmPose.Preset.SCORE_MID_CUBE, false),
-        MiddleRight     (2,1,ArmPose.Preset.SCORE_MID_CONE, true),
-        TopLeft         (0,2,ArmPose.Preset.SCORE_HIGH_CONE, true),
+        MiddleLoading   (2,1,ArmPose.Preset.SCORE_MID_CONE, true),
+        TopWall         (0,2,ArmPose.Preset.SCORE_HIGH_CONE, true),
         TopCenter       (1,2,ArmPose.Preset.SCORE_HIGH_CUBE, false),
-        TopRight        (2,2,ArmPose.Preset.SCORE_HIGH_CONE, true);
+        TopLoading      (2,2,ArmPose.Preset.SCORE_HIGH_CONE, true);
 
         public static final NodeEnum DEFAULT = MiddleCenter;
 
@@ -119,6 +120,14 @@ public class ArmStatus extends StatusBase {
     private double      turretPIDOutput;
     public double       getTurretPIDOutput()                        {return turretPIDOutput;}
     protected ArmStatus setTurretPIDOutput(double turretPIDOutput)  {this.turretPIDOutput = turretPIDOutput; return this;}
+
+    private double      turretPIDPosition;
+    public double       getTurretPIDPosition()                          {return turretPIDPosition;}
+    protected ArmStatus setTurretPIDPosition(double turretPIDPosition)  {this.turretPIDPosition = turretPIDPosition; return this;}
+
+    private double      turretPIDVelocity;
+    public double       getTurretPIDVelocity()                          {return turretPIDVelocity;}
+    protected ArmStatus setTurretPIDVelocity(double turretPIDVelocity)  {this.turretPIDVelocity = turretPIDVelocity; return this;}
 
     private MotorControlMode    turretControlMode = MotorControlMode.PercentOutput;
     public MotorControlMode     getTurretControlMode()                                      {return turretControlMode;}
@@ -346,6 +355,12 @@ public class ArmStatus extends StatusBase {
     protected ArmStatus setClawGrabbing(boolean clawGrabbing)   {this.clawGrabbing = clawGrabbing; return this;}
 
     @Override
+    protected void loadConfiguration(RobotConfiguration configuration) {
+        setArmState(configuration.armState);
+        setCurrentArmPose(configuration.armPose);
+    }
+
+    @Override
     public void updateInputs() {
         setCommand(arm.getCommand());
         setTurretAngleDeg(HAL.getTurretAngleDeg());
@@ -400,7 +415,9 @@ public class ArmStatus extends StatusBase {
         }
 
         logger.recordOutput(prefix + "Turret/Power",                getTurretPower());
-        logger.recordOutput(prefix + "Turret/PID Output",           getTurretPIDOutput());
+        logger.recordOutput(prefix + "Turret/PID/Output",           getTurretPIDOutput());
+        logger.recordOutput(prefix + "Turret/PID/Position",         getTurretPIDPosition());
+        logger.recordOutput(prefix + "Turret/PID/Velocity",         getTurretPIDVelocity());
         logger.recordOutput(prefix + "Turret/Control Mode",         turretControlMode != null ? turretControlMode.name() : "null");
         logger.recordOutput(prefix + "Turret/Neutral Mode",         turretNeutralMode != null ? turretNeutralMode.name() : "null");
         logger.recordOutput(prefix + "Turret/Position (deg)",       getTurretAngleDeg());

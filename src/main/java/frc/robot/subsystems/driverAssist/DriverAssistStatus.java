@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.trajectory.Trajectory;
+import frc.robot.RobotConfiguration;
 import frc.robot.subsystems.drive.DriveCommand;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -69,4 +70,5 @@ public class DriverAssistStatus extends StatusBase {
     @Override protected void exportToTable(LogTable table) {}
     @Override protected void importFromTable(LogTable table) {}
     @Override protected void processTable() {}
+    @Override protected void loadConfiguration(RobotConfiguration configuration) {}
 }

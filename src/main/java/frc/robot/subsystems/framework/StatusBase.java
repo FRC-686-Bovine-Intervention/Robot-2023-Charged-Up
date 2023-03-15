@@ -6,6 +6,7 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
+import frc.robot.RobotConfiguration;
 
 public abstract class StatusBase implements LoggableInputs{
 
@@ -99,6 +100,11 @@ public abstract class StatusBase implements LoggableInputs{
         processOutputs(Logger.getInstance(), prefix);
     }
 
+    /**
+     * 
+     * @param configuration - The configuration to load
+     */
+    protected abstract void loadConfiguration(RobotConfiguration configuration);
     /**
      * First thing called in a loop<p>
      * Should be for reading raw inputs from the HAL

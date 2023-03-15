@@ -10,21 +10,21 @@ public class Unwrapper
     public Unwrapper(double initialValue, double period) {
         this.initialValue = initialValue;
         this.prevIn = initialValue;
-        this.prevOut = 0;
+        this.prevOut = initialValue;
         this.period = period;
     }
 
     public void reset()
     {
         prevIn = initialValue;
-        prevOut = 0;
+        prevOut = initialValue;
     }
 
 
     public void reset(double initialValue)
     {
         prevIn = initialValue;
-        prevOut = 0;
+        prevOut = initialValue;
     }
 
     public double unwrap(double in)

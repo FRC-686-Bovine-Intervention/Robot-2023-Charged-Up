@@ -51,7 +51,10 @@ public class AllianceFlipUtil {
 
   /** Flips a pose to the correct side of the field based on the current alliance color. */
   public static Pose2d apply(Pose2d pose) {
-    if (shouldFlip()) {
+    return apply(pose, DriverStation.getAlliance());
+  }
+  public static Pose2d apply(Pose2d pose, Alliance alliance) {
+    if (shouldFlip(alliance)) {
       return new Pose2d(
           FieldDimensions.fieldLength - pose.getX(),
           pose.getY(),
@@ -94,6 +97,9 @@ public class AllianceFlipUtil {
   }
 
   private static boolean shouldFlip() {
-    return DriverStation.getAlliance() == Alliance.Red;
+    return shouldFlip(DriverStation.getAlliance());
+  }
+  private static boolean shouldFlip(Alliance alliance) {
+    return alliance == Alliance.Red;
   }
 }

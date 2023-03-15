@@ -1,7 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.math.util.Units;
-
 public class Constants {
     private static Constants instance = null;
     public static Constants getInstance() {if(instance == null){instance = new Constants();}return instance;}
@@ -44,9 +42,9 @@ public class Constants {
     public final static int kButtonboardPort =    1;
 
     // Robot Dimensions
-    public final static double kCenterToFrontBumper =   Units.inchesToMeters(17.5);//19.5;
-    public final static double kCenterToSideBumper =    Units.inchesToMeters(15.25);//15.0;
-    public final static double kCenterToIntake =        Units.inchesToMeters(21.25);//32.0;
+    public final static double kCenterToFrontBumper =   17.5;//19.5;
+    public final static double kCenterToSideBumper =    15.25;//15.0;
+    public final static double kCenterToIntake =        21.25;//32.0;
 
     public final static double loopPeriodSecs = 0.020;
 }

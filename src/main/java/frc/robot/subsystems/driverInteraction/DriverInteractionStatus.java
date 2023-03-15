@@ -5,6 +5,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
+import frc.robot.RobotConfiguration;
 import frc.robot.joysticks.ButtonBoard3x3;
 import frc.robot.joysticks.Thrustmaster;
 import frc.robot.subsystems.framework.StatusBase;
@@ -66,7 +67,10 @@ public class DriverInteractionStatus extends StatusBase {
         ThrustmasterX       (Thrustmaster.kXAxisID,         Thrustmaster.kXAxisInvert),
         ThrustmasterY       (Thrustmaster.kYAxisID,         Thrustmaster.kYAxisInvert),
         ThrustmasterRotation(Thrustmaster.kZRotateAxisID,   Thrustmaster.kZRotateAxisInvert),
-        ThrustmasterSlider  (Thrustmaster.kSliderAxisID,    Thrustmaster.kSliderAxisInvert);
+        ThrustmasterSlider  (Thrustmaster.kSliderAxisID,    Thrustmaster.kSliderAxisInvert),
+        ButtonBoardX        (Joysticks.ButtonBoard,         ButtonBoard3x3.kXAxisID),
+        ButtonBoardY        (Joysticks.ButtonBoard,         ButtonBoard3x3.kYAxisID),
+        ;
 
         private final Joysticks joystick;
         private final int axisID;
@@ -127,4 +131,5 @@ public class DriverInteractionStatus extends StatusBase {
     @Override protected void exportToTable(LogTable table) {}
     @Override protected void importFromTable(LogTable table) {}
     @Override protected void processTable() {}
+    @Override protected void loadConfiguration(RobotConfiguration configuration) {}
 }
