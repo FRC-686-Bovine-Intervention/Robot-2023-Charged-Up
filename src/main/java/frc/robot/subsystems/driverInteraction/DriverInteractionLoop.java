@@ -1,5 +1,6 @@
 package frc.robot.subsystems.driverInteraction;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.arm.Arm;
@@ -23,6 +24,9 @@ import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
 public class DriverInteractionLoop extends LoopBase {
     private static DriverInteractionLoop instance;
     public static DriverInteractionLoop getInstance() {if(instance == null){instance = new DriverInteractionLoop();}return instance;}
+
+    private static final double kExtendedThreshold = Units.degreesToRadians(15);
+    private static final double kExtendedDrivePowerMultiplier = 0.5;
 
     private final Drive drive = Drive.getInstance();
     private final DriverAssist driverAssist = DriverAssist.getInstance();
@@ -50,6 +54,8 @@ public class DriverInteractionLoop extends LoopBase {
 
         double leftPower = throttle+turn;
         double rightPower = throttle-turn;
+        leftPower *= (armStatus.getShoulderAngleRad() - Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
+        rightPower *= (armStatus.getShoulderAngleRad() - Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
         return new DriveCommand(leftPower, rightPower);
     }
 
