@@ -3,14 +3,8 @@ package frc.robot.auto.autoManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.auto.actions.Action;
-import frc.robot.auto.actions.RamseteFollowerAction;
-import frc.robot.subsystems.arm.Arm;
-import frc.robot.subsystems.arm.ArmStatus;
-import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.framework.SubsystemController;
-import frc.robot.subsystems.odometry.Odometry;
-import frc.robot.subsystems.odometry.OdometryCommand;
 
 public class AutoManagerLoop extends LoopBase {
     private static AutoManagerLoop instance;
@@ -41,7 +35,6 @@ public class AutoManagerLoop extends LoopBase {
             if(!status.getAutoRunning())
                 return;
             Action action = status.getCurrentAutoMode().actionList.get(status.getActionIndex());
-            status.setActionTrajectory(action.getClass() == RamseteFollowerAction.class ? ((RamseteFollowerAction)action).controller.getTrajectory() : null);
             action.onLoop();
             if(action.getEvaluatedDone()) {
                 status.incrementActionIndex(1);

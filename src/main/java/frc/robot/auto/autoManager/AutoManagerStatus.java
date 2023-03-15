@@ -15,11 +15,9 @@ import frc.robot.RobotConfiguration;
 import frc.robot.auto.AutoConfiguration;
 import frc.robot.auto.modes.AutoMode;
 import frc.robot.auto.modes.BlankAutoMode;
-import frc.robot.auto.modes.CenterOnePieceBalanceAuto;
-import frc.robot.auto.modes.LoadingOnePieceBalanceAuto;
 import frc.robot.auto.modes.DriveStraightAuto;
+import frc.robot.auto.modes.OnePieceBalanceAuto;
 import frc.robot.auto.modes.RamseteFollowerTestAuto;
-import frc.robot.auto.modes.WallSideOnePieceBalanceAuto;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class AutoManagerStatus extends StatusBase {
@@ -27,13 +25,11 @@ public class AutoManagerStatus extends StatusBase {
     public static AutoManagerStatus getInstance(){if(instance == null){instance = new AutoManagerStatus();}return instance;}
 
     public enum AutoModesEnum{
-        Blank("Blank Mode", BlankAutoMode.class),
-        RamseteFollowerTest("Ramsete Follower", RamseteFollowerTestAuto.class),
-        DriveStraightAuto("Drive Straight", DriveStraightAuto.class),
-        WallSideTwoPiece("Double Wall", WallSideOnePieceBalanceAuto.class),
-        WallSideOnePieceBalance("Single Balance Wall", WallSideOnePieceBalanceAuto.class),
-        CenterOnePieceBalance("Single Balance Center", CenterOnePieceBalanceAuto.class),
-        LoadingOnePieceBalance("Single Balance Loading", LoadingOnePieceBalanceAuto.class),
+        WallSideOnePieceBalance("One Piece Balance", OnePieceBalanceAuto.class),
+        WallSideTwoPiece("Two Piece", OnePieceBalanceAuto.class),
+        DriveStraightAuto("Drive Straight Test", DriveStraightAuto.class),
+        RamseteFollowerTest("Ramsete Follower Test", RamseteFollowerTestAuto.class),
+        Blank("Blank Mode Test", BlankAutoMode.class),
         ;
         public final String autoName;
         public final Class<? extends AutoMode> autoMode;
@@ -107,10 +103,6 @@ public class AutoManagerStatus extends StatusBase {
     public AutoManagerStatus setActionIndex(int actionIndex) {this.actionIndex = actionIndex; return this;}
     public AutoManagerStatus incrementActionIndex(int increment) {this.actionIndex += increment; return this;}
 
-    private Trajectory actionTrajectory;
-    public Trajectory getActionTrajectory() {return actionTrajectory;}
-    public AutoManagerStatus setActionTrajectory(Trajectory actionTrajectory) {this.actionTrajectory = actionTrajectory; return this;}
-
     private AutoConfiguration   autoConfiguration = new AutoConfiguration();
     public AutoConfiguration    getAutoConfiguration()                                      {return autoConfiguration;}
     protected AutoManagerStatus setAutoConfiguration(AutoConfiguration autoConfiguration)   {this.autoConfiguration = autoConfiguration; return this;}
@@ -150,7 +142,6 @@ public class AutoManagerStatus extends StatusBase {
         logger.recordOutput(prefix + "Auto Mode Class", getAutomode() != null ? getAutomode().getSimpleName() : null);
         logger.recordOutput(prefix + "Auto Running", autoRunning);
         logger.recordOutput(prefix + "Action Index", actionIndex);
-        // logger.recordOutput(prefix + "Action Trajectory", actionTrajectory);
     }
 
     @Override protected void processTable() {}

@@ -49,15 +49,15 @@ public class ArmStatus extends StatusBase {
     }
 
     public enum NodeEnum {
-        BottomLeft      (0,0,ArmPose.Preset.SCORE_HYBRID, false),
+        BottomWall      (0,0,ArmPose.Preset.SCORE_HYBRID, false),
         BottomCenter    (1,0,ArmPose.Preset.SCORE_HYBRID, false),
-        BottomRight     (2,0,ArmPose.Preset.SCORE_HYBRID, false),
-        MiddleLeft      (0,1,ArmPose.Preset.SCORE_MID_CONE, true),
+        BottomLoading   (2,0,ArmPose.Preset.SCORE_HYBRID, false),
+        MiddleWall      (0,1,ArmPose.Preset.SCORE_MID_CONE, true),
         MiddleCenter    (1,1,ArmPose.Preset.SCORE_MID_CUBE, false),
-        MiddleRight     (2,1,ArmPose.Preset.SCORE_MID_CONE, true),
-        TopLeft         (0,2,ArmPose.Preset.SCORE_HIGH_CONE, true),
+        MiddleLoading   (2,1,ArmPose.Preset.SCORE_MID_CONE, true),
+        TopWall         (0,2,ArmPose.Preset.SCORE_HIGH_CONE, true),
         TopCenter       (1,2,ArmPose.Preset.SCORE_HIGH_CUBE, false),
-        TopRight        (2,2,ArmPose.Preset.SCORE_HIGH_CONE, true);
+        TopLoading      (2,2,ArmPose.Preset.SCORE_HIGH_CONE, true);
 
         public static final NodeEnum DEFAULT = MiddleCenter;
 

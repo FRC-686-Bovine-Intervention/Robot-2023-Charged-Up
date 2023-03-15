@@ -1,6 +1,7 @@
 package frc.robot.subsystems.driverInteraction;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmCommand;
 import frc.robot.subsystems.arm.ArmStatus;
@@ -101,24 +102,25 @@ public class DriverInteractionLoop extends LoopBase {
         armCommand.setXAdjustment(DriverControlAxes.ButtonBoardX.getAxis());
         armCommand.setZAdjustment(DriverControlAxes.ButtonBoardY.getAxis());
 
+        // Field orient buttons
         if(DriverControlButtons.ButtonBoard1_1.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.BottomLeft);
+            armCommand.setTargetNode(DriverStation.getAlliance() == Alliance.Red ? NodeEnum.TopWall : NodeEnum.TopLoading);
         else if(DriverControlButtons.ButtonBoard1_2.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.BottomCenter);
+            armCommand.setTargetNode(NodeEnum.TopCenter);
         else if(DriverControlButtons.ButtonBoard1_3.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.BottomRight);
+            armCommand.setTargetNode(DriverStation.getAlliance() == Alliance.Red ? NodeEnum.TopLoading : NodeEnum.TopWall);
         else if(DriverControlButtons.ButtonBoard2_1.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.MiddleLeft);
+            armCommand.setTargetNode(DriverStation.getAlliance() == Alliance.Red ? NodeEnum.MiddleWall : NodeEnum.MiddleLoading);
         else if(DriverControlButtons.ButtonBoard2_2.getRisingEdge())
             armCommand.setTargetNode(NodeEnum.MiddleCenter);
         else if(DriverControlButtons.ButtonBoard2_3.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.MiddleRight);
+            armCommand.setTargetNode(DriverStation.getAlliance() == Alliance.Red ? NodeEnum.MiddleLoading : NodeEnum.MiddleWall);
         else if(DriverControlButtons.ButtonBoard3_1.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.TopLeft);
+            armCommand.setTargetNode(DriverStation.getAlliance() == Alliance.Red ? NodeEnum.BottomWall : NodeEnum.BottomLoading);
         else if(DriverControlButtons.ButtonBoard3_2.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.TopCenter);
+            armCommand.setTargetNode(NodeEnum.BottomCenter);
         else if(DriverControlButtons.ButtonBoard3_3.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.TopRight);
+            armCommand.setTargetNode(DriverStation.getAlliance() == Alliance.Red ? NodeEnum.BottomLoading : NodeEnum.BottomWall);
 
         switch(ArmStatus.getInstance().getArmState())
         {

@@ -5,7 +5,8 @@ import org.littletonrobotics.junction.Logger;
 public class AutoConfiguration {
     public enum StartPosition {
         Wall,
-        Center,
+        CenterWall,
+        CenterLoad,
         Loading
     }
     public enum GamePiece {
