@@ -57,4 +57,44 @@ public class ArmKinematicsTest {
         assertFalse(optTheta.isPresent());
 
     }
+
+
+    @Test
+    public void TestArmKinematics2() {
+
+        // debug discrepancy in measured kinematics
+
+        Translation2d shoulder = new Translation2d(13.5 / 39.3701, 50.0 / 39.3701);
+        double l1 = 27.0 / 39.3701;
+        double l2 = 20.5 / 39.3701;
+        double minTheta1 = -Math.PI;
+        double maxTheta1 = +Math.PI;
+        double minTheta2 = -Math.PI;
+        double maxTheta2 = +Math.PI;
+        double minTheta21 = -Math.PI;
+        double maxTheta21 = +Math.PI;
+
+        ArmKinematics kinematics = new ArmKinematics(shoulder, l1, l2, minTheta1, maxTheta1, minTheta2, maxTheta2, minTheta21, maxTheta21);
+
+        double x = 52.0 / 39.3701;
+        double y = 48.5 / 39.3701;
+
+        Translation2d endEffector = new Translation2d(x, y);
+        Optional<Vector<N2>> optTheta = kinematics.inverse(endEffector);
+
+        assertTrue(optTheta.isPresent());
+        
+        Vector<N2> theta = optTheta.get();
+
+        // TROUBLE!  Measured angles do not match measured X,Z
+        // assertEquals(-0.667, theta.get(0,0), 0.1);
+        // assertEquals(+0.838, theta.get(1,0), 0.1);
+        
+
+        // check that we come back to the same spot
+        endEffector = kinematics.forward(theta);
+
+        assertEquals(x, endEffector.getX(), kEps);
+        assertEquals(y, endEffector.getY(), kEps);
+    }
 }
