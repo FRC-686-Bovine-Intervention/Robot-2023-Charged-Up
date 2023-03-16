@@ -122,7 +122,7 @@ public class ArmLoop extends LoopBase {
     private final double shoulderMinAngleRad;
     private final double elbowMaxAngleRad;
     private final double elbowMinAngleRad;
-    public static final double kRelativeMaxAngleRad = Math.toRadians(160.0);    // don't let grabber smash into proximal arm
+    public static final double kRelativeMaxAngleRad = Math.toRadians(145.0);    // don't let grabber smash into proximal arm
     public static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
 
     private static final double kMaxElbowPlusClawLength = Units.inchesToMeters(26.0); 
