@@ -40,7 +40,7 @@ public class ArmHAL {
 
     public static final double kArmCurrentLimit = 100;
     public static final double kArmTriggerThresholdCurrent = 40;
-    public static final double kArmTriggerThresholdTime = 0.5;
+    public static final double kArmTriggerThresholdTime = 0.2;
 
    
 	// Constant import

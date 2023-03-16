@@ -540,6 +540,10 @@ public class ArmLoop extends LoopBase {
                 if (theta.isPresent()) {
                     finalShoulderAngleRad = theta.get().get(0,0);
                     finalElbowAngleRad = theta.get().get(1,0);
+                } else {
+                    // if the arm can't reach the target node, reach out as far as we can
+                    finalShoulderAngleRad = -0.1;   // should reach to 60" extension, 53" above floor
+                    finalElbowAngleRad = 0.28;      // hardcoding to make sure we always get a result
                 }
             }
             // set outputs
