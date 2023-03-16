@@ -34,7 +34,6 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.Constants;
 import frc.robot.FieldDimensions;
 import frc.robot.lib.util.GeomUtil;
-import frc.robot.lib.util.Unwrapper;
 import frc.robot.subsystems.arm.ArmDynamics.JointConfig;
 import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.arm.ArmStatus.MotorControlMode;
@@ -138,9 +137,9 @@ public class ArmLoop extends LoopBase {
     private final double manualMaxAdjustmentRangeInches = 12.0;
     private final double manualMaxAdjustmentRange = Units.inchesToMeters(manualMaxAdjustmentRangeInches);
 
-    private final double manualMaxSpeedInchesPerSec = 6.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
+    private final double manualMaxSpeedInchesPerSec = 12.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
     private final double manualMaxSpeedMetersPerSec = Units.inchesToMeters(manualMaxSpeedInchesPerSec);
-    private final double manualMaxSpeedDegreesPerSec = 10.0;  // speed the turret is allowed to manually spin
+    private final double manualMaxTurretPercentOutput = 0.2;  // speed the turret is allowed to manually spin
 
 
     private ArmLoop() {
@@ -263,7 +262,6 @@ public class ArmLoop extends LoopBase {
     }
     
     private final Timer stateTimer = new Timer();
-    private Unwrapper turretUnwrapper = new Unwrapper(0.0, 360.0);
     
     @Override
     protected void Enabled() {
@@ -278,6 +276,8 @@ public class ArmLoop extends LoopBase {
             status.setXThrottle(newCommand.getXAdjustment());
         if(newCommand.getZAdjustment() != null)
             status.setZThrottle(newCommand.getZAdjustment());
+        if(newCommand.getTurretAdjustment() != null)
+            status.setTurretThrottle(newCommand.getTurretAdjustment());
 
         stateTimer.start();
 
@@ -380,6 +380,8 @@ public class ArmLoop extends LoopBase {
                 status.setTurretControlMode(MotorControlMode.PercentOutput)
                       .setTurretPower(0)
                       .setTurretNeutralMode(NeutralMode.Coast);
+                if(!stateTimer.hasElapsed(1))
+                    break;
                 if(!status.getClawGrabbing()) {
                     status.setTargetArmPose(ArmPose.Preset.INTAKE);
                     if(status.getCurrentArmPose() == ArmPose.Preset.INTAKE)
@@ -456,6 +458,8 @@ public class ArmLoop extends LoopBase {
 
             case Adjust:
                 // Rotate turret according to limelight and driver controls
+                status.setTurretControlMode(MotorControlMode.PercentOutput)
+                      .setTurretPower(status.getTurretThrottle() * manualMaxTurretPercentOutput);
                 // Check if driver has pushed release button, if so jump to Release
             break;
 
@@ -463,7 +467,9 @@ public class ArmLoop extends LoopBase {
                 // Outtake piece
                 status.setClawGrabbing(false);
                 // Wait a bit then jump to Defense
-                if(stateTimer.hasElapsed(1))
+                if(stateTimer.hasElapsed(0.25))
+                    status.setTargetArmPose(ArmPose.Preset.DEFENSE);
+                if(status.getCurrentArmPose() == ArmPose.Preset.DEFENSE)
                     status.setArmState(ArmState.Defense);
             break;
 
@@ -532,8 +538,6 @@ public class ArmLoop extends LoopBase {
 
                 // calculate turret angle to target
                 Translation2d turretToTarget = nodeXY.minus(turretXY);
-                double targetAngle = turretToTarget.getAngle().getRadians();
-                double robotAngle = OdometryStatus.getInstance().getRobotPose().getRotation().getRadians();
                 turretAngleToTarget = getTurretBestAngle(nodeXY);
 
                 // extend the distance of the base trajectory
@@ -660,11 +664,11 @@ public class ArmLoop extends LoopBase {
 
             // Check if beyond limits
             if (!dynamics.isGoodShoulderAngle(shoulderAngleRad, internalDisableBeyondLimitThreshold)) {
-                status.setInternalDisable(true, "Shoulder beyond limit");
+                // status.setInternalDisable(true, "Shoulder beyond limit");
             }
 
             if (!dynamics.isGoodElbowAngle(elbowAngleRad, internalDisableBeyondLimitThreshold)) {
-                    status.setInternalDisable(true, "Elbow beyond limit");
+                    // status.setInternalDisable(true, "Elbow beyond limit");
             }
         }
 

@@ -5,23 +5,16 @@ import java.util.function.Supplier;
 public class ConditionalAction extends Action {
     private final Supplier<Boolean> condition;
 
-    private Action TrueAction;
-    private Action FalseAction;
+    private final Action trueAction;
+    private final Action falseAction;
 
     private boolean valueAtStart;
 
-    public ConditionalAction(Supplier<Boolean> condition) {
+    public ConditionalAction(Supplier<Boolean> condition, Action trueAction) {this(condition, trueAction, null);}
+    public ConditionalAction(Supplier<Boolean> condition, Action trueAction, Action falseAction) {
         this.condition = condition;
-    }
-
-    public ConditionalAction trueAction(Action trueAction) {
-        TrueAction = trueAction;
-        return this;
-    }
-
-    public ConditionalAction falseAction(Action falseAction) {
-        FalseAction = falseAction;
-        return this;
+        this.trueAction = trueAction;
+        this.falseAction = falseAction;
     }
 
     @Override
@@ -32,22 +25,24 @@ public class ConditionalAction extends Action {
     @Override
     protected void run() {
         if(valueAtStart) {
-            TrueAction.onLoop();
-            setFinished(TrueAction.getEvaluatedDone());
+            if(trueAction != null)
+                trueAction.onLoop();
+            setFinished(trueAction == null || trueAction.getEvaluatedDone());
         } else {
-            FalseAction.onLoop();
-            setFinished(FalseAction.getEvaluatedDone());
+            if(falseAction != null)
+                falseAction.onLoop();
+            setFinished(falseAction == null || falseAction.getEvaluatedDone());
         }
     }
 
     @Override
     protected void done() {
         if(valueAtStart) {
-            if(!TrueAction.getEvaluatedDone())
-                TrueAction.done();
+            if(trueAction != null && !trueAction.getEvaluatedDone())
+                trueAction.done();
         } else {
-            if(!FalseAction.getEvaluatedDone())
-                FalseAction.done();
+            if(falseAction != null && !falseAction.getEvaluatedDone())
+                falseAction.done();
         }
     }
 }

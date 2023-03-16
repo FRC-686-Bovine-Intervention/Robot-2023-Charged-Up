@@ -1,4 +1,4 @@
-package frc.robot.auto;
+package frc.robot.auto.modes;
 
 import java.util.ArrayList;
 
@@ -12,6 +12,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
 import frc.robot.FieldDimensions;
+import frc.robot.auto.autoManager.AutoConfiguration;
 import frc.robot.util.AllianceFlipUtil;
 
 public class AutoTrajectories {
@@ -28,7 +29,7 @@ public class AutoTrajectories {
 
     static {
         double kMaxVelocityMPS =      Units.inchesToMeters(48);
-        double kMaxAccelerationMPSS = kMaxVelocityMPS * 2;
+        double kMaxAccelerationMPSS = kMaxVelocityMPS / 1;
 
         TrajectoryConfig forwardConfig = new TrajectoryConfig(kMaxVelocityMPS, kMaxAccelerationMPSS);
         TrajectoryConfig backwardConfig = new TrajectoryConfig(kMaxVelocityMPS, kMaxAccelerationMPSS);
@@ -58,8 +59,9 @@ public class AutoTrajectories {
         );
         
         // Backup Poses
-        double onePointTurnRadius = 5;
-        double backupOffset = 24;
+        double onePointTurnRadius = 24;
+        double onePointTurnCenterOffset = 12;
+        double backupOffset = 12;
 
         Pose2d WallBackupPose = new Pose2d(
             new Translation2d(
@@ -94,14 +96,14 @@ public class AutoTrajectories {
         Pose2d CenterWallPointTurnPose = new Pose2d(
             new Translation2d(
                 FieldDimensions.StagingLocations.positionX - Units.inchesToMeters(onePointTurnRadius + Constants.kCenterToIntake + backupOffset),
-                FieldDimensions.StagingLocations.translations[1].getY() + Units.inchesToMeters(onePointTurnRadius)
+                FieldDimensions.StagingLocations.translations[1].getY() + Units.inchesToMeters(onePointTurnRadius + onePointTurnCenterOffset)
             ),
             Rotation2d.fromDegrees(-90)
         );
         Pose2d CenterLoadPointTurnPose = new Pose2d(
             new Translation2d(
                 FieldDimensions.StagingLocations.positionX - Units.inchesToMeters(onePointTurnRadius + Constants.kCenterToIntake + backupOffset),
-                FieldDimensions.StagingLocations.translations[2].getY() - Units.inchesToMeters(onePointTurnRadius)
+                FieldDimensions.StagingLocations.translations[2].getY() - Units.inchesToMeters(onePointTurnRadius + onePointTurnCenterOffset)
             ),
             Rotation2d.fromDegrees(90)
         );
@@ -146,7 +148,7 @@ public class AutoTrajectories {
         // Staging Poses
         Pose2d WallStagingPose = new Pose2d(
             new Translation2d(
-                FieldDimensions.StagingLocations.positionX - Units.inchesToMeters(Constants.kCenterToIntake ),
+                FieldDimensions.StagingLocations.positionX - Units.inchesToMeters(Constants.kCenterToIntake),
                 FieldDimensions.StagingLocations.translations[0].getY()
             ),
             Rotation2d.fromDegrees(0)
@@ -177,7 +179,7 @@ public class AutoTrajectories {
         Pose2d ChargeStationBackupPose = new Pose2d(
             new Translation2d(
                 FieldDimensions.Community.chargingStationOuterX + Units.inchesToMeters(Constants.kCenterToFrontBumper),
-                FieldDimensions.Community.chargingStationRightY + FieldDimensions.Community.chargingStationWidth
+                FieldDimensions.Community.chargingStationRightY + FieldDimensions.Community.chargingStationWidth / 2
             ),
             Rotation2d.fromDegrees(0)
         );
@@ -229,50 +231,50 @@ public class AutoTrajectories {
         ArrayList<Pose2d> CenterLoadPickupBackwardPath = new ArrayList<Pose2d>();
         ArrayList<Pose2d> LoadingPickupBackwardPath = new ArrayList<Pose2d>();
 
-        WallPickupForwardPath.add(WallStagingPose);
-        WallPickupForwardPath.add(WallStagingOffsetPose);
-        WallPickupForwardPath.add(WallPointTurnPose);
+        WallPickupBackwardPath.add(WallStagingPose);
+        WallPickupBackwardPath.add(WallStagingOffsetPose);
+        WallPickupBackwardPath.add(WallPointTurnPose);
 
-        CenterWallPickupForwardPath.add(CenterWallStagingPose);
-        CenterWallPickupForwardPath.add(CenterWallStagingOffsetPose);
-        CenterWallPickupForwardPath.add(CenterWallPointTurnPose);
+        CenterWallPickupBackwardPath.add(CenterWallStagingPose);
+        CenterWallPickupBackwardPath.add(CenterWallStagingOffsetPose);
+        CenterWallPickupBackwardPath.add(CenterWallPointTurnPose);
 
-        CenterLoadPickupForwardPath.add(CenterLoadStagingPose);
-        CenterLoadPickupForwardPath.add(CenterLoadStagingOffsetPose);
-        CenterLoadPickupForwardPath.add(CenterLoadPointTurnPose);
+        CenterLoadPickupBackwardPath.add(CenterLoadStagingPose);
+        CenterLoadPickupBackwardPath.add(CenterLoadStagingOffsetPose);
+        CenterLoadPickupBackwardPath.add(CenterLoadPointTurnPose);
 
-        LoadingPickupForwardPath.add(LoadingStagingPose);
-        LoadingPickupForwardPath.add(LoadingStagingOffsetPose);
-        LoadingPickupForwardPath.add(LoadingPointTurnPose);
+        LoadingPickupBackwardPath.add(LoadingStagingPose);
+        LoadingPickupBackwardPath.add(LoadingStagingOffsetPose);
+        LoadingPickupBackwardPath.add(LoadingPointTurnPose);
 
         ArrayList<Pose2d> WallScoringForwardPath = new ArrayList<Pose2d>();
         ArrayList<Pose2d> CenterWallScoringForwardPath = new ArrayList<Pose2d>();
         ArrayList<Pose2d> CenterLoadScoringForwardPath = new ArrayList<Pose2d>();
         ArrayList<Pose2d> LoadingScoringForwardPath = new ArrayList<Pose2d>();
 
-        WallScoringBackwardPath.add(WallPointTurnPose);
-        WallScoringBackwardPath.add(WallBackupPose);
-        WallScoringBackwardPath.add(WallScoringPose);
+        WallScoringForwardPath.add(WallPointTurnPose);
+        WallScoringForwardPath.add(WallBackupPose);
+        WallScoringForwardPath.add(WallScoringPose);
 
-        CenterWallScoringBackwardPath.add(CenterWallPointTurnPose);
-        CenterWallScoringBackwardPath.add(CenterBackupPose);
-        CenterWallScoringBackwardPath.add(CenterScoringPose);
+        CenterWallScoringForwardPath.add(CenterWallPointTurnPose);
+        CenterWallScoringForwardPath.add(CenterBackupPose);
+        CenterWallScoringForwardPath.add(CenterScoringPose);
 
-        CenterLoadScoringBackwardPath.add(CenterLoadPointTurnPose);
-        CenterLoadScoringBackwardPath.add(CenterBackupPose);
-        CenterLoadScoringBackwardPath.add(CenterScoringPose);
+        CenterLoadScoringForwardPath.add(CenterLoadPointTurnPose);
+        CenterLoadScoringForwardPath.add(CenterBackupPose);
+        CenterLoadScoringForwardPath.add(CenterScoringPose);
 
-        LoadingScoringBackwardPath.add(LoadingPointTurnPose);
-        LoadingScoringBackwardPath.add(LoadingBackupPose);
-        LoadingScoringBackwardPath.add(LoadingScoringPose);
+        LoadingScoringForwardPath.add(LoadingPointTurnPose);
+        LoadingScoringForwardPath.add(LoadingBackupPose);
+        LoadingScoringForwardPath.add(LoadingScoringPose);
 
         ArrayList<Pose2d> WallStationBackwardPath = new ArrayList<Pose2d>();
         ArrayList<Pose2d> CenterWallStationBackwardPath = new ArrayList<Pose2d>();
         ArrayList<Pose2d> CenterLoadStationBackwardPath = new ArrayList<Pose2d>();
         ArrayList<Pose2d> LoadingStationBackwardPath = new ArrayList<Pose2d>();
 
-        WallPickupForwardPath.add(WallStagingPose);
-        WallPickupForwardPath.add(ChargeStationBackupPose);
+        WallStationBackwardPath.add(WallStagingPose);
+        WallStationBackwardPath.add(ChargeStationBackupPose);
 
         CenterWallStationBackwardPath.add(CenterWallStagingPose);
         CenterWallStationBackwardPath.add(ChargeStationBackupPose);
@@ -380,50 +382,50 @@ public class AutoTrajectories {
         CenterLoadPickupBackwardPath.clear();
         LoadingPickupBackwardPath.clear();
 
-        WallPickupForwardPath.add(WallStagingPose);
-        WallPickupForwardPath.add(WallStagingOffsetPose);
-        WallPickupForwardPath.add(WallPointTurnPose);
+        WallPickupBackwardPath.add(WallStagingPose);
+        WallPickupBackwardPath.add(WallStagingOffsetPose);
+        WallPickupBackwardPath.add(WallPointTurnPose);
 
-        CenterWallPickupForwardPath.add(CenterWallStagingPose);
-        CenterWallPickupForwardPath.add(CenterWallStagingOffsetPose);
-        CenterWallPickupForwardPath.add(CenterWallPointTurnPose);
+        CenterWallPickupBackwardPath.add(CenterWallStagingPose);
+        CenterWallPickupBackwardPath.add(CenterWallStagingOffsetPose);
+        CenterWallPickupBackwardPath.add(CenterWallPointTurnPose);
 
-        CenterLoadPickupForwardPath.add(CenterLoadStagingPose);
-        CenterLoadPickupForwardPath.add(CenterLoadStagingOffsetPose);
-        CenterLoadPickupForwardPath.add(CenterLoadPointTurnPose);
+        CenterLoadPickupBackwardPath.add(CenterLoadStagingPose);
+        CenterLoadPickupBackwardPath.add(CenterLoadStagingOffsetPose);
+        CenterLoadPickupBackwardPath.add(CenterLoadPointTurnPose);
 
-        LoadingPickupForwardPath.add(LoadingStagingPose);
-        LoadingPickupForwardPath.add(LoadingStagingOffsetPose);
-        LoadingPickupForwardPath.add(LoadingPointTurnPose);
+        LoadingPickupBackwardPath.add(LoadingStagingPose);
+        LoadingPickupBackwardPath.add(LoadingStagingOffsetPose);
+        LoadingPickupBackwardPath.add(LoadingPointTurnPose);
 
         WallScoringForwardPath.clear();
         CenterWallScoringForwardPath.clear();
         CenterLoadScoringForwardPath.clear();
         LoadingScoringForwardPath.clear();
 
-        WallScoringBackwardPath.add(WallPointTurnPose);
-        WallScoringBackwardPath.add(WallBackupPose);
-        WallScoringBackwardPath.add(WallScoringPose);
+        WallScoringForwardPath.add(WallPointTurnPose);
+        WallScoringForwardPath.add(WallBackupPose);
+        WallScoringForwardPath.add(WallScoringPose);
 
-        CenterWallScoringBackwardPath.add(CenterWallPointTurnPose);
-        CenterWallScoringBackwardPath.add(CenterBackupPose);
-        CenterWallScoringBackwardPath.add(CenterScoringPose);
+        CenterWallScoringForwardPath.add(CenterWallPointTurnPose);
+        CenterWallScoringForwardPath.add(CenterBackupPose);
+        CenterWallScoringForwardPath.add(CenterScoringPose);
 
-        CenterLoadScoringBackwardPath.add(CenterLoadPointTurnPose);
-        CenterLoadScoringBackwardPath.add(CenterBackupPose);
-        CenterLoadScoringBackwardPath.add(CenterScoringPose);
+        CenterLoadScoringForwardPath.add(CenterLoadPointTurnPose);
+        CenterLoadScoringForwardPath.add(CenterBackupPose);
+        CenterLoadScoringForwardPath.add(CenterScoringPose);
 
-        LoadingScoringBackwardPath.add(LoadingPointTurnPose);
-        LoadingScoringBackwardPath.add(LoadingBackupPose);
-        LoadingScoringBackwardPath.add(LoadingScoringPose);
+        LoadingScoringForwardPath.add(LoadingPointTurnPose);
+        LoadingScoringForwardPath.add(LoadingBackupPose);
+        LoadingScoringForwardPath.add(LoadingScoringPose);
 
         WallStationBackwardPath.clear();
         CenterWallStationBackwardPath.clear();
         CenterLoadStationBackwardPath.clear();
         LoadingStationBackwardPath.clear();
 
-        WallPickupForwardPath.add(WallStagingPose);
-        WallPickupForwardPath.add(ChargeStationBackupPose);
+        WallStationBackwardPath.add(WallStagingPose);
+        WallStationBackwardPath.add(ChargeStationBackupPose);
 
         CenterWallStationBackwardPath.add(CenterWallStagingPose);
         CenterWallStationBackwardPath.add(ChargeStationBackupPose);
@@ -544,5 +546,9 @@ public class AutoTrajectories {
                 }
             }
         }
+    }
+
+    public static void loadTrajectories() {
+        System.out.println("Loaded trajectories");
     }
 }

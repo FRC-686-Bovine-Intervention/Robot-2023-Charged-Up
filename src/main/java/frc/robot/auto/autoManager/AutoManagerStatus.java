@@ -11,13 +11,14 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.RobotConfiguration;
-import frc.robot.auto.AutoConfiguration;
-import frc.robot.auto.AutoConfiguration.*;
+import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
+import frc.robot.auto.autoManager.AutoConfiguration.StartPosition;
 import frc.robot.auto.modes.AutoMode;
 import frc.robot.auto.modes.BlankAutoMode;
 import frc.robot.auto.modes.DriveStraightAuto;
 import frc.robot.auto.modes.OnePieceBalanceAuto;
 import frc.robot.auto.modes.RamseteFollowerTestAuto;
+import frc.robot.auto.modes.TwoPieceAuto;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class AutoManagerStatus extends StatusBase {
@@ -25,8 +26,8 @@ public class AutoManagerStatus extends StatusBase {
     public static AutoManagerStatus getInstance(){if(instance == null){instance = new AutoManagerStatus();}return instance;}
 
     public enum AutoModesEnum{
-        WallSideOnePieceBalance("One Piece Balance", OnePieceBalanceAuto.class),
-        WallSideTwoPiece("Two Piece", OnePieceBalanceAuto.class),
+        OnePieceBalance("One Piece Balance", OnePieceBalanceAuto.class),
+        TwoPiece("Two Piece", TwoPieceAuto.class),
         DriveStraightAuto("Drive Straight Test", DriveStraightAuto.class),
         RamseteFollowerTest("Ramsete Follower Test", RamseteFollowerTestAuto.class),
         Blank("Blank Mode Test", BlankAutoMode.class),
@@ -133,8 +134,9 @@ public class AutoManagerStatus extends StatusBase {
     public AutoMode getNewAutomode() {
         try {
             try {
-                return getAutomode().getConstructor(AutoConfiguration.class).newInstance();
+                return getAutomode().getConstructor(AutoConfiguration.class).newInstance(autoConfiguration);
             } catch(NoSuchMethodException e) {
+                System.out.println("No configuration constructor");
                 return getAutomode().getConstructor().newInstance();
             }
         } catch (InvocationTargetException e) {

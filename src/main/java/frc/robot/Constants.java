@@ -38,8 +38,9 @@ public class Constants {
     public final static int kClawSolenoidID =           1;
 
     // Control Hardware
-    public final static int kThrustmasterPort =   0;
-    public final static int kButtonboardPort =    1;
+    public final static int kThrustmasterPort =     0;
+    public final static int kButtonboardPort =      1;
+    public final static int kXBoxPort =             2;
 
     // Robot Dimensions
     public final static double kCenterToFrontBumper =   17.5;//19.5;

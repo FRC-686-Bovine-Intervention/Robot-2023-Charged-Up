@@ -2,9 +2,8 @@ package frc.robot.auto.autoManager;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.auto.AutoConfiguration;
-import frc.robot.auto.AutoConfiguration.GamePiece;
 import frc.robot.auto.actions.Action;
+import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.framework.SubsystemController;
 

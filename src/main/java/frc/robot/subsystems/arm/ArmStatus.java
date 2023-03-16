@@ -111,7 +111,7 @@ public class ArmStatus extends StatusBase {
 
     private double      targetTurretAngleDeg;
     public double       getTargetTurretAngleDeg()              {return targetTurretAngleDeg;}
-    public ArmStatus setTargetTurretAngleDeg(double angle)  {targetTurretAngleDeg = angle; return this;}
+    public ArmStatus    setTargetTurretAngleDeg(double angle)  {targetTurretAngleDeg = angle; return this;}
 
     private double      turretPower;
     public double       getTurretPower()                    {return turretPower;}
@@ -187,11 +187,15 @@ public class ArmStatus extends StatusBase {
     private double          zThrottle;
     public double           getZThrottle()                  {return zThrottle;}
     protected ArmStatus     setZThrottle(double zThrottle)  {this.zThrottle = zThrottle; return this;}
-
+    
     private double          zAdjustment; // height
     public double           getZAdjustment()                        {return zAdjustment;}
     protected ArmStatus     setZAdjustment(double zAdjustment)      {this.zAdjustment = zAdjustment; return this;}
     protected ArmStatus     incrementZAdjustment(double increment)  {this.zAdjustment += increment; return this;}
+
+    private double          turretThrottle;
+    public double           getTurretThrottle()                         {return turretThrottle;}
+    protected ArmStatus     setTurretThrottle(double turretThrottle)    {this.turretThrottle = turretThrottle; return this;}
 
     // Shoulder
     private PotAndEncoder.Reading   shoulderPotEncReading = new PotAndEncoder.Reading(0,0,0);
@@ -398,6 +402,7 @@ public class ArmStatus extends StatusBase {
     public void processOutputs(Logger logger, String prefix) {
         // Generic
         command.recordOutputs(logger, prefix + "Command");
+        arm.setCommand(new ArmCommand());
         logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
         logger.recordOutput(prefix + "Hold|Align Locked", stateLocked);
 

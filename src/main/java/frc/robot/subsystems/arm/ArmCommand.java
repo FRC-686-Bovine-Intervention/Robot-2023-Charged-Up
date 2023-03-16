@@ -28,10 +28,15 @@ public class ArmCommand {
     public Double       getZAdjustment()                    {return zAdjustment;}
     public ArmCommand   setZAdjustment(double zAdjustment)  {this.zAdjustment = zAdjustment; return this;}
 
+    private Double      turretAdjustment = null;
+    public Double       getTurretAdjustment()                           {return turretAdjustment;}
+    public ArmCommand   setTurretAdjustment(double turretAdjustment)    {this.turretAdjustment = turretAdjustment; return this;}
+
     public void recordOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "/Arm State", armState != null ? armState.name() : "null");
         logger.recordOutput(prefix + "/Target Node", targetNode != null ? targetNode.name() : "null");
-        logger.recordOutput(prefix + "/Adjustment/X", xAdjustment != null ? xAdjustment.toString() : "null");
-        logger.recordOutput(prefix + "/Adjustment/Z", zAdjustment != null ? zAdjustment.toString() : "null");
+        logger.recordOutput(prefix + "/Adjustment/X", xAdjustment != null ? xAdjustment.doubleValue() : 0);
+        logger.recordOutput(prefix + "/Adjustment/Z", zAdjustment != null ? zAdjustment.doubleValue() : 0);
+        logger.recordOutput(prefix + "/Adjustment/Turret", turretAdjustment != null ? turretAdjustment.doubleValue() : 0);
     }
 }

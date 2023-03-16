@@ -8,6 +8,7 @@ import frc.robot.Constants;
 import frc.robot.RobotConfiguration;
 import frc.robot.joysticks.ButtonBoard3x3;
 import frc.robot.joysticks.Thrustmaster;
+import frc.robot.joysticks.XBox;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class DriverInteractionStatus extends StatusBase {
@@ -16,7 +17,9 @@ public class DriverInteractionStatus extends StatusBase {
 
     public enum Joysticks{
         Thrustmaster(new Joystick(Constants.kThrustmasterPort)),
-        ButtonBoard(new Joystick(Constants.kButtonboardPort));
+        ButtonBoard(new Joystick(Constants.kButtonboardPort)),
+        XBox(new Joystick(Constants.kXBoxPort)),
+        ;
 
         public final Joystick joystick;
         Joysticks(Joystick joystick)                {this.joystick = joystick;}
@@ -47,7 +50,10 @@ public class DriverInteractionStatus extends StatusBase {
         ButtonBoard2_3  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton2_3),
         ButtonBoard3_1  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton3_1),
         ButtonBoard3_2  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton3_2),
-        ButtonBoard3_3  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton3_3);
+        ButtonBoard3_3  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton3_3),
+        
+        Release         (Joysticks.XBox, XBox.kAButton),
+        ;
 
         private final Joysticks joystick;
         private final int buttonID;
@@ -70,6 +76,12 @@ public class DriverInteractionStatus extends StatusBase {
         ThrustmasterSlider  (Thrustmaster.kSliderAxisID,    Thrustmaster.kSliderAxisInvert),
         ButtonBoardX        (Joysticks.ButtonBoard,         ButtonBoard3x3.kXAxisID),
         ButtonBoardY        (Joysticks.ButtonBoard,         ButtonBoard3x3.kYAxisID),
+        XBoxLeftX           (Joysticks.XBox,                XBox.kLeftXAxisID),
+        XBoxLeftY           (Joysticks.XBox,                XBox.kLeftYAxisID),
+        XBoxRightX          (Joysticks.XBox,                XBox.kRightXAxisID),
+        XBoxRightY          (Joysticks.XBox,                XBox.kRightYAxisID),
+        XBoxLeftTrigger     (Joysticks.XBox,                XBox.kLeftTriggerAxisID),
+        XBoxRightTrigger    (Joysticks.XBox,                XBox.kRightTriggerAxisID),
         ;
 
         private final Joysticks joystick;

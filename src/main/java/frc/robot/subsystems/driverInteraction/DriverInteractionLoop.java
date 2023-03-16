@@ -27,6 +27,7 @@ public class DriverInteractionLoop extends LoopBase {
 
     private static final double kExtendedThreshold = Units.degreesToRadians(15);
     private static final double kExtendedDrivePowerMultiplier = 0.5;
+    private static final double kAdjustmentDeadband = 0.1;
 
     private final Drive drive = Drive.getInstance();
     private final DriverAssist driverAssist = DriverAssist.getInstance();
@@ -57,6 +58,25 @@ public class DriverInteractionLoop extends LoopBase {
         leftPower *= (armStatus.getShoulderAngleRad() - Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
         rightPower *= (armStatus.getShoulderAngleRad() - Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
         return new DriveCommand(leftPower, rightPower);
+    }
+
+    private double[] generateAdjustments() {
+        double xAdjustment = 0;
+        double zAdjustment = 0;
+        double turretAdjustment = 0;
+        if(armStatus.getArmState() == ArmState.Adjust) {
+            xAdjustment = -DriverControlAxes.XBoxRightY.getAxis();
+            zAdjustment = DriverControlAxes.XBoxRightTrigger.getAxis() - DriverControlAxes.XBoxLeftTrigger.getAxis();
+            turretAdjustment = DriverControlAxes.XBoxLeftX.getAxis();
+
+            if(Math.abs(xAdjustment) <= kAdjustmentDeadband)
+                xAdjustment = 0;
+            if(Math.abs(zAdjustment) <= kAdjustmentDeadband)
+                zAdjustment = 0;
+            if(Math.abs(turretAdjustment) <= kAdjustmentDeadband)
+                turretAdjustment = 0;
+        }
+        return new double[]{xAdjustment,zAdjustment,turretAdjustment};
     }
 
     @Override
@@ -105,8 +125,10 @@ public class DriverInteractionLoop extends LoopBase {
 
         ArmCommand armCommand = new ArmCommand();
 
-        armCommand.setXAdjustment(DriverControlAxes.ButtonBoardX.getAxis());
-        armCommand.setZAdjustment(DriverControlAxes.ButtonBoardY.getAxis());
+        double[] adjustments = generateAdjustments();
+        armCommand.setXAdjustment(adjustments[0]);
+        armCommand.setZAdjustment(adjustments[1]);
+        armCommand.setTurretAdjustment(adjustments[2]);
 
         // Field orient buttons
         if(DriverControlButtons.ButtonBoard1_1.getRisingEdge())
@@ -162,9 +184,9 @@ public class DriverInteractionLoop extends LoopBase {
             break;
 
             case Adjust:
-                if(DriverControlButtons.MainAction.getRisingEdge() || armCommand.getTargetNode() == armStatus.getTargetNode())
+                if(DriverControlButtons.MainAction.getRisingEdge() || DriverControlButtons.Release.getRisingEdge())
                     armCommand.setArmState(ArmState.Release);
-                else if(armCommand.getTargetNode() != null)
+                else if(armCommand.getTargetNode() != null && armCommand.getTargetNode() != armStatus.getTargetNode())
                     armCommand.setArmState(ArmState.Extend);
                 else if(DriverControlButtons.Undo.getRisingEdge())
                     armCommand.setArmState(ArmState.Align);
