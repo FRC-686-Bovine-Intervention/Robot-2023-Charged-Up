@@ -15,6 +15,10 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.RobotConfiguration;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
 import frc.robot.lib.util.AdvantageUtil;
@@ -364,6 +368,15 @@ public class ArmStatus extends StatusBase {
         setCurrentArmPose(configuration.armPose);
     }
 
+    private final ShuffleboardTab tab = Shuffleboard.getTab("Arm");
+    private final GenericEntry stateEntry = tab.add("Arm State","not updating")                 .withPosition(0, 0).withSize(2, 1).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry targetPoseEntry = tab.add("Target Pose","not updating")          .withPosition(0, 1).withSize(1, 1).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry currentPoseEntry = tab.add("Current Pose","not updating")        .withPosition(1, 1).withSize(1, 1).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry trajectoryEntry = tab.add("Current Trajectory","not updating")   .withPosition(0, 2).withSize(2, 1).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry nodeEntry = tab.add("Target Node","not updating")                .withPosition(2, 0).withSize(1, 1).withWidget(BuiltInWidgets.kBooleanBox).getEntry();
+    private final GenericEntry lockedEntry = tab.add("Hold|Align Locked",false)                 .withPosition(2, 1).withSize(1, 1).withWidget(BuiltInWidgets.kBooleanBox).getEntry();
+    private final GenericEntry lockoutEntry = tab.add("Turret Lockout",false)                   .withPosition(9, 0).withSize(1, 1).withWidget(BuiltInWidgets.kBooleanBox).getEntry();
+    private final GenericEntry recheckLockoutEntry = tab.add("Recheck Turret Lockout",false)    .withPosition(8, 0).withSize(1, 1).withWidget(BuiltInWidgets.kToggleButton).getEntry();
     @Override
     public void updateInputs() {
         setCommand(arm.getCommand());
@@ -372,6 +385,11 @@ public class ArmStatus extends StatusBase {
         setElbowPotEncReading(HAL.getElbowPotEncoder().getReading());
         setShoulderFalconSensorPosition(HAL.getShoulderFalconSensorPosition());
         setElbowFalconSensorPosition(HAL.getElbowFalconSensorPosition());
+
+        if(recheckLockoutEntry.getBoolean(false)) {
+            setCheckedForTurretLockout(false);
+            recheckLockoutEntry.setBoolean(false);
+        }
     }
 
     @Override
@@ -404,7 +422,9 @@ public class ArmStatus extends StatusBase {
         command.recordOutputs(logger, prefix + "Command");
         arm.setCommand(new ArmCommand());
         logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
+        stateEntry.setString(armState != null ? armState.name() : "null");
         logger.recordOutput(prefix + "Hold|Align Locked", stateLocked);
+        lockedEntry.setBoolean(stateLocked);
 
         // Claw
         HAL.setClawGrabbing(clawGrabbing);
@@ -430,11 +450,15 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Turret/Encoder/Relative",     HAL.getTurretRelative());
         logger.recordOutput(prefix + "Turret/Encoder/Absolute",     HAL.getTurretAbsolute());
         logger.recordOutput(prefix + "Turret/Lockout",              getTurretLockout());
+        lockoutEntry.setBoolean(getTurretLockout());
 
         // Arm
         logger.recordOutput(prefix + "Arm/Target Pose",             targetArmPose != null ? targetArmPose.name() : "null");
+        targetPoseEntry.setString(targetArmPose != null ? targetArmPose.name() : "null");
         logger.recordOutput(prefix + "Arm/Current Pose",            currentArmPose != null ? currentArmPose.name() : "null");
+        currentPoseEntry.setString(currentArmPose != null ? currentArmPose.name() : "null");
         logger.recordOutput(prefix + "Arm/Target Node",             targetNode != null ? targetNode.name() : "null");
+        nodeEntry.setString(targetNode != null ? targetNode.name() : "null");
         logger.recordOutput(prefix + "Arm/Adjustments/Throttle/X",  xThrottle);
         logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Z",  zThrottle);
         logger.recordOutput(prefix + "Arm/Adjustments/X",           xAdjustment);
@@ -442,6 +466,7 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable",         internalDisable);
         logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable Reason",  internalDisableReason);
         logger.recordOutput(prefix + "Arm/Trajectory/Current Trajectory",   currentArmTrajectory != null ? "Start pose: " + currentArmTrajectory.getStartString() + " Final pose: " + currentArmTrajectory.getFinalString() : "null");
+        trajectoryEntry.setString(currentArmTrajectory != null ? "Start pose: " + currentArmTrajectory.getStartString() + " Final pose: " + currentArmTrajectory.getFinalString() : "null");
         AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta1", getCurrentTrajState().extractRowVector(0));
         AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta2", getCurrentTrajState().extractRowVector(1));
         AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Setpoint State/Theta1", getSetpointTrajState().extractRowVector(0));

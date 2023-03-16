@@ -20,7 +20,7 @@ public class VisionHAL {
     {
         if(RobotBase.isReal()) {
             cam1 = new PhotonCamera(kLeftCamName);
-            cam2 = null;//new PhotonCamera(kRightCamName);
+            cam2 = new PhotonCamera(kRightCamName);
         } else {
             cam1 = null;
             cam2 = null;

@@ -23,14 +23,10 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.Constants;
 import frc.robot.FieldDimensions;
 import frc.robot.lib.util.GeomUtil;
@@ -97,6 +93,7 @@ public class ArmLoop extends LoopBase {
 
     private Matrix<N2,N3> setpointState = null;     
     private Matrix<N2,N3> finalTrajectoryState = null;
+    private Matrix<N2,N3> prevManualAdjustmentState = null;
 
     private final PIDController shoulderPID = 
         new PIDController(
@@ -124,17 +121,17 @@ public class ArmLoop extends LoopBase {
     private final double shoulderMinAngleRad;
     private final double elbowMaxAngleRad;
     private final double elbowMinAngleRad;
-    public static final double kRelativeMaxAngleRad = Math.toRadians(145.0);    // don't let grabber smash into proximal arm
+    public static final double kRelativeMaxAngleRad = Math.toRadians(180.0 - 35.0);    // don't let grabber smash into proximal arm
     public static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
 
     private static final double kMaxElbowPlusClawLength = Units.inchesToMeters(26.0); 
-
+ 
     private final double xMinSetpoint = Units.inchesToMeters(0.0);
     private final double xMaxSetpoint;  // calculated
     private final double zMinSetpoint = Units.inchesToMeters(0.0);
     private final double zMaxSetpoint = Units.inchesToMeters(72.0); 
 
-    private final double manualMaxAdjustmentRangeInches = 12.0;
+    private final double manualMaxAdjustmentRangeInches = 18.0;
     private final double manualMaxAdjustmentRange = Units.inchesToMeters(manualMaxAdjustmentRangeInches);
 
     private final double manualMaxSpeedInchesPerSec = 12.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
@@ -199,14 +196,6 @@ public class ArmLoop extends LoopBase {
         setpointState = finalTrajectoryState;
     }
 
-
-    private final ShuffleboardTab tab = Shuffleboard.getTab("Arm");
-    private final GenericEntry kPEntry = tab.add("kP",0).withWidget(BuiltInWidgets.kTextView).getEntry();
-    private final GenericEntry kIEntry = tab.add("kI",0).withWidget(BuiltInWidgets.kTextView).getEntry();
-    private final GenericEntry kDEntry = tab.add("kD",0).withWidget(BuiltInWidgets.kTextView).getEntry();
-    private final GenericEntry setShoulderEntry =   tab.add("Set Shoulder",false)   .withWidget(BuiltInWidgets.kToggleButton).getEntry();
-    private final GenericEntry setElbowEntry =      tab.add("Set Elbow",false)      .withWidget(BuiltInWidgets.kToggleButton).getEntry();
-    private final GenericEntry resetLockoutEntry =  tab.add("Reset Turret Lockout",false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
     @Override
     protected void Update() {
         if(!status.getCheckedForTurretLockout()) {
@@ -217,26 +206,6 @@ public class ArmLoop extends LoopBase {
                   .setCheckedForTurretLockout(true);
         }
         checkArmCalibration();
-
-        if(setShoulderEntry.getBoolean(false))
-        {
-            turretPID.setP(kPEntry.getDouble(turretPID.getP()));
-            turretPID.setI(kIEntry.getDouble(turretPID.getI()));
-            turretPID.setD(kDEntry.getDouble(turretPID.getD()));
-            setShoulderEntry.setBoolean(false);
-        }
-        if(setElbowEntry.getBoolean(false))
-        {
-            elbowPID.setP(kPEntry.getDouble(elbowPID.getP()));
-            elbowPID.setI(kIEntry.getDouble(elbowPID.getI()));
-            elbowPID.setD(kDEntry.getDouble(elbowPID.getD()));
-            setElbowEntry.setBoolean(false);
-        }
-        if(resetLockoutEntry.getBoolean(false))
-        {
-            status.setCheckedForTurretLockout(false);
-            resetLockoutEntry.setBoolean(false);
-        }
 
         status.setTurretPIDPosition(turretPID.getSetpoint().position);
         status.setTurretPIDVelocity(turretPID.getSetpoint().velocity);
@@ -547,6 +516,10 @@ public class ArmLoop extends LoopBase {
                 if (theta.isPresent()) {
                     finalShoulderAngleRad = theta.get().get(0,0);
                     finalElbowAngleRad = theta.get().get(1,0);
+                } else {
+                    // if the arm can't reach the target node, reach out as far as we can
+                    finalShoulderAngleRad = -0.1;   // should reach to 60" extension, 53" above floor
+                    finalElbowAngleRad = 0.28;      // hardcoding to make sure we always get a result
                 }
             }
             // set outputs
@@ -589,6 +562,7 @@ public class ArmLoop extends LoopBase {
         // if internally disabled, set the setpoint to the current position (don't move when enabling)
         if (status.getInternalDisable()) {
             setpointState = ArmTrajectory.getFixedState(shoulderAngleRad, elbowAngleRad);
+            prevManualAdjustmentState = setpointState;
             status.setCurrentArmTrajectory(null);
         } else {
             // move arm!
@@ -597,6 +571,7 @@ public class ArmLoop extends LoopBase {
                 // follow trajectory
                 trajectoryTimer.start();                            // multiple calls to start will not restart timer
                 finalTrajectoryState = status.getCurrentArmTrajectory().getFinalState();
+                prevManualAdjustmentState = finalTrajectoryState;
 
                 // get setpoint from current trajectory
                 setpointState = status.getCurrentArmTrajectory().sample(trajectoryTimer.get());
@@ -630,6 +605,11 @@ public class ArmLoop extends LoopBase {
                 if (optTheta.isPresent()) {
                     Vector<N2> setpointTheta = optTheta.get();
                     setpointState = ArmTrajectory.getFixedState(setpointTheta);
+                    prevManualAdjustmentState = setpointState;
+                }
+                else {
+                    // if we can't hit this point, remain where we were last time
+                    setpointState = prevManualAdjustmentState;
                 }
             }
 

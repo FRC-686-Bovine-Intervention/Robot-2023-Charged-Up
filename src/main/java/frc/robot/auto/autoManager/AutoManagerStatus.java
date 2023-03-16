@@ -14,10 +14,7 @@ import frc.robot.RobotConfiguration;
 import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
 import frc.robot.auto.autoManager.AutoConfiguration.StartPosition;
 import frc.robot.auto.modes.AutoMode;
-import frc.robot.auto.modes.BlankAutoMode;
-import frc.robot.auto.modes.DriveStraightAuto;
 import frc.robot.auto.modes.OnePieceBalanceAuto;
-import frc.robot.auto.modes.RamseteFollowerTestAuto;
 import frc.robot.auto.modes.TwoPieceAuto;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -28,9 +25,9 @@ public class AutoManagerStatus extends StatusBase {
     public enum AutoModesEnum{
         OnePieceBalance("One Piece Balance", OnePieceBalanceAuto.class),
         TwoPiece("Two Piece", TwoPieceAuto.class),
-        DriveStraightAuto("Drive Straight Test", DriveStraightAuto.class),
-        RamseteFollowerTest("Ramsete Follower Test", RamseteFollowerTestAuto.class),
-        Blank("Blank Mode Test", BlankAutoMode.class),
+        // DriveStraightAuto("Drive Straight Test", DriveStraightAuto.class),
+        // RamseteFollowerTest("Ramsete Follower Test", RamseteFollowerTestAuto.class),
+        // Blank("Blank Mode Test", BlankAutoMode.class),
         ;
         public final String autoName;
         public final Class<? extends AutoMode> autoMode;
@@ -51,7 +48,7 @@ public class AutoManagerStatus extends StatusBase {
     private final SendableChooser<GamePiece> piece3Chooser = new SendableChooser<GamePiece>();
 
     private final ShuffleboardTab tab = Shuffleboard.getTab("Autonomous");
-    private final GenericEntry initialDelayEntry = tab.add("Initial Delay (Sec)", 0).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry initialDelayEntry = tab.add("Initial Delay (Sec)", 0).withWidget(BuiltInWidgets.kTextView).withPosition(0,3).withSize(2, 1).getEntry();
 
     private AutoManagerStatus()
     {
@@ -63,7 +60,7 @@ public class AutoManagerStatus extends StatusBase {
             else
                 modeChooser.addOption(mode.autoName, mode);
         }
-        tab.add("Auto Mode", modeChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
+        tab.add("Auto Mode", modeChooser).withPosition(0, 0).withSize(2, 1).withWidget(BuiltInWidgets.kComboBoxChooser);
         for(int i = 0; i < StartPosition.values().length; i++) {
             StartPosition pose = StartPosition.values()[i];
             if(i == 0)
@@ -71,7 +68,7 @@ public class AutoManagerStatus extends StatusBase {
             else
                 poseChooser.addOption(pose.name(), pose);
         }
-        tab.add("Starting Pose", poseChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
+        tab.add("Starting Pose", poseChooser).withPosition(0, 1).withSize(2, 1).withWidget(BuiltInWidgets.kComboBoxChooser);
         for(int i = 0; i < GamePiece.values().length; i++) {
             GamePiece piece = GamePiece.values()[i];
             if(i == 0) {
@@ -88,11 +85,11 @@ public class AutoManagerStatus extends StatusBase {
                 piece3Chooser.addOption(piece.name(), piece);
             }
         }
-        tab.add("Starting Piece", startingPieceChooser).withWidget(BuiltInWidgets.kComboBoxChooser);
-        tab.add("Staged Piece 0", piece0Chooser).withWidget(BuiltInWidgets.kComboBoxChooser);
-        tab.add("Staged Piece 1", piece1Chooser).withWidget(BuiltInWidgets.kComboBoxChooser);
-        tab.add("Staged Piece 2", piece2Chooser).withWidget(BuiltInWidgets.kComboBoxChooser);
-        tab.add("Staged Piece 3", piece3Chooser).withWidget(BuiltInWidgets.kComboBoxChooser);
+        tab.add("Starting Piece", startingPieceChooser).withPosition(0, 2).withSize(2, 1).withWidget(BuiltInWidgets.kComboBoxChooser);
+        tab.add("Staged Piece 0", piece0Chooser).withPosition(2, 3).withSize(1, 1).withWidget(BuiltInWidgets.kComboBoxChooser);
+        tab.add("Staged Piece 1", piece1Chooser).withPosition(2, 2).withSize(1, 1).withWidget(BuiltInWidgets.kComboBoxChooser);
+        tab.add("Staged Piece 2", piece2Chooser).withPosition(2, 1).withSize(1, 1).withWidget(BuiltInWidgets.kComboBoxChooser);
+        tab.add("Staged Piece 3", piece3Chooser).withPosition(2, 0).withSize(1, 1).withWidget(BuiltInWidgets.kComboBoxChooser);
     }
 
     private double NT_InitialDelay;

@@ -45,7 +45,7 @@ class ArmPresetPoses:
             "defense": {"fileIdx": ArmPresetEnum.DEFENSE, "theta1": -2.282, "theta2": 0.000},
             "intake": {"fileIdx": ArmPresetEnum.INTAKE, "theta1": -2.048, "theta2": -0.524},
             "double_substation": {"fileIdx": ArmPresetEnum.DOUBLE_SUBSTATION, "theta1": -0.603, "theta2": 0.472},
-            "score_hybrid": {"fileIdx": ArmPresetEnum.SCORE_HYBRID, "theta1": -2.000, "theta2": 0.000},
+            "score_hybrid": {"fileIdx": ArmPresetEnum.SCORE_HYBRID, "theta1": -2.100, "theta2": 0.000},
             "score_mid_cube": {"fileIdx": ArmPresetEnum.SCORE_MID_CUBE, "theta1": -1.453, "theta2": 0.400},
             "score_high_cube": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CUBE, "theta1": -0.613, "theta2": 0.398},
             "score_mid_cone": {"fileIdx": ArmPresetEnum.SCORE_MID_CONE, "theta1": -1.289, "theta2": 1.049},
