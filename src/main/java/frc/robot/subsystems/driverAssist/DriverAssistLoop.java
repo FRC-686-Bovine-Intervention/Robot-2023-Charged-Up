@@ -102,21 +102,21 @@ public class DriverAssistLoop extends LoopBase {
             break;
 
             case AutoDrive:
-                if(prevState != DriverAssistState.AutoDrive)
-                {
-                    ArrayList<Pose2d> waypoints = new ArrayList<Pose2d>();
-                    waypoints.add(OdometryStatus.getInstance().getRobotPose());
-                    waypoints.add(OdometryStatus.getInstance().getRobotPose().plus(new Transform2d(new Translation2d(2,0), new Rotation2d())));
-                    waypoints.add(newCommand.getTargetPose());
-                    TrajectoryConfig trajectoryConfig = new TrajectoryConfig(1.0, 2.0);
+                // if(prevState != DriverAssistState.AutoDrive)
+                // {
+                //     ArrayList<Pose2d> waypoints = new ArrayList<Pose2d>();
+                //     waypoints.add(OdometryStatus.getInstance().getRobotPose());
+                //     waypoints.add(OdometryStatus.getInstance().getRobotPose().plus(new Transform2d(new Translation2d(2,0), new Rotation2d())));
+                //     waypoints.add(newCommand.getTargetPose());
+                //     TrajectoryConfig trajectoryConfig = new TrajectoryConfig(1.0, 2.0);
                     
-                    status.setTrajectory(TrajectoryGenerator.generateTrajectory(waypoints, trajectoryConfig));
+                //     status.setTrajectory(TrajectoryGenerator.generateTrajectory(waypoints, trajectoryConfig));
 
-                    ramseteFollower = new RamseteFollower(ramseteController).setTrajectory(status.getTrajectory());
-                }
+                //     ramseteFollower = new RamseteFollower(ramseteController).setTrajectory(status.getTrajectory());
+                // }
 
-                // TODO: actually set drive command
-                status.setDriveCommand(ramseteFollower.getDriveCommand());
+                // // TODO: actually set drive command
+                // status.setDriveCommand(ramseteFollower.getDriveCommand());
             break;
 
             case AutoIntake:

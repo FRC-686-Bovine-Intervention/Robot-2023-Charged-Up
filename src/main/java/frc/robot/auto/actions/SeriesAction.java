@@ -22,6 +22,7 @@ public class SeriesAction extends Action {
 
     @Override
     protected void done() {
+        actionIndex = Math.min(actionIndex, actions.length - 1);
         if(!actions[actionIndex].getEvaluatedDone())
             actions[actionIndex].done();
     }

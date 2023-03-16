@@ -1,6 +1,8 @@
 package frc.robot.subsystems.driverInteraction;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmCommand;
 import frc.robot.subsystems.arm.ArmStatus;
@@ -22,6 +24,10 @@ import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
 public class DriverInteractionLoop extends LoopBase {
     private static DriverInteractionLoop instance;
     public static DriverInteractionLoop getInstance() {if(instance == null){instance = new DriverInteractionLoop();}return instance;}
+
+    private static final double kExtendedThreshold = Units.degreesToRadians(15);
+    private static final double kExtendedDrivePowerMultiplier = 0.5;
+    private static final double kAdjustmentDeadband = 0.1;
 
     private final Drive drive = Drive.getInstance();
     private final DriverAssist driverAssist = DriverAssist.getInstance();
@@ -49,7 +55,28 @@ public class DriverInteractionLoop extends LoopBase {
 
         double leftPower = throttle+turn;
         double rightPower = throttle-turn;
+        leftPower *= (armStatus.getShoulderAngleRad() - Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
+        rightPower *= (armStatus.getShoulderAngleRad() - Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
         return new DriveCommand(leftPower, rightPower);
+    }
+
+    private double[] generateAdjustments() {
+        double xAdjustment = 0;
+        double zAdjustment = 0;
+        double turretAdjustment = 0;
+        if(armStatus.getArmState() == ArmState.Adjust) {
+            xAdjustment = -DriverControlAxes.XBoxRightY.getAxis();
+            zAdjustment = DriverControlAxes.XBoxRightTrigger.getAxis() - DriverControlAxes.XBoxLeftTrigger.getAxis();
+            turretAdjustment = DriverControlAxes.XBoxLeftX.getAxis();
+
+            if(Math.abs(xAdjustment) <= kAdjustmentDeadband)
+                xAdjustment = 0;
+            if(Math.abs(zAdjustment) <= kAdjustmentDeadband)
+                zAdjustment = 0;
+            if(Math.abs(turretAdjustment) <= kAdjustmentDeadband)
+                turretAdjustment = 0;
+        }
+        return new double[]{xAdjustment,zAdjustment,turretAdjustment};
     }
 
     @Override
@@ -98,27 +125,30 @@ public class DriverInteractionLoop extends LoopBase {
 
         ArmCommand armCommand = new ArmCommand();
 
-        // armCommand.setXAdjustment(DriverControlAxes.ThrustmasterX.getAxis());
-        // armCommand.setZAdjustment(DriverControlAxes.ThrustmasterY.getAxis());
+        double[] adjustments = generateAdjustments();
+        armCommand.setXAdjustment(adjustments[0]);
+        armCommand.setZAdjustment(adjustments[1]);
+        armCommand.setTurretAdjustment(adjustments[2]);
 
+        // Field orient buttons
         if(DriverControlButtons.ButtonBoard1_1.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.BottomLeft);
+            armCommand.setTargetNode(DriverStation.getAlliance() == Alliance.Red ? NodeEnum.TopWall : NodeEnum.TopLoading);
         else if(DriverControlButtons.ButtonBoard1_2.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.BottomCenter);
+            armCommand.setTargetNode(NodeEnum.TopCenter);
         else if(DriverControlButtons.ButtonBoard1_3.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.BottomRight);
+            armCommand.setTargetNode(DriverStation.getAlliance() == Alliance.Red ? NodeEnum.TopLoading : NodeEnum.TopWall);
         else if(DriverControlButtons.ButtonBoard2_1.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.MiddleLeft);
+            armCommand.setTargetNode(DriverStation.getAlliance() == Alliance.Red ? NodeEnum.MiddleWall : NodeEnum.MiddleLoading);
         else if(DriverControlButtons.ButtonBoard2_2.getRisingEdge())
             armCommand.setTargetNode(NodeEnum.MiddleCenter);
         else if(DriverControlButtons.ButtonBoard2_3.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.MiddleRight);
+            armCommand.setTargetNode(DriverStation.getAlliance() == Alliance.Red ? NodeEnum.MiddleLoading : NodeEnum.MiddleWall);
         else if(DriverControlButtons.ButtonBoard3_1.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.TopLeft);
+            armCommand.setTargetNode(DriverStation.getAlliance() == Alliance.Red ? NodeEnum.BottomWall : NodeEnum.BottomLoading);
         else if(DriverControlButtons.ButtonBoard3_2.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.TopCenter);
+            armCommand.setTargetNode(NodeEnum.BottomCenter);
         else if(DriverControlButtons.ButtonBoard3_3.getRisingEdge())
-            armCommand.setTargetNode(NodeEnum.TopRight);
+            armCommand.setTargetNode(DriverStation.getAlliance() == Alliance.Red ? NodeEnum.BottomLoading : NodeEnum.BottomWall);
 
         switch(ArmStatus.getInstance().getArmState())
         {
@@ -154,9 +184,9 @@ public class DriverInteractionLoop extends LoopBase {
             break;
 
             case Adjust:
-                if(DriverControlButtons.MainAction.getRisingEdge() || armCommand.getTargetNode() == armStatus.getTargetNode())
+                if(DriverControlButtons.MainAction.getRisingEdge() || DriverControlButtons.Release.getRisingEdge())
                     armCommand.setArmState(ArmState.Release);
-                else if(armCommand.getTargetNode() != null)
+                else if(armCommand.getTargetNode() != null && armCommand.getTargetNode() != armStatus.getTargetNode())
                     armCommand.setArmState(ArmState.Extend);
                 else if(DriverControlButtons.Undo.getRisingEdge())
                     armCommand.setArmState(ArmState.Align);

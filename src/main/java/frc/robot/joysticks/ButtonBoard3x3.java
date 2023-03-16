@@ -1,6 +1,9 @@
 package frc.robot.joysticks;
 
 public class ButtonBoard3x3 {
+    public static final int kXAxisID = 0;
+    public static final int kYAxisID = 1;
+
     public static final int kButton1_1 = 7;
     public static final int kButton1_2 = 8;
     public static final int kButton1_3 = 9;

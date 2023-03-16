@@ -15,8 +15,13 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import frc.robot.AdvantageUtil;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import frc.robot.RobotConfiguration;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
+import frc.robot.lib.util.AdvantageUtil;
 import frc.robot.subsystems.framework.StatusBase;
 import frc.robot.subsystems.odometry.OdometryStatus;
 
@@ -48,15 +53,15 @@ public class ArmStatus extends StatusBase {
     }
 
     public enum NodeEnum {
-        BottomLeft      (0,0,ArmPose.Preset.SCORE_HYBRID, false),
+        BottomWall      (0,0,ArmPose.Preset.SCORE_HYBRID, false),
         BottomCenter    (1,0,ArmPose.Preset.SCORE_HYBRID, false),
-        BottomRight     (2,0,ArmPose.Preset.SCORE_HYBRID, false),
-        MiddleLeft      (0,1,ArmPose.Preset.SCORE_MID_CONE, true),
+        BottomLoading   (2,0,ArmPose.Preset.SCORE_HYBRID, false),
+        MiddleWall      (0,1,ArmPose.Preset.SCORE_MID_CONE, true),
         MiddleCenter    (1,1,ArmPose.Preset.SCORE_MID_CUBE, false),
-        MiddleRight     (2,1,ArmPose.Preset.SCORE_MID_CONE, true),
-        TopLeft         (0,2,ArmPose.Preset.SCORE_HIGH_CONE, true),
+        MiddleLoading   (2,1,ArmPose.Preset.SCORE_MID_CONE, true),
+        TopWall         (0,2,ArmPose.Preset.SCORE_HIGH_CONE, true),
         TopCenter       (1,2,ArmPose.Preset.SCORE_HIGH_CUBE, false),
-        TopRight        (2,2,ArmPose.Preset.SCORE_HIGH_CONE, true);
+        TopLoading      (2,2,ArmPose.Preset.SCORE_HIGH_CONE, true);
 
         public static final NodeEnum DEFAULT = MiddleCenter;
 
@@ -110,7 +115,7 @@ public class ArmStatus extends StatusBase {
 
     private double      targetTurretAngleDeg;
     public double       getTargetTurretAngleDeg()              {return targetTurretAngleDeg;}
-    public ArmStatus setTargetTurretAngleDeg(double angle)  {targetTurretAngleDeg = angle; return this;}
+    public ArmStatus    setTargetTurretAngleDeg(double angle)  {targetTurretAngleDeg = angle; return this;}
 
     private double      turretPower;
     public double       getTurretPower()                    {return turretPower;}
@@ -119,6 +124,14 @@ public class ArmStatus extends StatusBase {
     private double      turretPIDOutput;
     public double       getTurretPIDOutput()                        {return turretPIDOutput;}
     protected ArmStatus setTurretPIDOutput(double turretPIDOutput)  {this.turretPIDOutput = turretPIDOutput; return this;}
+
+    private double      turretPIDPosition;
+    public double       getTurretPIDPosition()                          {return turretPIDPosition;}
+    protected ArmStatus setTurretPIDPosition(double turretPIDPosition)  {this.turretPIDPosition = turretPIDPosition; return this;}
+
+    private double      turretPIDVelocity;
+    public double       getTurretPIDVelocity()                          {return turretPIDVelocity;}
+    protected ArmStatus setTurretPIDVelocity(double turretPIDVelocity)  {this.turretPIDVelocity = turretPIDVelocity; return this;}
 
     private MotorControlMode    turretControlMode = MotorControlMode.PercentOutput;
     public MotorControlMode     getTurretControlMode()                                      {return turretControlMode;}
@@ -178,11 +191,15 @@ public class ArmStatus extends StatusBase {
     private double          zThrottle;
     public double           getZThrottle()                  {return zThrottle;}
     protected ArmStatus     setZThrottle(double zThrottle)  {this.zThrottle = zThrottle; return this;}
-
+    
     private double          zAdjustment; // height
     public double           getZAdjustment()                        {return zAdjustment;}
     protected ArmStatus     setZAdjustment(double zAdjustment)      {this.zAdjustment = zAdjustment; return this;}
     protected ArmStatus     incrementZAdjustment(double increment)  {this.zAdjustment += increment; return this;}
+
+    private double          turretThrottle;
+    public double           getTurretThrottle()                         {return turretThrottle;}
+    protected ArmStatus     setTurretThrottle(double turretThrottle)    {this.turretThrottle = turretThrottle; return this;}
 
     // Shoulder
     private PotAndEncoder.Reading   shoulderPotEncReading = new PotAndEncoder.Reading(0,0,0);
@@ -346,6 +363,21 @@ public class ArmStatus extends StatusBase {
     protected ArmStatus setClawGrabbing(boolean clawGrabbing)   {this.clawGrabbing = clawGrabbing; return this;}
 
     @Override
+    protected void loadConfiguration(RobotConfiguration configuration) {
+        setArmState(configuration.armState);
+        setCurrentArmPose(configuration.armPose);
+    }
+
+    private final ShuffleboardTab tab = Shuffleboard.getTab("Arm");
+    private final GenericEntry stateEntry = tab.add("Arm State","not updating")                 .withPosition(0, 0).withSize(2, 1).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry targetPoseEntry = tab.add("Target Pose","not updating")          .withPosition(0, 1).withSize(1, 1).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry currentPoseEntry = tab.add("Current Pose","not updating")        .withPosition(1, 1).withSize(1, 1).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry trajectoryEntry = tab.add("Current Trajectory","not updating")   .withPosition(0, 2).withSize(2, 1).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private final GenericEntry nodeEntry = tab.add("Target Node","not updating")                .withPosition(2, 0).withSize(1, 1).withWidget(BuiltInWidgets.kBooleanBox).getEntry();
+    private final GenericEntry lockedEntry = tab.add("Hold|Align Locked",false)                 .withPosition(2, 1).withSize(1, 1).withWidget(BuiltInWidgets.kBooleanBox).getEntry();
+    private final GenericEntry lockoutEntry = tab.add("Turret Lockout",false)                   .withPosition(9, 0).withSize(1, 1).withWidget(BuiltInWidgets.kBooleanBox).getEntry();
+    private final GenericEntry recheckLockoutEntry = tab.add("Recheck Turret Lockout",false)    .withPosition(8, 0).withSize(1, 1).withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    @Override
     public void updateInputs() {
         setCommand(arm.getCommand());
         setTurretAngleDeg(HAL.getTurretAngleDeg());
@@ -353,6 +385,11 @@ public class ArmStatus extends StatusBase {
         setElbowPotEncReading(HAL.getElbowPotEncoder().getReading());
         setShoulderFalconSensorPosition(HAL.getShoulderFalconSensorPosition());
         setElbowFalconSensorPosition(HAL.getElbowFalconSensorPosition());
+
+        if(recheckLockoutEntry.getBoolean(false)) {
+            setCheckedForTurretLockout(false);
+            recheckLockoutEntry.setBoolean(false);
+        }
     }
 
     @Override
@@ -383,8 +420,11 @@ public class ArmStatus extends StatusBase {
     public void processOutputs(Logger logger, String prefix) {
         // Generic
         command.recordOutputs(logger, prefix + "Command");
+        arm.setCommand(new ArmCommand());
         logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
+        stateEntry.setString(armState != null ? armState.name() : "null");
         logger.recordOutput(prefix + "Hold|Align Locked", stateLocked);
+        lockedEntry.setBoolean(stateLocked);
 
         // Claw
         HAL.setClawGrabbing(clawGrabbing);
@@ -400,7 +440,9 @@ public class ArmStatus extends StatusBase {
         }
 
         logger.recordOutput(prefix + "Turret/Power",                getTurretPower());
-        logger.recordOutput(prefix + "Turret/PID Output",           getTurretPIDOutput());
+        logger.recordOutput(prefix + "Turret/PID/Output",           getTurretPIDOutput());
+        logger.recordOutput(prefix + "Turret/PID/Position",         getTurretPIDPosition());
+        logger.recordOutput(prefix + "Turret/PID/Velocity",         getTurretPIDVelocity());
         logger.recordOutput(prefix + "Turret/Control Mode",         turretControlMode != null ? turretControlMode.name() : "null");
         logger.recordOutput(prefix + "Turret/Neutral Mode",         turretNeutralMode != null ? turretNeutralMode.name() : "null");
         logger.recordOutput(prefix + "Turret/Position (deg)",       getTurretAngleDeg());
@@ -408,11 +450,15 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Turret/Encoder/Relative",     HAL.getTurretRelative());
         logger.recordOutput(prefix + "Turret/Encoder/Absolute",     HAL.getTurretAbsolute());
         logger.recordOutput(prefix + "Turret/Lockout",              getTurretLockout());
+        lockoutEntry.setBoolean(getTurretLockout());
 
         // Arm
         logger.recordOutput(prefix + "Arm/Target Pose",             targetArmPose != null ? targetArmPose.name() : "null");
+        targetPoseEntry.setString(targetArmPose != null ? targetArmPose.name() : "null");
         logger.recordOutput(prefix + "Arm/Current Pose",            currentArmPose != null ? currentArmPose.name() : "null");
+        currentPoseEntry.setString(currentArmPose != null ? currentArmPose.name() : "null");
         logger.recordOutput(prefix + "Arm/Target Node",             targetNode != null ? targetNode.name() : "null");
+        nodeEntry.setString(targetNode != null ? targetNode.name() : "null");
         logger.recordOutput(prefix + "Arm/Adjustments/Throttle/X",  xThrottle);
         logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Z",  zThrottle);
         logger.recordOutput(prefix + "Arm/Adjustments/X",           xAdjustment);
@@ -420,6 +466,7 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable",         internalDisable);
         logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable Reason",  internalDisableReason);
         logger.recordOutput(prefix + "Arm/Trajectory/Current Trajectory",   currentArmTrajectory != null ? "Start pose: " + currentArmTrajectory.getStartString() + " Final pose: " + currentArmTrajectory.getFinalString() : "null");
+        trajectoryEntry.setString(currentArmTrajectory != null ? "Start pose: " + currentArmTrajectory.getStartString() + " Final pose: " + currentArmTrajectory.getFinalString() : "null");
         AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta1", getCurrentTrajState().extractRowVector(0));
         AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta2", getCurrentTrajState().extractRowVector(1));
         AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Setpoint State/Theta1", getSetpointTrajState().extractRowVector(0));

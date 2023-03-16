@@ -5,6 +5,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkMax.IdleMode;
 
+import frc.robot.RobotConfiguration;
 import frc.robot.subsystems.framework.StatusBase;
 
 public class IntakeStatus extends StatusBase {
@@ -94,4 +95,5 @@ public class IntakeStatus extends StatusBase {
     }
 
     @Override protected void processTable() {}
+    @Override protected void loadConfiguration(RobotConfiguration configuration) {}
 }

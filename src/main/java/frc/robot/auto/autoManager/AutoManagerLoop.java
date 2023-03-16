@@ -3,13 +3,9 @@ package frc.robot.auto.autoManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.auto.actions.Action;
-import frc.robot.auto.actions.RamseteFollowerAction;
-import frc.robot.subsystems.arm.Arm;
-import frc.robot.subsystems.arm.ArmStatus;
-import frc.robot.subsystems.arm.ArmStatus.ArmState;
+import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
 import frc.robot.subsystems.framework.LoopBase;
-import frc.robot.subsystems.odometry.Odometry;
-import frc.robot.subsystems.odometry.OdometryCommand;
+import frc.robot.subsystems.framework.SubsystemController;
 
 public class AutoManagerLoop extends LoopBase {
     private static AutoManagerLoop instance;
@@ -29,20 +25,17 @@ public class AutoManagerLoop extends LoopBase {
             status.setCurrentAutoMode(status.getNewAutomode())
                   .setAutoRunning(true)
                   .setActionIndex(-1);
-            Odometry.getInstance().setCommand(new OdometryCommand().setResetPose(status.getCurrentAutoMode().initialPose));
-            ArmStatus.getInstance().setCurrentArmPose(status.getCurrentAutoMode().initialArmPose)
-                                   .setArmState(ArmState.Hold);
+            SubsystemController.getInstance().loadConfiguration(status.getCurrentAutoMode().startConfiguration);
             autoTimer.start();
         }
         if(status.getActionIndex() < 0) {
-            if(autoTimer.hasElapsed(status.getInitialDelay()))
+            if(autoTimer.hasElapsed(status.getAutoConfiguration().initialDelay))
                 status.setActionIndex(0);
         } else {
             checkAutoFinished();
             if(!status.getAutoRunning())
                 return;
             Action action = status.getCurrentAutoMode().actionList.get(status.getActionIndex());
-            status.setActionTrajectory(action.getClass() == RamseteFollowerAction.class ? ((RamseteFollowerAction)action).controller.getTrajectory() : null);
             action.onLoop();
             if(action.getEvaluatedDone()) {
                 status.incrementActionIndex(1);
@@ -60,11 +53,18 @@ public class AutoManagerLoop extends LoopBase {
 
     @Override
     protected void Disabled() {
-        // if(status.getSelectedAutoMode() != status.getNT_SelectedAutoMode()) {
-        //     status.setCurrentAutoMode(status.getNewAutomode());
-        // }
-        status.setInitialDelay(status.getNT_InitialDelay())
-              .setSelectedAutoMode(status.getNT_SelectedAutoMode());
+        status.setSelectedAutoMode(status.getNT_SelectedAutoMode());
+        status.setAutoConfiguration(new AutoConfiguration(
+            status.getNT_StartingPose(),
+            status.getNT_StartingPiece(),
+            new GamePiece[]{
+                status.getNT_StagedPiece0(),
+                status.getNT_StagedPiece1(),
+                status.getNT_StagedPiece2(),
+                status.getNT_StagedPiece3()
+            },
+            status.getNT_InitialDelay()
+        ));
     }
     @Override
     protected void Update() {
