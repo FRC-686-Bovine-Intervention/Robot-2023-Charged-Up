@@ -95,6 +95,7 @@ public class ArmLoop extends LoopBase {
 
     private Matrix<N2,N3> setpointState = null;     
     private Matrix<N2,N3> finalTrajectoryState = null;
+    private Matrix<N2,N3> prevManualAdjustmentState = null;
 
     private final PIDController shoulderPID = 
         new PIDController(
@@ -122,20 +123,20 @@ public class ArmLoop extends LoopBase {
     private final double shoulderMinAngleRad;
     private final double elbowMaxAngleRad;
     private final double elbowMinAngleRad;
-    public static final double kRelativeMaxAngleRad = Math.toRadians(145.0);    // don't let grabber smash into proximal arm
+    public static final double kRelativeMaxAngleRad = Math.toRadians(180.0 - 35.0);    // don't let grabber smash into proximal arm
     public static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
 
     private static final double kMaxElbowPlusClawLength = Units.inchesToMeters(26.0); 
-
+ 
     private final double xMinSetpoint = Units.inchesToMeters(0.0);
     private final double xMaxSetpoint;  // calculated
     private final double zMinSetpoint = Units.inchesToMeters(0.0);
     private final double zMaxSetpoint = Units.inchesToMeters(72.0); 
 
-    private final double manualMaxAdjustmentRangeInches = 12.0;
+    private final double manualMaxAdjustmentRangeInches = 18.0;
     private final double manualMaxAdjustmentRange = Units.inchesToMeters(manualMaxAdjustmentRangeInches);
 
-    private final double manualMaxSpeedInchesPerSec = 6.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
+    private final double manualMaxSpeedInchesPerSec = 12.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
     private final double manualMaxSpeedMetersPerSec = Units.inchesToMeters(manualMaxSpeedInchesPerSec);
     private final double manualMaxSpeedDegreesPerSec = 10.0;  // speed the turret is allowed to manually spin
 
@@ -582,6 +583,7 @@ public class ArmLoop extends LoopBase {
         // if internally disabled, set the setpoint to the current position (don't move when enabling)
         if (status.getInternalDisable()) {
             setpointState = ArmTrajectory.getFixedState(shoulderAngleRad, elbowAngleRad);
+            prevManualAdjustmentState = setpointState;
             status.setCurrentArmTrajectory(null);
         } else {
             // move arm!
@@ -590,6 +592,7 @@ public class ArmLoop extends LoopBase {
                 // follow trajectory
                 trajectoryTimer.start();                            // multiple calls to start will not restart timer
                 finalTrajectoryState = status.getCurrentArmTrajectory().getFinalState();
+                prevManualAdjustmentState = finalTrajectoryState;
 
                 // get setpoint from current trajectory
                 setpointState = status.getCurrentArmTrajectory().sample(trajectoryTimer.get());
@@ -623,6 +626,11 @@ public class ArmLoop extends LoopBase {
                 if (optTheta.isPresent()) {
                     Vector<N2> setpointTheta = optTheta.get();
                     setpointState = ArmTrajectory.getFixedState(setpointTheta);
+                    prevManualAdjustmentState = setpointState;
+                }
+                else {
+                    // if we can't hit this point, remain where we were last time
+                    setpointState = prevManualAdjustmentState;
                 }
             }
 
