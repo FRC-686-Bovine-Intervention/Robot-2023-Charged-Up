@@ -41,15 +41,15 @@ class ArmPresetPoses:
             # "score_mid_cone": {"fileIdx": ArmPresetEnum.SCORE_MID_CUBE, "xy": (np.array([34, 37])).tolist()},
             # "score_high_cone": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CUBE, "xy": (np.array([52, 48.5])).tolist()}
 
-            "auto_start": {"fileIdx": ArmPresetEnum.AUTO_START, "theta1": -2.381, "theta2": 0.308},
+            "auto_start": {"fileIdx": ArmPresetEnum.AUTO_START, "theta1": -2.340, "theta2": -0.422},
             "defense": {"fileIdx": ArmPresetEnum.DEFENSE, "theta1": -2.282, "theta2": 0.000},
             "intake": {"fileIdx": ArmPresetEnum.INTAKE, "theta1": -2.048, "theta2": -0.524},
             "double_substation": {"fileIdx": ArmPresetEnum.DOUBLE_SUBSTATION, "theta1": -0.603, "theta2": 0.472},
             "score_hybrid": {"fileIdx": ArmPresetEnum.SCORE_HYBRID, "theta1": -2.100, "theta2": 0.000},
-            "score_mid_cube": {"fileIdx": ArmPresetEnum.SCORE_MID_CUBE, "theta1": -1.453, "theta2": 0.400},
-            "score_high_cube": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CUBE, "theta1": -0.613, "theta2": 0.398},
-            "score_mid_cone": {"fileIdx": ArmPresetEnum.SCORE_MID_CONE, "theta1": -1.289, "theta2": 1.049},
-            "score_high_cone": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CONE, "theta1": -0.528, "theta2": 0.815}
+            "score_mid_cube": {"fileIdx": ArmPresetEnum.SCORE_MID_CUBE, "theta1": -1.411, "theta2": 0.485},
+            "score_high_cube": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CUBE, "theta1": -0.679, "theta2": 0.442},
+            "score_mid_cone": {"fileIdx": ArmPresetEnum.SCORE_MID_CONE, "theta1": -1.300, "theta2": 0.938},
+            "score_high_cone": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CONE, "theta1": -0.487, "theta2": 0.852}
         }
 
         return preset
