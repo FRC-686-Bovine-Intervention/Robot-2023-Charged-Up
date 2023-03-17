@@ -65,9 +65,9 @@ public class DriverInteractionLoop extends LoopBase {
         double zAdjustment = 0;
         double turretAdjustment = 0;
         if(armStatus.getArmState() == ArmState.Adjust) {
-            xAdjustment = -DriverControlAxes.XBoxRightY.getAxis();
+            xAdjustment = -DriverControlAxes.XBoxLeftY.getAxis();
             zAdjustment = DriverControlAxes.XBoxRightTrigger.getAxis() - DriverControlAxes.XBoxLeftTrigger.getAxis();
-            turretAdjustment = DriverControlAxes.XBoxLeftX.getAxis();
+            turretAdjustment = DriverControlAxes.XBoxRightX.getAxis();
 
             if(Math.abs(xAdjustment) <= kAdjustmentDeadband)
                 xAdjustment = 0;
@@ -162,11 +162,6 @@ public class DriverInteractionLoop extends LoopBase {
                     armCommand.setArmState(ArmState.Grab);
             break;
 
-            case Grab:
-                // if(DriverControlButtons.MainAction.getRisingEdge())
-                //     armCommand.setArmState(ArmState.Hold);
-            break;
-
             case Hold:
                 if(DriverControlButtons.MainAction.getRisingEdge())
                     armCommand.setArmState(ArmState.Align);
@@ -188,7 +183,7 @@ public class DriverInteractionLoop extends LoopBase {
                     armCommand.setArmState(ArmState.Release);
                 else if(armCommand.getTargetNode() != null && armCommand.getTargetNode() != armStatus.getTargetNode())
                     armCommand.setArmState(ArmState.Extend);
-                else if(DriverControlButtons.Undo.getRisingEdge())
+                else if(DriverControlButtons.Undo.getRisingEdge() || DriverControlButtons.SecondUndo.getRisingEdge())
                     armCommand.setArmState(ArmState.Align);
             break;
             

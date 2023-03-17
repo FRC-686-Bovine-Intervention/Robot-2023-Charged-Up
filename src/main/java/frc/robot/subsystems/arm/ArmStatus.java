@@ -141,6 +141,8 @@ public class ArmStatus extends StatusBase {
     public NeutralMode  getTurretNeutralMode()                              {return turretNeutralMode;}
     protected ArmStatus setTurretNeutralMode(NeutralMode turretNeutralMode) {this.turretNeutralMode = turretNeutralMode; return this;}
 
+    private static final double kTurretClockwiseLockoutThreshold = -90;
+    private static final double kTurretCounterLockoutThreshold = 90;
     private boolean     turretLockout;
     public boolean      getTurretLockout()                      {return turretLockout;}
     protected ArmStatus setTurretLockout(boolean turretLockout) {this.turretLockout = turretLockout; return this;}
@@ -386,8 +388,17 @@ public class ArmStatus extends StatusBase {
         setShoulderFalconSensorPosition(HAL.getShoulderFalconSensorPosition());
         setElbowFalconSensorPosition(HAL.getElbowFalconSensorPosition());
 
+        if(!getCheckedForTurretLockout()) {
+            setTurretLockout(
+                      getTurretAngleDeg() <= kTurretClockwiseLockoutThreshold
+                                                 ||
+                      getTurretAngleDeg() >= kTurretCounterLockoutThreshold)
+                  .setCheckedForTurretLockout(true);
+        }
+
         if(recheckLockoutEntry.getBoolean(false)) {
             setCheckedForTurretLockout(false);
+            HAL.syncTurretEncoders();
             recheckLockoutEntry.setBoolean(false);
         }
     }

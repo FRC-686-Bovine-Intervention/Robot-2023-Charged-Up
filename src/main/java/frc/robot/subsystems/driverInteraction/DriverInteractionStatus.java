@@ -52,7 +52,8 @@ public class DriverInteractionStatus extends StatusBase {
         ButtonBoard3_2  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton3_2),
         ButtonBoard3_3  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton3_3),
         
-        Release         (Joysticks.XBox, XBox.kAButton),
+        Release         (Joysticks.XBox, XBox.kBButton),
+        SecondUndo      (Joysticks.XBox, XBox.kXButton),
         ;
 
         private final Joysticks joystick;

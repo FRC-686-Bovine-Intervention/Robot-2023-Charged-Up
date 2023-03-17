@@ -109,13 +109,7 @@ public class ArmHAL {
             // set quadrature encoder to absolute encoder value
             turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kRelativePIDId, 0);
             turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, kAbsolutePIDId, 0);
-            // if (turretMotor.getSelectedSensorPosition(kRelativePIDId) == 0) { // Reset relative to absolute only on power on
-            turretMotor.setSelectedSensorPosition(
-                ((turretMotor.getSelectedSensorPosition(kAbsolutePIDId) - kTurretEncoderZeroingCalib + (4096/2)) % (4096)) - (4096/2), 
-                kRelativePIDId, 
-                0);
-                // turretMotor.getSensorCollection().syncQuadratureWithPulseWidth(0, 0, true);
-            // }
+            syncTurretEncoders();
             // enable turret soft limits
             turretMotor.configForwardSoftLimitThreshold(+kTurretSoftLimitDeg / kTurretEncoderUnitsToDegrees);
             turretMotor.configReverseSoftLimitThreshold(-kTurretSoftLimitDeg / kTurretEncoderUnitsToDegrees);
@@ -173,6 +167,16 @@ public class ArmHAL {
     public ArmHAL setTurretNeutralMode(NeutralMode neutralMode) {
         if (turretMotor != null) {
             turretMotor.setNeutralMode(neutralMode);
+        }
+        return this;
+    }
+
+    public ArmHAL syncTurretEncoders() {
+        if(turretMotor != null) {
+            turretMotor.setSelectedSensorPosition(
+                ((turretMotor.getSelectedSensorPosition(kAbsolutePIDId) - kTurretEncoderZeroingCalib + (4096/2)) % (4096)) - (4096/2), 
+                kRelativePIDId, 
+                0);
         }
         return this;
     }
