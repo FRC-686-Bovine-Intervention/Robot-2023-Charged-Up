@@ -132,7 +132,7 @@ public class ArmLoop extends LoopBase {
     private final double manualMaxAdjustmentRangeInches = 18.0;
     private final double manualMaxAdjustmentRange = Units.inchesToMeters(manualMaxAdjustmentRangeInches);
 
-    private final double manualMaxSpeedInchesPerSec = 12.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
+    private final double manualMaxSpeedInchesPerSec = 18.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
     private final double manualMaxSpeedMetersPerSec = Units.inchesToMeters(manualMaxSpeedInchesPerSec);
     private final double manualMaxTurretPercentOutput = 0.2;  // speed the turret is allowed to manually spin
 
