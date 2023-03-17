@@ -344,8 +344,8 @@ public class DriveHAL {
     public double getLeftSpeedInchesPerSec()    {return lMotorMaster != null ? encoderUnitsPerFrameToInchesPerSecond(lMotorMaster.getSelectedSensorVelocity(kTalonIdx)) : 0;}
     public double getRightSpeedInchesPerSec()   {return rMotorMaster != null ? encoderUnitsPerFrameToInchesPerSecond(rMotorMaster.getSelectedSensorVelocity(kTalonIdx)) : 0;}
 
-    public double getLeftCurrent()  {return lMotorMaster != null ? lMotorMaster.getStatorCurrent() : 0;}
-    public double getRightCurrent() {return rMotorMaster != null ? rMotorMaster.getStatorCurrent() : 0;}
+    public double getLeftCurrent()  {return lMotorMaster != null ? lMotorMaster.getSupplyCurrent() : 0;}
+    public double getRightCurrent() {return rMotorMaster != null ? rMotorMaster.getSupplyCurrent() : 0;}
 
     public double getLeftPIDError()     {return lMotorMaster != null ? lMotorMaster.getClosedLoopError(kTalonIdx) : 0;}
     public double getRightPIDError()    {return rMotorMaster != null ? rMotorMaster.getClosedLoopError(kTalonIdx) : 0;}

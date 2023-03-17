@@ -248,6 +248,10 @@ public class ArmStatus extends StatusBase {
     protected ArmStatus setShoulderPower(double shoulderPower)      {this.shoulderPower = shoulderMotorSoftLimit(shoulderPower); return this;}
     protected ArmStatus setShoulderVoltage(double shoulderVoltage)  {this.shoulderPower = shoulderMotorSoftLimit(shoulderVoltage / 12); return this;}
 
+	private double      shoulderCurrent;
+    public ArmStatus    setShoulderCurrent(double shoulderCurrent)      {this.shoulderCurrent = shoulderCurrent; return this;}
+    public double       getShoulderCurrent()                            {return shoulderCurrent;}
+
     private static final double kShoulderMinPower = 0;//0.055;
     public double shoulderMotorSoftLimit(double _power) {
         double power = _power;
@@ -283,6 +287,8 @@ public class ArmStatus extends StatusBase {
     public double       getShoulderPIDOutput()                          {return shoulderPIDOutput;}
     protected ArmStatus setShoulderPIDOutput(double shoulderPIDOutput)  {this.shoulderPIDOutput = shoulderPIDOutput; return this;}
 
+    
+    
     // Elbow
     private PotAndEncoder.Reading   elbowPotEncReading = new PotAndEncoder.Reading(0,0,0);
     private ArmStatus               setElbowPotEncReading(PotAndEncoder.Reading elbowReading) {this.elbowPotEncReading = elbowReading; return this;}
@@ -327,6 +333,10 @@ public class ArmStatus extends StatusBase {
     public double       getElbowVoltage()                     {return elbowPower * 12;}
     protected ArmStatus setElbowPower(double elbowPower)      {this.elbowPower = elbowMotorSoftLimit(elbowPower); return this;}
     protected ArmStatus setElbowVoltage(double elbowVoltage)  {this.elbowPower = elbowMotorSoftLimit(elbowVoltage / 12); return this;}
+
+	private double      elbowCurrent;
+    public ArmStatus    setElbowCurrent(double elbowCurrent)    {this.elbowCurrent = elbowCurrent; return this;}
+    public double       getElbowCurrent()                       {return elbowCurrent;}
 
     public double elbowMotorSoftLimit(double _power) {
         double power = _power;
@@ -387,6 +397,8 @@ public class ArmStatus extends StatusBase {
         setElbowPotEncReading(HAL.getElbowPotEncoder().getReading());
         setShoulderFalconSensorPosition(HAL.getShoulderFalconSensorPosition());
         setElbowFalconSensorPosition(HAL.getElbowFalconSensorPosition());
+        setShoulderCurrent(HAL.getShoulderCurrent());
+        setElbowCurrent(HAL.getElbowCurrent());
 
         if(!getCheckedForTurretLockout()) {
             setTurretLockout(
@@ -470,10 +482,10 @@ public class ArmStatus extends StatusBase {
         currentPoseEntry.setString(currentArmPose != null ? currentArmPose.name() : "null");
         logger.recordOutput(prefix + "Arm/Target Node",             targetNode != null ? targetNode.name() : "null");
         nodeEntry.setString(targetNode != null ? targetNode.name() : "null");
-        logger.recordOutput(prefix + "Arm/Adjustments/Throttle/X",  shoulderThrottle);
-        logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Z",  elbowThrottle);
-        logger.recordOutput(prefix + "Arm/Adjustments/X",           shoulderAdjustment);
-        logger.recordOutput(prefix + "Arm/Adjustments/Z",           elbowAdjustment);
+        logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Shoulder",  shoulderThrottle);
+        logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Elbow",  elbowThrottle);
+        logger.recordOutput(prefix + "Arm/Adjustments/Shoulder",           shoulderAdjustment);
+        logger.recordOutput(prefix + "Arm/Adjustments/Elbow",           elbowAdjustment);
         logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable",         internalDisable);
         logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable Reason",  internalDisableReason);
         logger.recordOutput(prefix + "Arm/Trajectory/Current Trajectory",   currentArmTrajectory != null ? "Start pose: " + currentArmTrajectory.getStartString() + " Final pose: " + currentArmTrajectory.getFinalString() : "null");
@@ -492,6 +504,7 @@ public class ArmStatus extends StatusBase {
         HAL.setShoulderMotorPower(shoulderPower);
         shoulderPotEncStatus.recordOutputs(logger, prefix + "Arm/Shoulder/Encoder Status");
         logger.recordOutput(prefix + "Arm/Shoulder/Power",          shoulderPower);
+        logger.recordOutput(prefix + "Arm/Shoulder/Current",          getShoulderCurrent());
         logger.recordOutput(prefix + "Arm/Shoulder/PotEnc Angle (Rad)",    Units.degreesToRadians(getShoulderPotEncStatus().positionDeg));
         logger.recordOutput(prefix + "Arm/Shoulder/Falcon Angle (Rad)",    shoulderSensorUnitsToRadians(getShoulderFalconSensorPosition()));
         logger.recordOutput(prefix + "Arm/Shoulder/Angle (Rad)",    getShoulderAngleRad());
@@ -508,6 +521,7 @@ public class ArmStatus extends StatusBase {
         HAL.setElbowMotorPower(elbowPower);
         elbowPotEncStatus.recordOutputs(logger, prefix + "Arm/Elbow/Encoder Status");
         logger.recordOutput(prefix + "Arm/Elbow/Power",         elbowPower);
+        logger.recordOutput(prefix + "Arm/Elbow/Current",          getElbowCurrent());
         logger.recordOutput(prefix + "Arm/Elbow/PotEnc Angle (Rad)",    Units.degreesToRadians(getElbowPotEncStatus().positionDeg));
         logger.recordOutput(prefix + "Arm/Elbow/Falcon Angle (Rad)",    elbowSensorUnitsToRadians(getElbowFalconSensorPosition()));
         logger.recordOutput(prefix + "Arm/Elbow/Angle (Rad)",    getElbowAngleRad());
