@@ -39,7 +39,6 @@ public class ArmStatus extends StatusBase {
         ZeroProximal,       // move arm to proper position
         ZeroDistal,         // =============================================================================
         Defense,            // Arm is idling, retracted fully and waiting for the intake to do something
-        IdentifyPiece,      // Arm is identifying the piece in the intake
         Grab,               // Arm has identified the location of the piece and arm is grabbing the piece from the intake
         Hold,               // Arm has grabbed the piece and is holding it in the defense position
         Align,              // Robot has entered the community and the turret should align to the alliance wall
@@ -47,7 +46,8 @@ public class ArmStatus extends StatusBase {
         Adjust,             // Driver and limelight are fudging the position of the turret to align piece on the node
         Release,            // Driver has decided the piece will score on the node and tells the arm to release the piece
         SubstationExtend,   // Driver has decided to grab a piece from the substation
-        SubstationGrab;     // Driver is ready to grab piece from the substation
+        SubstationGrab,     // Driver is ready to grab piece from the substation
+        Emergency;          // Arm did an oopsie
 
         public static final ArmState DEFAULT = Defense;
     }
@@ -403,12 +403,15 @@ public class ArmStatus extends StatusBase {
             recheckLockoutEntry.setBoolean(false);
         }
         if(falconRecalEntry.getBoolean(false)) {
-            oneShotElbowCalibrationEnabled = true;
-            oneShotShoulderCalibrationEnabled = true;
-            setElbowFalconCalibrated(false);
-            setShoulderFalconCalibrated(false);
+            recalFalcons();
             falconRecalEntry.setBoolean(false);
         }
+    }
+    public void recalFalcons() {
+        oneShotElbowCalibrationEnabled = true;
+        oneShotShoulderCalibrationEnabled = true;
+        setElbowFalconCalibrated(false);
+        setShoulderFalconCalibrated(false);
     }
 
     @Override

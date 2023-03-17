@@ -135,6 +135,8 @@ public class ArmLoop extends LoopBase {
     private final double manualMaxSpeedInchesPerSec = 18.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
     private final double manualMaxSpeedMetersPerSec = Units.inchesToMeters(manualMaxSpeedInchesPerSec);
     private final double manualMaxTurretPercentOutput = 0.2;  // speed the turret is allowed to manually spin
+    private final double manualMaxShoulderPercentOutput = 0.2;  // speed the shoulder is allowed to manually spin when in emergency mode
+    private final double manualMaxElbowPercentOutput = 0.2;  // speed the elbow is allowed to manually spin when in emergency mode
 
 
     private ArmLoop() {
@@ -210,14 +212,14 @@ public class ArmLoop extends LoopBase {
             status.setShoulderCalibAngleRad(shoulderAngleRad);
             status.setShoulderMinAngleRad(shoulderMinAngleRad);
             status.setShoulderMaxAngleRad(shoulderMaxAngleRad);
-            status.setShoulderFalconCalibrated(true);            
+            status.setShoulderFalconCalibrated(true);
         }
         if (!status.getElbowFalconCalibrated() && status.getElbowPotEncStatus().calibrated) {
             double elbowAngleRad = Units.degreesToRadians(status.getElbowPotEncStatus().positionDeg);
             status.setElbowCalibAngleRad(elbowAngleRad);
             status.setElbowMinAngleRad(elbowMinAngleRad);
             status.setElbowMaxAngleRad(elbowMaxAngleRad);
-            status.setElbowFalconCalibrated(true);            
+            status.setElbowFalconCalibrated(true);
         }
     }
     
@@ -315,6 +317,8 @@ public class ArmLoop extends LoopBase {
                         status.setArmState(ArmState.Defense)
                               .setCurrentArmPose(ArmPose.Preset.DEFENSE)
                               .setTargetArmPose(ArmPose.Preset.DEFENSE)
+                              .setCurrentTrajState(ArmTrajectory.getFixedState(ArmPose.Preset.DEFENSE.getShoulderAngleRad(), ArmPose.Preset.DEFENSE.getElbowAngleRad()))
+                              .setCurrentArmTrajectory(null)
                               .setInternalDisable(false, "");     // enable arm trajectories
                     }
                 }
@@ -329,11 +333,15 @@ public class ArmLoop extends LoopBase {
                     status.setArmState(ArmState.Grab);
             break;
 
-            case IdentifyPiece:
-                status.setTurretControlMode(MotorControlMode.PID)
-                      .setTargetTurretAngleDeg(0)
-                      .setTargetArmPose(ArmPose.Preset.DEFENSE);
-                // Check for piece in intake bounding box
+            case Emergency:
+                if(stateTimer.get() == 0) {
+                    status.recalFalcons();
+                }
+                status.setTurretControlMode(MotorControlMode.PercentOutput)
+                      .setTurretPower(status.getTurretThrottle() * manualMaxTurretPercentOutput)
+                      .setShoulderPower(status.getXThrottle() * manualMaxShoulderPercentOutput)
+                      .setElbowPower(status.getZThrottle() * manualMaxElbowPercentOutput)
+                      .setClawGrabbing(false);
             break;
             
             case Grab:

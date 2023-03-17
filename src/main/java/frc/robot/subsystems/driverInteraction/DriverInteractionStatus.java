@@ -55,19 +55,29 @@ public class DriverInteractionStatus extends StatusBase {
         
         Release         (Joysticks.XBox, XBox.kBButton),
         SecondUndo      (Joysticks.XBox, XBox.kXButton),
+        Oopsie          (Joysticks.XBox, XBox.kLeftButton, XBox.kRightButton), // Named Oopsie at the request of Mr. Maceikis
         ;
 
         private final Joysticks joystick;
-        private final int buttonID;
-        DriverControlButtons(int buttonID)                      {this(Joysticks.Thrustmaster, buttonID);}
-        DriverControlButtons(Joysticks joystick, int buttonID)  {this.joystick = joystick; this.buttonID = buttonID;}
+        private final int[] buttonIDs;
+        DriverControlButtons(int... buttonIDs)                      {this(Joysticks.Thrustmaster, buttonIDs);}
+        DriverControlButtons(Joysticks joystick, int... buttonIDs)  {this.joystick = joystick; this.buttonIDs = buttonIDs;}
         private boolean value = false;
         private boolean prevValue = false;
         public boolean getButton()                              {return value;}
         public boolean getRisingEdge()                          {return value && !prevValue;}
         public boolean getFallingEdge()                         {return !value && prevValue;}
         private DriverControlButtons setValue(boolean value)    {this.value = value; return this;}
-        private DriverControlButtons update()                   {return update(joystick.getRawButton(buttonID));}
+        private DriverControlButtons update() {
+            boolean r = true;
+            for(int buttonID : buttonIDs) {
+                if(!joystick.getRawButton(buttonID)) {
+                    r = false;
+                    break;
+                }
+            }
+            return update(r);
+        }
         private DriverControlButtons update(boolean value)      {this.prevValue = this.value; return setValue(value);}
     }
 

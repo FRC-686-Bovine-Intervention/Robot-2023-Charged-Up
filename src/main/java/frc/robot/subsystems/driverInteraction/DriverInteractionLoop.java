@@ -58,8 +58,8 @@ public class DriverInteractionLoop extends LoopBase {
 
         double leftPower = throttle+turn;
         double rightPower = throttle-turn;
-        leftPower *= (armStatus.getShoulderAngleRad() - Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
-        rightPower *= (armStatus.getShoulderAngleRad() - Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
+        leftPower *= (armStatus.getShoulderAngleRad() + Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
+        rightPower *= (armStatus.getShoulderAngleRad() + Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
         return new DriveCommand(DriveControlMode.OPEN_LOOP, leftPower, rightPower, (DriverControlButtons.ParkingBrake.getButton() ? NeutralMode.Brake : NeutralMode.Coast));
     }
 
@@ -67,7 +67,7 @@ public class DriverInteractionLoop extends LoopBase {
         double xAdjustment = 0;
         double zAdjustment = 0;
         double turretAdjustment = 0;
-        if(armStatus.getArmState() == ArmState.Adjust) {
+        if(armStatus.getArmState() == ArmState.Adjust || armStatus.getArmState() == ArmState.Emergency) {
             xAdjustment = DriverControlAxes.XBoxLeftY.getAxis();
             zAdjustment = DriverControlAxes.XBoxRightTrigger.getAxis() - DriverControlAxes.XBoxLeftTrigger.getAxis();
             turretAdjustment = DriverControlAxes.XBoxRightX.getAxis();
@@ -160,11 +160,6 @@ public class DriverInteractionLoop extends LoopBase {
                     armCommand.setArmState(ArmState.SubstationExtend);
             break;
 
-            case IdentifyPiece:
-                if(DriverControlButtons.MainAction.getRisingEdge())
-                    armCommand.setArmState(ArmState.Grab);
-            break;
-
             case Hold:
                 if(DriverControlButtons.MainAction.getRisingEdge())
                     armCommand.setArmState(ArmState.Align);
@@ -177,8 +172,10 @@ public class DriverInteractionLoop extends LoopBase {
                     armCommand.setArmState(ArmState.Align); // Locks State
                 if(DriverControlButtons.Undo.getRisingEdge())
                     armCommand.setArmState(ArmState.Hold);
-                if(armCommand.getTargetNode() != null)
+                if(armCommand.getTargetNode() != null) {
                     armCommand.setArmState(ArmState.Extend);
+                    invertDriveControls = false;
+                }
             break;
 
             case Adjust:
@@ -191,8 +188,10 @@ public class DriverInteractionLoop extends LoopBase {
             break;
             
             case SubstationExtend:
-                if(DriverControlButtons.MainAction.getRisingEdge())
+                if(DriverControlButtons.MainAction.getRisingEdge()) {
                     armCommand.setArmState(ArmState.SubstationGrab);
+                    invertDriveControls = true;
+                }
                 if(DriverControlButtons.Undo.getRisingEdge())
                     armCommand.setArmState(ArmState.Defense);
             break;
@@ -200,6 +199,8 @@ public class DriverInteractionLoop extends LoopBase {
             default: break;
         }
 
+        if(DriverControlButtons.Oopsie.getRisingEdge())
+            armCommand.setArmState(armStatus.getArmState() != ArmState.Emergency ? ArmState.Emergency : ArmState.ZeroDistalUp);
         arm.setCommand(armCommand);
     }
 
