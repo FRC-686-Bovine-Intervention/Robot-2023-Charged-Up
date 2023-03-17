@@ -388,8 +388,9 @@ public class ArmStatus extends StatusBase {
     private final GenericEntry nodeEntry = tab.add("Target Node","not updating")                .withPosition(2, 0).withSize(1, 1).withWidget(BuiltInWidgets.kBooleanBox).getEntry();
     private final GenericEntry lockedEntry = tab.add("Hold|Align Locked",false)                 .withPosition(2, 1).withSize(1, 1).withWidget(BuiltInWidgets.kBooleanBox).getEntry();
     private final GenericEntry lockoutEntry = tab.add("Turret Lockout",false)                   .withPosition(9, 0).withSize(1, 1).withWidget(BuiltInWidgets.kBooleanBox).getEntry();
+    private final GenericEntry turretAngleEntry = tab.add("Turret Angle","not updating")        .withPosition(9, 1).withSize(1, 1).withWidget(BuiltInWidgets.kTextView).getEntry();
     private final GenericEntry recheckLockoutEntry = tab.add("Recheck Turret Lockout",false)    .withPosition(8, 0).withSize(1, 1).withWidget(BuiltInWidgets.kToggleButton).getEntry();
-    private final GenericEntry falconRecalEntry = tab.add("Recalibrate Falcons",false)          .withPosition(8, 1).withSize(2, 1).withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    private final GenericEntry falconRecalEntry = tab.add("Recalibrate Falcons",false)          .withPosition(8, 1).withSize(1, 1).withWidget(BuiltInWidgets.kToggleButton).getEntry();
     @Override
     public void updateInputs() {
         setCommand(arm.getCommand());
@@ -480,6 +481,7 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Turret/Control Mode",         turretControlMode != null ? turretControlMode.name() : "null");
         logger.recordOutput(prefix + "Turret/Neutral Mode",         turretNeutralMode != null ? turretNeutralMode.name() : "null");
         logger.recordOutput(prefix + "Turret/Position (deg)",       getTurretAngleDeg());
+        turretAngleEntry.setDouble(getTurretAngleDeg());
         logger.recordOutput(prefix + "Turret/Target Angle (deg)",   getTargetTurretAngleDeg());
         logger.recordOutput(prefix + "Turret/Encoder/Relative",     HAL.getTurretRelative());
         logger.recordOutput(prefix + "Turret/Encoder/Absolute",     HAL.getTurretAbsolute());
