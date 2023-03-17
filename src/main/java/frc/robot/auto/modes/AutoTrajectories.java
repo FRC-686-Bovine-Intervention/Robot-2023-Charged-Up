@@ -328,6 +328,7 @@ public class AutoTrajectories {
         LoadingPointTurnPose = AllianceFlipUtil.apply(LoadingPointTurnPose, Alliance.Red);
         WallStagingOffsetPose = AllianceFlipUtil.apply(WallStagingOffsetPose, Alliance.Red);
         CenterWallStagingOffsetPose = AllianceFlipUtil.apply(CenterWallStagingOffsetPose, Alliance.Red);
+        CenterLoadStagingOffsetPose = AllianceFlipUtil.apply(CenterLoadStagingOffsetPose, Alliance.Red);
         LoadingStagingOffsetPose = AllianceFlipUtil.apply(LoadingStagingOffsetPose, Alliance.Red);
         WallStagingPose = AllianceFlipUtil.apply(WallStagingPose, Alliance.Red);
         CenterWallStagingPose = AllianceFlipUtil.apply(CenterWallStagingPose, Alliance.Red);

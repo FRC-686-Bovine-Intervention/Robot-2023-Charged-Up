@@ -379,6 +379,7 @@ public class ArmStatus extends StatusBase {
     private final GenericEntry lockedEntry = tab.add("Hold|Align Locked",false)                 .withPosition(2, 1).withSize(1, 1).withWidget(BuiltInWidgets.kBooleanBox).getEntry();
     private final GenericEntry lockoutEntry = tab.add("Turret Lockout",false)                   .withPosition(9, 0).withSize(1, 1).withWidget(BuiltInWidgets.kBooleanBox).getEntry();
     private final GenericEntry recheckLockoutEntry = tab.add("Recheck Turret Lockout",false)    .withPosition(8, 0).withSize(1, 1).withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    private final GenericEntry falconRecalEntry = tab.add("Recalibrate Falcons",false)          .withPosition(8, 1).withSize(2, 1).withWidget(BuiltInWidgets.kToggleButton).getEntry();
     @Override
     public void updateInputs() {
         setCommand(arm.getCommand());
@@ -400,6 +401,13 @@ public class ArmStatus extends StatusBase {
             setCheckedForTurretLockout(false);
             HAL.syncTurretEncoders();
             recheckLockoutEntry.setBoolean(false);
+        }
+        if(falconRecalEntry.getBoolean(false)) {
+            oneShotElbowCalibrationEnabled = true;
+            oneShotShoulderCalibrationEnabled = true;
+            setElbowFalconCalibrated(false);
+            setShoulderFalconCalibrated(false);
+            falconRecalEntry.setBoolean(false);
         }
     }
 

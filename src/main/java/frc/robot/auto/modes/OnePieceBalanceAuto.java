@@ -5,11 +5,13 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.RobotConfiguration;
 import frc.robot.auto.actions.ArmCommandAction;
+import frc.robot.auto.actions.ConditionalAction;
 import frc.robot.auto.actions.DriveOnChargeStationEdgeAction;
 import frc.robot.auto.actions.DriverAssistCommandAction;
 import frc.robot.auto.actions.IntakeCommandAction;
 import frc.robot.auto.actions.ParallelAction;
 import frc.robot.auto.actions.RamseteFollowerAction;
+import frc.robot.auto.actions.SeriesAction;
 import frc.robot.auto.actions.WaitUntilAction;
 import frc.robot.auto.autoManager.AutoConfiguration;
 import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
@@ -22,10 +24,12 @@ import frc.robot.subsystems.arm.ArmStatus.NodeEnum;
 import frc.robot.subsystems.driverAssist.DriverAssistCommand;
 import frc.robot.subsystems.driverAssist.DriverAssistStatus.DriverAssistState;
 import frc.robot.subsystems.intake.IntakeCommand;
+import frc.robot.subsystems.intake.IntakeStatus;
 import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
 
 public class OnePieceBalanceAuto extends AutoMode {
     private final ArmStatus armStatus = ArmStatus.getInstance();
+    private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
 
     public OnePieceBalanceAuto(AutoConfiguration config) {
         
@@ -49,7 +53,13 @@ public class OnePieceBalanceAuto extends AutoMode {
         addAction(new RamseteFollowerAction(trajectories[1], ramseteController));
         addAction(new ParallelAction(
             new RamseteFollowerAction(trajectories[2], ramseteController),
-            new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Hold).setTimeout(3)
+            new SeriesAction(
+                new WaitUntilAction(() -> intakeStatus.getIntakeState() == IntakeState.Hold).setTimeout(0.5),
+                new ConditionalAction(() -> intakeStatus.getIntakeState() == IntakeState.Hold, 
+                    new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Hold).setTimeout(3),
+                    new IntakeCommandAction(new IntakeCommand(IntakeState.Defense))
+                )
+            )
         ));
         addAction(new DriveOnChargeStationEdgeAction(true).setTimeout(3));
         addAction(new DriverAssistCommandAction(new DriverAssistCommand(DriverAssistState.AutoBalance)));

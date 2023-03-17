@@ -41,6 +41,7 @@ public class DriverInteractionStatus extends StatusBase {
         Undo            (Thrustmaster.kTopButton3),
         AutoDrive       (Thrustmaster.kRightThumbButton),
         InvertDrive     (Thrustmaster.kLeftThumbButton),
+        ParkingBrake    (Thrustmaster.kBottomButton3),
 
         ButtonBoard1_1  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton1_1),
         ButtonBoard1_2  (Joysticks.ButtonBoard, ButtonBoard3x3.kButton1_2),

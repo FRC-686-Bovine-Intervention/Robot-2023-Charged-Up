@@ -1,5 +1,7 @@
 package frc.robot.subsystems.driverInteraction;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -10,6 +12,7 @@ import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.arm.ArmStatus.NodeEnum;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveCommand;
+import frc.robot.subsystems.drive.DriveCommand.DriveControlMode;
 import frc.robot.subsystems.driverAssist.DriverAssist;
 import frc.robot.subsystems.driverAssist.DriverAssistCommand;
 import frc.robot.subsystems.driverAssist.DriverAssistStatus.DriverAssistState;
@@ -57,7 +60,7 @@ public class DriverInteractionLoop extends LoopBase {
         double rightPower = throttle-turn;
         leftPower *= (armStatus.getShoulderAngleRad() - Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
         rightPower *= (armStatus.getShoulderAngleRad() - Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
-        return new DriveCommand(leftPower, rightPower);
+        return new DriveCommand(DriveControlMode.OPEN_LOOP, leftPower, rightPower, (DriverControlButtons.ParkingBrake.getButton() ? NeutralMode.Brake : NeutralMode.Coast));
     }
 
     private double[] generateAdjustments() {
