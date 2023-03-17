@@ -65,8 +65,6 @@ public class ArmLoop extends LoopBase {
             turretPIDConstraints
         );
     private static final double kTurretPIDMaxError = 10;
-    private static final double kTurretClockwiseLockoutThreshold = -90;
-    private static final double kTurretCounterLockoutThreshold = 90;
 
     private static final double kDistalZeroPower =      0.15;
     private static final double kProximalZeroPower =    0.1;
@@ -198,13 +196,6 @@ public class ArmLoop extends LoopBase {
 
     @Override
     protected void Update() {
-        if(!status.getCheckedForTurretLockout()) {
-            status.setTurretLockout(
-                      status.getTurretAngleDeg() <= kTurretClockwiseLockoutThreshold
-                                                 ||
-                      status.getTurretAngleDeg() >= kTurretCounterLockoutThreshold)
-                  .setCheckedForTurretLockout(true);
-        }
         checkArmCalibration();
 
         status.setTurretPIDPosition(turretPID.getSetpoint().position);
@@ -349,7 +340,7 @@ public class ArmLoop extends LoopBase {
                 status.setTurretControlMode(MotorControlMode.PercentOutput)
                       .setTurretPower(0)
                       .setTurretNeutralMode(NeutralMode.Coast);
-                if(!stateTimer.hasElapsed(1))
+                if(!stateTimer.hasElapsed(0.5))
                     break;
                 if(!status.getClawGrabbing()) {
                     status.setTargetArmPose(ArmPose.Preset.INTAKE);
@@ -727,7 +718,8 @@ public class ArmLoop extends LoopBase {
         if(disabledTimer.hasElapsed(kDisabledResetTimerThreshold)) {
             status.setCurrentArmPose(null)
                   .setCurrentArmTrajectory(null)
-                  .setClawGrabbing(true);
+                  .setClawGrabbing(true)
+                  .setCurrentTrajState(ArmTrajectory.getFixedState(ArmPose.Preset.DEFENSE.getShoulderAngleRad(), ArmPose.Preset.DEFENSE.getElbowAngleRad()));
             if(status.getShoulderPotEncStatus().calibrated && Math.abs(status.getShoulderAngleRad() - ArmPose.Preset.DEFENSE.getShoulderAngleRad()) > kProximalZeroErrorThreshold) {
                 status.setArmState(ArmState.ZeroDistalUp); // Calibrate Proximal
             } else if(Math.abs(status.getTurretAngleDeg()) > kTurretZeroErrorThreshold) {
