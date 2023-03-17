@@ -212,6 +212,7 @@ public class ArmHAL {
 
     public void setShoulderMotorPower(double _power) { if (shoulderMotor != null) { shoulderMotor.set(_power);  }}
 
+    public double getShoulderCurrent()  {return shoulderMotor != null ? shoulderMotor.getSupplyCurrent() : 0;}
 
 
     // Elbow
@@ -238,6 +239,7 @@ public class ArmHAL {
 
     public void setElbowMotorPower(double _power) { if (elbowMotor != null) { elbowMotor.set(_power);  }}
 
+    public double getElbowCurrent()  {return elbowMotor != null ? elbowMotor.getSupplyCurrent() : 0;}
         
     // Claw
     public ArmHAL setClawGrabbing(boolean clawGrabbing) {

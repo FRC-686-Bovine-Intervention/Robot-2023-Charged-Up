@@ -20,13 +20,13 @@ public class ArmCommand {
     public NodeEnum     getTargetNode()                     {return targetNode;}
     public ArmCommand   setTargetNode(NodeEnum targetNode)  {this.targetNode = targetNode; return this;}
 
-    private Double      xAdjustment = null;
-    public Double       getXAdjustment()                    {return xAdjustment;}
-    public ArmCommand   setXAdjustment(double xAdjustment)  {this.xAdjustment = xAdjustment; return this;}
+    private Double      shoulderAdjustment = null;
+    public Double       getShoulderAdjustment()                    {return shoulderAdjustment;}
+    public ArmCommand   setShoulderAdjustment(double shoulderAdjustment)  {this.shoulderAdjustment = shoulderAdjustment; return this;}
 
-    private Double      zAdjustment = null;
-    public Double       getZAdjustment()                    {return zAdjustment;}
-    public ArmCommand   setZAdjustment(double zAdjustment)  {this.zAdjustment = zAdjustment; return this;}
+    private Double      elbowAdjustment = null;
+    public Double       getElbowAdjustment()                    {return elbowAdjustment;}
+    public ArmCommand   setElbowAdjustment(double elbowAdjustment)  {this.elbowAdjustment = elbowAdjustment; return this;}
 
     private Double      turretAdjustment = null;
     public Double       getTurretAdjustment()                           {return turretAdjustment;}
@@ -35,8 +35,8 @@ public class ArmCommand {
     public void recordOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "/Arm State", armState != null ? armState.name() : "null");
         logger.recordOutput(prefix + "/Target Node", targetNode != null ? targetNode.name() : "null");
-        logger.recordOutput(prefix + "/Adjustment/X", xAdjustment != null ? xAdjustment.doubleValue() : 0);
-        logger.recordOutput(prefix + "/Adjustment/Z", zAdjustment != null ? zAdjustment.doubleValue() : 0);
+        logger.recordOutput(prefix + "/Adjustment/Shoulder", shoulderAdjustment != null ? shoulderAdjustment.doubleValue() : 0);
+        logger.recordOutput(prefix + "/Adjustment/Elbow", elbowAdjustment != null ? elbowAdjustment.doubleValue() : 0);
         logger.recordOutput(prefix + "/Adjustment/Turret", turretAdjustment != null ? turretAdjustment.doubleValue() : 0);
     }
 }
