@@ -68,7 +68,7 @@ public class DriverInteractionLoop extends LoopBase {
         double zAdjustment = 0;
         double turretAdjustment = 0;
         if(armStatus.getArmState() == ArmState.Adjust) {
-            xAdjustment = -DriverControlAxes.XBoxLeftY.getAxis();
+            xAdjustment = DriverControlAxes.XBoxLeftY.getAxis();
             zAdjustment = DriverControlAxes.XBoxRightTrigger.getAxis() - DriverControlAxes.XBoxLeftTrigger.getAxis();
             turretAdjustment = DriverControlAxes.XBoxRightX.getAxis();
 

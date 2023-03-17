@@ -36,10 +36,12 @@ public class AutoTrajectories {
         backwardConfig.setReversed(true);
 
         // Scoring Poses
+        double outsideScoringOffset = 6;
+
         Pose2d WallScoringPose = new Pose2d(
             new Translation2d(
                 FieldDimensions.Grids.outerX + Units.inchesToMeters(Constants.kCenterToFrontBumper),
-                FieldDimensions.Grids.nodeFirstY + FieldDimensions.Grids.nodeSeparationY * 1
+                FieldDimensions.Grids.nodeFirstY + FieldDimensions.Grids.nodeSeparationY * 1 - Units.inchesToMeters(outsideScoringOffset)
             ),
             Rotation2d.fromDegrees(180)
         );
@@ -53,15 +55,15 @@ public class AutoTrajectories {
         Pose2d LoadingScoringPose = new Pose2d(
             new Translation2d(
                 FieldDimensions.Grids.outerX + Units.inchesToMeters(Constants.kCenterToFrontBumper),
-                FieldDimensions.Grids.nodeFirstY + FieldDimensions.Grids.nodeSeparationY * 7
+                FieldDimensions.Grids.nodeFirstY + FieldDimensions.Grids.nodeSeparationY * 7 + Units.inchesToMeters(outsideScoringOffset)
             ),
             Rotation2d.fromDegrees(180)
         );
         
         // Backup Poses
-        double onePointTurnRadius = 24;
-        double onePointTurnCenterOffset = 12;
-        double backupOffset = 12;
+        double onePointTurnRadius = 18;
+        double onePointTurnCenterOffset = 18;
+        double backupOffset = 18;
 
         Pose2d WallBackupPose = new Pose2d(
             new Translation2d(
