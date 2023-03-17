@@ -42,7 +42,7 @@ class ArmPresetPoses:
             # "score_high_cone": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CUBE, "xy": (np.array([52, 48.5])).tolist()}
 
             "auto_start": {"fileIdx": ArmPresetEnum.AUTO_START, "theta1": -2.340, "theta2": -0.422},
-            "defense": {"fileIdx": ArmPresetEnum.DEFENSE, "theta1": -2.282, "theta2": 0.000},
+            "defense": {"fileIdx": ArmPresetEnum.DEFENSE, "theta1": -2.26, "theta2": 0.160},
             "intake": {"fileIdx": ArmPresetEnum.INTAKE, "theta1": -2.048, "theta2": -0.524},
             "double_substation": {"fileIdx": ArmPresetEnum.DOUBLE_SUBSTATION, "theta1": -0.603, "theta2": 0.472},
             "score_hybrid": {"fileIdx": ArmPresetEnum.SCORE_HYBRID, "theta1": -2.100, "theta2": 0.000},
