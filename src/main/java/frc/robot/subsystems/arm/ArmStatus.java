@@ -181,23 +181,23 @@ public class ArmStatus extends StatusBase {
     public boolean          getInternalDisable()                        {return internalDisable;}
     protected ArmStatus     setInternalDisable(boolean internalDisable, String reason) {this.internalDisable = internalDisable; this.internalDisableReason = reason; return this;}
 
-    private double          xThrottle;
-    public double           getXThrottle()                  {return xThrottle;}
-    protected ArmStatus     setXThrottle(double xThrottle)  {this.xThrottle = xThrottle; return this;}
+    private double          shoulderThrottle;
+    public double           getShoulderThrottle()                  {return shoulderThrottle;}
+    protected ArmStatus     setshoulderThrottle(double shoulderThrottle)  {this.shoulderThrottle = shoulderThrottle; return this;}
 
-    private double          xAdjustment; // extension from turret center of rotation
-    public double           getXAdjustment()                        {return xAdjustment;}
-    protected ArmStatus     setXAdjustment(double xAdjustment)      {this.xAdjustment = xAdjustment; return this;}
-    protected ArmStatus     incrementXAdjustment(double increment)  {this.xAdjustment += increment; return this;}
+    private double          shoulderAdjustment; // extension from turret center of rotation
+    public double           getShoulderAdjustment()                        {return shoulderAdjustment;}
+    protected ArmStatus     setShoulderAdjustment(double shoulderAdjustment)      {this.shoulderAdjustment = shoulderAdjustment; return this;}
+    protected ArmStatus     incrementShoulderAdjustment(double increment)  {this.shoulderAdjustment += increment; return this;}
 
-    private double          zThrottle;
-    public double           getZThrottle()                  {return zThrottle;}
-    protected ArmStatus     setZThrottle(double zThrottle)  {this.zThrottle = zThrottle; return this;}
+    private double          elbowThrottle;
+    public double           getElbowThrottle()                  {return elbowThrottle;}
+    protected ArmStatus     setElbowThrottle(double elbowThrottle)  {this.elbowThrottle = elbowThrottle; return this;}
     
-    private double          zAdjustment; // height
-    public double           getZAdjustment()                        {return zAdjustment;}
-    protected ArmStatus     setZAdjustment(double zAdjustment)      {this.zAdjustment = zAdjustment; return this;}
-    protected ArmStatus     incrementZAdjustment(double increment)  {this.zAdjustment += increment; return this;}
+    private double          elbowAdjustment; // height
+    public double           getElbowAdjustment()                        {return elbowAdjustment;}
+    protected ArmStatus     setElbowAdjustment(double elbowAdjustment)      {this.elbowAdjustment = elbowAdjustment; return this;}
+    protected ArmStatus     incrementElbowAdjustment(double increment)  {this.elbowAdjustment += increment; return this;}
 
     private double          turretThrottle;
     public double           getTurretThrottle()                         {return turretThrottle;}
@@ -470,10 +470,10 @@ public class ArmStatus extends StatusBase {
         currentPoseEntry.setString(currentArmPose != null ? currentArmPose.name() : "null");
         logger.recordOutput(prefix + "Arm/Target Node",             targetNode != null ? targetNode.name() : "null");
         nodeEntry.setString(targetNode != null ? targetNode.name() : "null");
-        logger.recordOutput(prefix + "Arm/Adjustments/Throttle/X",  xThrottle);
-        logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Z",  zThrottle);
-        logger.recordOutput(prefix + "Arm/Adjustments/X",           xAdjustment);
-        logger.recordOutput(prefix + "Arm/Adjustments/Z",           zAdjustment);
+        logger.recordOutput(prefix + "Arm/Adjustments/Throttle/X",  shoulderThrottle);
+        logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Z",  elbowThrottle);
+        logger.recordOutput(prefix + "Arm/Adjustments/X",           shoulderAdjustment);
+        logger.recordOutput(prefix + "Arm/Adjustments/Z",           elbowAdjustment);
         logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable",         internalDisable);
         logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable Reason",  internalDisableReason);
         logger.recordOutput(prefix + "Arm/Trajectory/Current Trajectory",   currentArmTrajectory != null ? "Start pose: " + currentArmTrajectory.getStartString() + " Final pose: " + currentArmTrajectory.getFinalString() : "null");

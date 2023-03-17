@@ -61,22 +61,22 @@ public class DriverInteractionLoop extends LoopBase {
     }
 
     private double[] generateAdjustments() {
-        double xAdjustment = 0;
-        double zAdjustment = 0;
+        double shoulderAdjustment = 0;
+        double elbowAdjustment = 0;
         double turretAdjustment = 0;
         if(armStatus.getArmState() == ArmState.Adjust) {
-            xAdjustment = -DriverControlAxes.XBoxLeftY.getAxis();
-            zAdjustment = DriverControlAxes.XBoxRightTrigger.getAxis() - DriverControlAxes.XBoxLeftTrigger.getAxis();
+            shoulderAdjustment = -DriverControlAxes.XBoxLeftY.getAxis();
+            elbowAdjustment = DriverControlAxes.XBoxRightTrigger.getAxis() - DriverControlAxes.XBoxLeftTrigger.getAxis();
             turretAdjustment = DriverControlAxes.XBoxRightX.getAxis();
 
-            if(Math.abs(xAdjustment) <= kAdjustmentDeadband)
-                xAdjustment = 0;
-            if(Math.abs(zAdjustment) <= kAdjustmentDeadband)
-                zAdjustment = 0;
+            if(Math.abs(shoulderAdjustment) <= kAdjustmentDeadband)
+                shoulderAdjustment = 0;
+            if(Math.abs(elbowAdjustment) <= kAdjustmentDeadband)
+                elbowAdjustment = 0;
             if(Math.abs(turretAdjustment) <= kAdjustmentDeadband)
                 turretAdjustment = 0;
         }
-        return new double[]{xAdjustment,zAdjustment,turretAdjustment};
+        return new double[]{shoulderAdjustment,elbowAdjustment,turretAdjustment};
     }
 
     @Override
@@ -126,8 +126,8 @@ public class DriverInteractionLoop extends LoopBase {
         ArmCommand armCommand = new ArmCommand();
 
         double[] adjustments = generateAdjustments();
-        armCommand.setXAdjustment(adjustments[0]);
-        armCommand.setZAdjustment(adjustments[1]);
+        armCommand.setShoulderAdjustment(adjustments[0]);
+        armCommand.setElbowAdjustment(adjustments[1]);
         armCommand.setTurretAdjustment(adjustments[2]);
 
         // Field orient buttons
