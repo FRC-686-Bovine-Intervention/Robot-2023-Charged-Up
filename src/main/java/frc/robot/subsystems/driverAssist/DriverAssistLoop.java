@@ -82,7 +82,7 @@ public class DriverAssistLoop extends LoopBase {
                 double output = 0;
                 if(status.getUsingProportional())
                 {
-                    output = Math.max(Math.min(estimatedPitch*0.125/15, 0.25),-0.25);
+                    output = Math.max(Math.min(estimatedPitch*0.1875/15, 0.25),-0.25);
                 }
                 else
                 {

@@ -20,16 +20,14 @@ import frc.robot.subsystems.arm.ArmStatus.NodeEnum;
 import frc.robot.subsystems.driverAssist.DriverAssistCommand;
 import frc.robot.subsystems.driverAssist.DriverAssistStatus.DriverAssistState;
 
-public class OnePieceBalanceAuto extends AutoMode {
+public class OneSkipBalanceAuto extends AutoMode {
     private final ArmStatus armStatus = ArmStatus.getInstance();
 
-    public OnePieceBalanceAuto(AutoConfiguration config) {
+    public OneSkipBalanceAuto(AutoConfiguration config) {
         
-        Trajectory[] trajectories = new Trajectory[3];
+        Trajectory trajectory = AutoTrajectories.SkipBackward[DriverStation.getAlliance().ordinal()][config.startingPosition.ordinal()];
 
-        trajectories[0] = AutoTrajectories.SkipBackward[DriverStation.getAlliance().ordinal()][config.startingPosition.ordinal()];
-
-        startConfiguration = new RobotConfiguration(trajectories[0].getInitialPose(), ArmPose.Preset.AUTO_START, ArmState.Hold);
+        startConfiguration = new RobotConfiguration(trajectory.getInitialPose(), ArmPose.Preset.AUTO_START, ArmState.Hold);
 
         RamseteController ramseteController = new RamseteController(2, 0.7);
 
@@ -38,7 +36,7 @@ public class OnePieceBalanceAuto extends AutoMode {
         addAction(new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Adjust));
         addAction(new ArmCommandAction(new ArmCommand(ArmState.Release)));
         addAction(new WaitUntilAction(() -> armStatus.getClawGrabbing() == false));
-        addAction(new RamseteFollowerAction(trajectories[0], ramseteController));
+        addAction(new RamseteFollowerAction(trajectory, ramseteController));
         addAction(new DriveOnChargeStationEdgeAction(true));
         addAction(new DriverAssistCommandAction(new DriverAssistCommand(DriverAssistState.AutoBalance)));
     }

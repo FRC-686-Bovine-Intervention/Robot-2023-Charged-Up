@@ -15,7 +15,7 @@ import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
 import frc.robot.auto.autoManager.AutoConfiguration.StartPosition;
 import frc.robot.auto.modes.AutoMode;
 import frc.robot.auto.modes.OneGrabBalanceAuto;
-import frc.robot.auto.modes.OnePieceBalanceAuto;
+import frc.robot.auto.modes.OneSkipBalanceAuto;
 import frc.robot.auto.modes.TwoPieceAuto;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -25,7 +25,7 @@ public class AutoManagerStatus extends StatusBase {
 
     public enum AutoModesEnum{
         OneGrabBalance("One Piece Grab Balance", OneGrabBalanceAuto.class),
-        OnePieceBalance("One Piece Balance", OnePieceBalanceAuto.class),
+        OneSkipBalance("One Piece Skip Balance", OneSkipBalanceAuto.class),
         TwoPiece("Two Piece", TwoPieceAuto.class),
         // DriveStraightAuto("Drive Straight Test", DriveStraightAuto.class),
         // RamseteFollowerTest("Ramsete Follower Test", RamseteFollowerTestAuto.class),
@@ -129,7 +129,7 @@ public class AutoManagerStatus extends StatusBase {
     private AutoModesEnum selectedAutoMode;
     public AutoModesEnum getSelectedAutoMode()                                      {return selectedAutoMode;}
     public AutoManagerStatus setSelectedAutoMode(AutoModesEnum selectedAutoMode)    {this.selectedAutoMode = selectedAutoMode; return this;}
-    public Class<? extends AutoMode> getAutomode()                                  {return (selectedAutoMode.autoMode != null ? selectedAutoMode.autoMode : null);}
+    public Class<? extends AutoMode> getAutomode()                                  {return (selectedAutoMode != null ? selectedAutoMode.autoMode : null);}
     public AutoMode getNewAutomode() {
         try {
             try {
@@ -203,9 +203,9 @@ public class AutoManagerStatus extends StatusBase {
     @Override
     protected void processOutputs(Logger logger, String prefix) {
         // TODO: LESS LOGGING
-        // autoConfiguration.log(logger, prefix +  "Auto Configuration");
-        // logger.recordOutput(prefix + "Selected Auto Mode", selectedAutoMode != null ? selectedAutoMode.name() : null);
-        // logger.recordOutput(prefix + "Auto Mode Class", getAutomode() != null ? getAutomode().getSimpleName() : null);
+        autoConfiguration.log(logger, prefix +  "Auto Configuration");
+        logger.recordOutput(prefix + "Selected Auto Mode", selectedAutoMode != null ? selectedAutoMode.name() : null);
+        logger.recordOutput(prefix + "Auto Mode Class", getAutomode() != null ? getAutomode().getSimpleName() : null);
         // logger.recordOutput(prefix + "Auto Running", autoRunning);
         // logger.recordOutput(prefix + "Action Index", actionIndex);
     }

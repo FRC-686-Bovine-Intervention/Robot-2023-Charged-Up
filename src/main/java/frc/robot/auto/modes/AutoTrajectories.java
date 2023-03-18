@@ -238,8 +238,9 @@ public class AutoTrajectories {
         CenterWallSkipBackwardPath.add(CenterBackupPose);
         CenterWallSkipBackwardPath.add(CenterWallUTurnPose);
         CenterWallSkipBackwardPath.add(ChargeStationBackupPose);
-
+        
         CenterLoadSkipBackwardPath.add(CenterScoringPose);
+        CenterLoadSkipBackwardPath.add(CenterBackupPose);
         CenterLoadSkipBackwardPath.add(CenterLoadUTurnPose);
         CenterLoadSkipBackwardPath.add(ChargeStationBackupPose);
 
@@ -342,9 +343,9 @@ public class AutoTrajectories {
         // One Piece Skip
 
         Trajectory BlueWallSkipBackward =           TrajectoryGenerator.generateTrajectory(WallSkipBackwardPath, backwardConfig);
-        Trajectory BlueCenterWallSkipBackward =     TrajectoryGenerator.generateTrajectory(WallSkipBackwardPath, backwardConfig);
-        Trajectory BlueCenterLoadSkipBackward =     TrajectoryGenerator.generateTrajectory(WallSkipBackwardPath, backwardConfig);
-        Trajectory BlueLoadingSkipBackward =        TrajectoryGenerator.generateTrajectory(WallSkipBackwardPath, backwardConfig);
+        Trajectory BlueCenterWallSkipBackward =     TrajectoryGenerator.generateTrajectory(CenterWallSkipBackwardPath, backwardConfig);
+        Trajectory BlueCenterLoadSkipBackward =     TrajectoryGenerator.generateTrajectory(CenterLoadSkipBackwardPath, backwardConfig);
+        Trajectory BlueLoadingSkipBackward =        TrajectoryGenerator.generateTrajectory(LoadingSkipBackwardPath, backwardConfig);
         
         // Two Piece
 
@@ -421,8 +422,9 @@ public class AutoTrajectories {
         CenterWallSkipBackwardPath.add(CenterBackupPose);
         CenterWallSkipBackwardPath.add(CenterWallUTurnPose);
         CenterWallSkipBackwardPath.add(ChargeStationBackupPose);
-
+        
         CenterLoadSkipBackwardPath.add(CenterScoringPose);
+        CenterLoadSkipBackwardPath.add(CenterBackupPose);
         CenterLoadSkipBackwardPath.add(CenterLoadUTurnPose);
         CenterLoadSkipBackwardPath.add(ChargeStationBackupPose);
 
@@ -525,9 +527,9 @@ public class AutoTrajectories {
         // One Piece Skip
 
         Trajectory RedWallSkipBackward =           TrajectoryGenerator.generateTrajectory(WallSkipBackwardPath, backwardConfig);
-        Trajectory RedCenterWallSkipBackward =     TrajectoryGenerator.generateTrajectory(WallSkipBackwardPath, backwardConfig);
-        Trajectory RedCenterLoadSkipBackward =     TrajectoryGenerator.generateTrajectory(WallSkipBackwardPath, backwardConfig);
-        Trajectory RedLoadingSkipBackward =        TrajectoryGenerator.generateTrajectory(WallSkipBackwardPath, backwardConfig);
+        Trajectory RedCenterWallSkipBackward =     TrajectoryGenerator.generateTrajectory(CenterWallSkipBackwardPath, backwardConfig);
+        Trajectory RedCenterLoadSkipBackward =     TrajectoryGenerator.generateTrajectory(CenterLoadSkipBackwardPath, backwardConfig);
+        Trajectory RedLoadingSkipBackward =        TrajectoryGenerator.generateTrajectory(LoadingSkipBackwardPath, backwardConfig);
 
         // Two Piece
 
@@ -639,7 +641,7 @@ public class AutoTrajectories {
                         case CenterLoad:    traj = (alliance == Alliance.Red ? RedCenterLoadSkipBackward : BlueCenterLoadSkipBackward);   break;
                         case Loading:       traj = (alliance == Alliance.Red ? RedLoadingSkipBackward : BlueLoadingSkipBackward);         break;
                     }
-                    StationBackward[alliance.ordinal()][startPosition.ordinal()] = traj;
+                    SkipBackward[alliance.ordinal()][startPosition.ordinal()] = traj;
                 }
             }
         }
