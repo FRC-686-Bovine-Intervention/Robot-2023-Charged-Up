@@ -38,9 +38,9 @@ public class ArmHAL {
     public static final TalonFXInvertType kShoulderMotorInverted    = TalonFXInvertType.Clockwise;          
     public static final TalonFXInvertType kElbowMotorInverted       = TalonFXInvertType.CounterClockwise;    
 
-    public static final double kArmCurrentLimit = 100;
-    public static final double kArmTriggerThresholdCurrent = 40;
-    public static final double kArmTriggerThresholdTime = 0.2;
+    public static final double kArmCurrentLimit = 40;
+    public static final double kArmTriggerThresholdCurrent = 25;
+    public static final double kArmTriggerThresholdTime = 0.1;
 
    
 	// Constant import
