@@ -67,10 +67,10 @@ public class DriverInteractionLoop extends LoopBase {
         double shoulderAdjustment = 0;
         double elbowAdjustment = 0;
         double turretAdjustment = 0;
-        if(armStatus.getArmState() == ArmState.Adjust || armStatus.getArmState() == ArmState.Emergency) {
+        if(armStatus.getArmState() == ArmState.Adjust || armStatus.getArmState() == ArmState.Emergency || armStatus.getArmState() == ArmState.SubstationExtend) {
             shoulderAdjustment = -DriverControlAxes.XBoxLeftY.getAxis();
-            elbowAdjustment = DriverControlAxes.XBoxRightTrigger.getAxis() - DriverControlAxes.XBoxLeftTrigger.getAxis();
-            turretAdjustment = DriverControlAxes.XBoxRightX.getAxis();
+            elbowAdjustment = -DriverControlAxes.XBoxRightY.getAxis();
+            turretAdjustment = DriverControlAxes.XBoxRightTrigger.getAxis() - DriverControlAxes.XBoxLeftTrigger.getAxis();
 
             if(Math.abs(shoulderAdjustment) <= kAdjustmentDeadband)
                 shoulderAdjustment = 0;
