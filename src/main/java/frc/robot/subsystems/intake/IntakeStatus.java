@@ -86,12 +86,13 @@ public class IntakeStatus extends StatusBase {
            .setDeploySolenoid(deploySolenoid)
            .setIntakeStallCurrentLimit(intakeStallCurrentLimit);
 
-        logger.recordOutput(prefix + "Intake State", intakeState.name());
-        logger.recordOutput(prefix + "Intake Motor/Power", intakePower);
-        logger.recordOutput(prefix + "Intake Motor/Neutral Mode", intakeNeutralMode.name());
-        logger.recordOutput(prefix + "Intake Motor/Stall Current Limit", intakeStallCurrentLimit);
-        logger.recordOutput(prefix + "Intake Solenoid Deployed", deploySolenoid);
-        intakeCommand.log(logger, prefix + "Command");
+        // TODO: LESS LOGGING
+        // logger.recordOutput(prefix + "Intake State", intakeState.name());
+        // logger.recordOutput(prefix + "Intake Motor/Power", intakePower);
+        // logger.recordOutput(prefix + "Intake Motor/Neutral Mode", intakeNeutralMode.name());
+        // logger.recordOutput(prefix + "Intake Motor/Stall Current Limit", intakeStallCurrentLimit);
+        // logger.recordOutput(prefix + "Intake Solenoid Deployed", deploySolenoid);
+        // intakeCommand.log(logger, prefix + "Command");
     }
 
     @Override protected void processTable() {}

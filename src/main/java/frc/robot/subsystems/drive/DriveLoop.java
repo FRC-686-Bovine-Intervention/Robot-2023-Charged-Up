@@ -12,7 +12,7 @@ public class DriveLoop extends LoopBase {
     private final DriveStatus status;
 
     public static final double kDriveWatchdogTimerThreshold = 0.500;
-    private static final double kDisabledCoastTimerThreshold = 2;
+    private static final double kDisabledCoastTimerThreshold = 5;
 
     private DriveLoop()
     {

@@ -42,14 +42,16 @@ public class ArmTrajectory {
     this.finalState = getFixedState(points.get(points.size() - 1));
   }
 
-  /** slow down factor for arm movements */
-  private static double grannyFactor = 2;//TODO: TRAJECTORYDEBUG 1.0; // default to full speed motions
+  /** slow down factor for arm movements 
+   * CHANGE IN AUTOMANAGERLOOP AS WELL
+  */
+  private static double grannyFactor = 1.5;//TODO: TRAJECTORYDEBUG 1.0; // default to full speed motions
 
   public double getGrannyFactor() {
     return grannyFactor;
   }
 
-  public void setGrannyFactor(double grannyFactor) {
+  public static void setGrannyFactor(double grannyFactor) {
     ArmTrajectory.grannyFactor = MathUtil.clamp(grannyFactor, 1.0, 10.0);
   }
 

@@ -131,11 +131,13 @@ public class ArmLoop extends LoopBase {
     private final double manualMaxArmAdjustmentRangeDegrees = 45.0;
     private final double manualMaxArmAdjustmentRangeRadians = Units.degreesToRadians(manualMaxArmAdjustmentRangeDegrees);
 
-    private final double manualMaxArmSpeedDegreesPerSec = 30.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
-    private final double manualMaxArmSpeedRadiansPerSec = Units.degreesToRadians(manualMaxArmSpeedDegreesPerSec);
+    private final double manualMaxShoulderSpeedDegreesPerSec = 30.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
+    private final double manualMaxShoulderSpeedRadiansPerSec = Units.degreesToRadians(manualMaxShoulderSpeedDegreesPerSec);
+    private final double manualMaxElbowSpeedDegreesPerSec = 45.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
+    private final double manualMaxElbowSpeedRadiansPerSec = Units.degreesToRadians(manualMaxElbowSpeedDegreesPerSec);
     private final double manualMaxTurretPercentOutput = 0.2;  // speed the turret is allowed to manually spin
     private final double manualMaxShoulderPercentOutput = 0.2;  // speed the shoulder is allowed to manually spin when in emergency mode
-    private final double manualMaxElbowPercentOutput = 0.2;  // speed the elbow is allowed to manually spin when in emergency mode
+    private final double manualMaxElbowPercentOutput = 0.3;  // speed the elbow is allowed to manually spin when in emergency mode
 
 
     private ArmLoop() {
@@ -383,8 +385,8 @@ public class ArmLoop extends LoopBase {
                 if(FieldDimensions.chargeStation.withinBounds(odometryStatus.getRobotPose()))
                     status.setStateLocked(true);
                     
-                // if(!status.getStateLocked() && FieldDimensions.communityWithoutChargeStation.withinBounds(odometryStatus.getRobotPose()))
-                //     status.setArmState(ArmState.Align);
+                if(!status.getStateLocked() && FieldDimensions.communityWithoutChargeStation.withinBounds(odometryStatus.getRobotPose()))
+                    status.setArmState(ArmState.Align);
             break;
 
             case Align:
@@ -410,8 +412,8 @@ public class ArmLoop extends LoopBase {
                 if(newCommand.getArmState() == ArmState.Align)
                     status.setStateLocked(true);
 
-                // if(!status.getStateLocked() && !FieldDimensions.communityWithoutChargeStation.withinBounds(odometryStatus.getRobotPose()))
-                //     status.setArmState(ArmState.Hold);
+                if(!status.getStateLocked() && !FieldDimensions.communityWithoutChargeStation.withinBounds(odometryStatus.getRobotPose()))
+                    status.setArmState(ArmState.Hold);
                 // Check if driver has selected node, if so jump to Extend
             break;
 
@@ -575,8 +577,8 @@ public class ArmLoop extends LoopBase {
             } else {
                 // update manual adjustments
                 // shoulderThrottle and elbowThrottle are assumed to be joystick inputs in the range [-1, +1]
-                double shoulderIncr = status.getShoulderThrottle() * manualMaxArmSpeedRadiansPerSec * Constants.loopPeriodSecs;
-                double elbowIncr = status.getElbowThrottle() * manualMaxArmSpeedRadiansPerSec * Constants.loopPeriodSecs;
+                double shoulderIncr = status.getShoulderThrottle() * manualMaxShoulderSpeedRadiansPerSec * Constants.loopPeriodSecs;
+                double elbowIncr = status.getElbowThrottle() * manualMaxElbowSpeedRadiansPerSec * Constants.loopPeriodSecs;
 
                 // clamp manual adjustments
                 double shoulderAdj = MathUtil.clamp(status.getShoulderAdjustment() + shoulderIncr, -manualMaxArmAdjustmentRangeRadians, +manualMaxArmAdjustmentRangeRadians);

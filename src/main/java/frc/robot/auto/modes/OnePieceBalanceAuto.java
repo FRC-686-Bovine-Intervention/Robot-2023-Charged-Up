@@ -47,12 +47,16 @@ public class OnePieceBalanceAuto extends AutoMode {
         addAction(new ArmCommandAction(new ArmCommand(ArmState.Extend).setTargetNode(config.startingPiece == GamePiece.Cube ? NodeEnum.TopCenter : (config.startingPosition == StartPosition.Loading ? NodeEnum.TopWall : NodeEnum.TopLoading))));
         addAction(new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Adjust));
         addAction(new ArmCommandAction(new ArmCommand(ArmState.Release)));
-        addAction(new WaitUntilAction(() -> armStatus.getTargetArmPose() == ArmPose.Preset.DEFENSE));
+        addAction(new WaitUntilAction(() -> armStatus.getClawGrabbing() == false));
         addAction(new RamseteFollowerAction(trajectories[0], ramseteController));
         addAction(new IntakeCommandAction(new IntakeCommand(IntakeState.Grab)));
         addAction(new RamseteFollowerAction(trajectories[1], ramseteController));
         addAction(new ParallelAction(
-            new RamseteFollowerAction(trajectories[2], ramseteController),
+            new SeriesAction(
+                new RamseteFollowerAction(trajectories[2], ramseteController),
+                new DriveOnChargeStationEdgeAction(true).setTimeout(3),
+                new DriverAssistCommandAction(new DriverAssistCommand(DriverAssistState.AutoBalance))
+            ),
             new SeriesAction(
                 new WaitUntilAction(() -> intakeStatus.getIntakeState() == IntakeState.Hold).setTimeout(0.5),
                 new ConditionalAction(() -> intakeStatus.getIntakeState() == IntakeState.Hold, 
@@ -61,7 +65,5 @@ public class OnePieceBalanceAuto extends AutoMode {
                 )
             )
         ));
-        addAction(new DriveOnChargeStationEdgeAction(true).setTimeout(3));
-        addAction(new DriverAssistCommandAction(new DriverAssistCommand(DriverAssistState.AutoBalance)));
     }
 }

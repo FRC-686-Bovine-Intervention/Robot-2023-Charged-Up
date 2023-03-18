@@ -56,15 +56,16 @@ public class DriverAssistStatus extends StatusBase {
 
     @Override
     protected void processOutputs(Logger logger, String prefix) {
-        logger.recordOutput(prefix + "Command/Target Pose",     assistCommand.getTargetPose());
-        logger.recordOutput(prefix + "Calculated Trajectory",   getTrajectory());
-        logger.recordOutput(prefix + "Driver Assist State",     getDriverAssistState().name());
-        logger.recordOutput(prefix + "Pitch Velocity",          getPitchVelo());
-        logger.recordOutput(prefix + "Estimated Pitch",         getEstimatedPitch());
-        logger.recordOutput(prefix + "usingProportional",       getUsingProportional());
+        // TODO: LESS LOGGING
+        // logger.recordOutput(prefix + "Command/Target Pose",     assistCommand.getTargetPose());
+        // logger.recordOutput(prefix + "Calculated Trajectory",   getTrajectory());
+        // logger.recordOutput(prefix + "Driver Assist State",     getDriverAssistState().name());
+        // logger.recordOutput(prefix + "Pitch Velocity",          getPitchVelo());
+        // logger.recordOutput(prefix + "Estimated Pitch",         getEstimatedPitch());
+        // logger.recordOutput(prefix + "usingProportional",       getUsingProportional());
 
-        if(getDriveCommand() != null)
-            getDriveCommand().logCommand(logger, prefix + "Drive Command/");
+        // if(getDriveCommand() != null)
+        //     getDriveCommand().logCommand(logger, prefix + "Drive Command/");
     }
     
     @Override protected void exportToTable(LogTable table) {}

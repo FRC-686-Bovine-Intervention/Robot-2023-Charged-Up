@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.RobotConfiguration;
 import frc.robot.auto.actions.ArmCommandAction;
 import frc.robot.auto.actions.ConditionalAction;
+import frc.robot.auto.actions.DriveOnChargeStationEdgeAction;
+import frc.robot.auto.actions.DriverAssistCommandAction;
 import frc.robot.auto.actions.IntakeCommandAction;
 import frc.robot.auto.actions.ParallelAction;
 import frc.robot.auto.actions.RamseteFollowerAction;
@@ -19,21 +21,23 @@ import frc.robot.subsystems.arm.ArmPose;
 import frc.robot.subsystems.arm.ArmStatus;
 import frc.robot.subsystems.arm.ArmStatus.ArmState;
 import frc.robot.subsystems.arm.ArmStatus.NodeEnum;
+import frc.robot.subsystems.driverAssist.DriverAssistCommand;
+import frc.robot.subsystems.driverAssist.DriverAssistStatus.DriverAssistState;
 import frc.robot.subsystems.intake.IntakeCommand;
 import frc.robot.subsystems.intake.IntakeStatus;
 import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
 
-public class TwoPieceAuto extends AutoMode {
+public class OneGrabBalanceAuto extends AutoMode {
     private final ArmStatus armStatus = ArmStatus.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
 
-    public TwoPieceAuto(AutoConfiguration config) {
-        Trajectory[] trajectories = new Trajectory[4];
+    public OneGrabBalanceAuto(AutoConfiguration config) {
+        
+        Trajectory[] trajectories = new Trajectory[3];
 
         trajectories[0] = AutoTrajectories.ScoringBackward[DriverStation.getAlliance().ordinal()][config.startingPosition.ordinal()];
         trajectories[1] = AutoTrajectories.PickupForward[DriverStation.getAlliance().ordinal()][config.startingPosition.ordinal()];
-        trajectories[2] = AutoTrajectories.PickupBackward[DriverStation.getAlliance().ordinal()][config.startingPosition.ordinal()];
-        trajectories[3] = AutoTrajectories.ScoringForward[DriverStation.getAlliance().ordinal()][config.startingPosition.ordinal()];
+        trajectories[2] = AutoTrajectories.StationBackward[DriverStation.getAlliance().ordinal()][config.startingPosition.ordinal()];
 
         startConfiguration = new RobotConfiguration(trajectories[0].getInitialPose(), ArmPose.Preset.AUTO_START, ArmState.Hold);
 
@@ -46,33 +50,20 @@ public class TwoPieceAuto extends AutoMode {
         addAction(new WaitUntilAction(() -> armStatus.getTargetArmPose() == ArmPose.Preset.DEFENSE));
         addAction(new RamseteFollowerAction(trajectories[0], ramseteController));
         addAction(new IntakeCommandAction(new IntakeCommand(IntakeState.Grab)));
+        addAction(new RamseteFollowerAction(trajectories[1], ramseteController));
         addAction(new ParallelAction(
-            new RamseteFollowerAction(trajectories[1], ramseteController),
-            new WaitUntilAction(() -> intakeStatus.getIntakeState() == IntakeState.Hold).setTimeout(1.5)
-        ));
-        NodeEnum secondNode = NodeEnum.TopCenter;
-        if(config.stagedPieces[config.startingPosition.ordinal()] == GamePiece.Cone) { // If second piece is a cone, override cube node
-            if (config.startingPiece == config.stagedPieces[config.startingPosition.ordinal()]) { // Choose highest possible cone node
-                secondNode = (config.startingPosition == StartPosition.Loading ? NodeEnum.MiddleLoading : NodeEnum.MiddleWall);
-            } else {
-                secondNode = (config.startingPosition == StartPosition.Loading ? NodeEnum.TopLoading : NodeEnum.TopWall);
-            }
-        }
-        addAction(new ConditionalAction(() -> intakeStatus.getIntakeState() == IntakeState.Hold, 
             new SeriesAction(
                 new RamseteFollowerAction(trajectories[2], ramseteController),
-                new ParallelAction(
-                    new RamseteFollowerAction(trajectories[3], ramseteController),
-                    new SeriesAction(
-                        new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Hold),
-                        new ArmCommandAction(new ArmCommand(ArmState.Align))
-                    )
-                ),
-                new ArmCommandAction(new ArmCommand(ArmState.Extend).setTargetNode(secondNode))/* ,
-                new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Adjust),
-                new ArmCommandAction(new ArmCommand(ArmState.Release)) */
+                new DriveOnChargeStationEdgeAction(true).setTimeout(3),
+                new DriverAssistCommandAction(new DriverAssistCommand(DriverAssistState.AutoBalance))
             ),
-            new IntakeCommandAction(new IntakeCommand(IntakeState.Defense))
+            new SeriesAction(
+                new WaitUntilAction(() -> intakeStatus.getIntakeState() == IntakeState.Hold).setTimeout(0.5),
+                new ConditionalAction(() -> intakeStatus.getIntakeState() == IntakeState.Hold, 
+                    new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Hold).setTimeout(3),
+                    new IntakeCommandAction(new IntakeCommand(IntakeState.Defense))
+                )
+            )
         ));
     }
 }

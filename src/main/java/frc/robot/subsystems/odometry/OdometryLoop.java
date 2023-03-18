@@ -40,7 +40,8 @@ public class OdometryLoop extends LoopBase {
             );
 
         for(VisionData data : visionStatus.getVisionData()) {
-            poseEstimator.addVisionMeasurement(data.getRobotPose(), data.timestamp(), data.getStdDevs());
+            if(data.isGoodData())
+                poseEstimator.addVisionMeasurement(data.getRobotPose(), data.timestamp(), data.getStdDevs());
         }
 
         if(newCommand.getResetPose() != null) {

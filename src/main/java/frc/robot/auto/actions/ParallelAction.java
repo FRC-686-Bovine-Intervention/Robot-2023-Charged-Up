@@ -13,15 +13,12 @@ public class ParallelAction extends Action {
     @Override
     public void run() {
         setFinished(true);
-        int done = actions.length;
         for(Action action : actions) {
             action.onLoop();
             if(!action.getEvaluatedDone()) {
-                done--;
                 setFinished(false);
             }
         }
-        System.out.println(done + " Parallel actions done");
     }
 
     @Override

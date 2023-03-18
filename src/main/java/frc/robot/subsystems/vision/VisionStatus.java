@@ -19,6 +19,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import frc.robot.FieldDimensions;
 import frc.robot.RobotConfiguration;
 import frc.robot.lib.util.AdvantageUtil;
 import frc.robot.subsystems.arm.ArmStatus;
@@ -134,6 +135,9 @@ public class VisionStatus extends StatusBase {
 
     // AprilTags
     public record VisionData(AprilTag aprilTag, Transform3d camToTarget, Transform3d robotToCam, double timestamp) {
+        private static final Translation3d camOrigin = new Translation3d();
+        private static final double kMaxDistToTarget = FieldDimensions.Community.chargingStationOuterX;
+        
         public Pose2d getRobotPose() {
             return aprilTag.pose.transformBy(camToTarget.inverse()).transformBy(robotToCam.inverse()).toPose2d();
         }
@@ -145,6 +149,12 @@ public class VisionStatus extends StatusBase {
         }
         public double getKalmanError() {
             return OdometryStatus.getInstance().getRobotPose().getTranslation().getDistance(getRobotPose().getTranslation());
+        }
+        public double getDistanceToTarget() {
+            return camOrigin.getDistance(camToTarget.getTranslation());
+        }
+        public boolean isGoodData() {
+            return getDistanceToTarget() < kMaxDistToTarget;
         }
         public Matrix<N3, N1> getStdDevs() {
             double xyCoefficient = 0.1;

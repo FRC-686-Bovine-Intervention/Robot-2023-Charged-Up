@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.auto.actions.Action;
 import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
+import frc.robot.subsystems.arm.ArmTrajectory;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.framework.SubsystemController;
 
@@ -19,8 +20,11 @@ public class AutoManagerLoop extends LoopBase {
 
     @Override
     protected void Enabled() {
-        if(!DriverStation.isAutonomous())
+        if(!DriverStation.isAutonomous()) {
+            ArmTrajectory.setGrannyFactor(1.5);
             return;
+        }
+        ArmTrajectory.setGrannyFactor(1);
         if(status.EnabledState.IsInitState) {
             status.setCurrentAutoMode(status.getNewAutomode())
                   .setAutoRunning(true)

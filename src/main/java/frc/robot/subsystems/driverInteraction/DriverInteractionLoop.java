@@ -161,7 +161,7 @@ public class DriverInteractionLoop extends LoopBase {
             break;
 
             case Hold:
-                if(DriverControlButtons.MainAction.getRisingEdge())
+                if(DriverControlButtons.MainAction.getRisingEdge() || DriverControlButtons.SecondAlign.getRisingEdge())
                     armCommand.setArmState(ArmState.Align);
                 if(DriverControlButtons.Undo.getRisingEdge())
                     armCommand.setArmState(ArmState.Defense);

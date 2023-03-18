@@ -55,6 +55,7 @@ public class DriverInteractionStatus extends StatusBase {
         
         Release         (Joysticks.XBox, XBox.kBButton),
         SecondUndo      (Joysticks.XBox, XBox.kXButton),
+        SecondAlign     (Joysticks.XBox, XBox.kAButton),
         Oopsie          (Joysticks.XBox, XBox.kLeftButton, XBox.kRightButton), // Named Oopsie at the request of Mr. Maceikis
         ;
 
@@ -144,12 +145,13 @@ public class DriverInteractionStatus extends StatusBase {
 
     @Override
     protected void processOutputs(Logger logger, String prefix) {
-        for(DriverControlButtons button : DriverControlButtons.values())
-            logger.recordOutput(prefix + "Joystick Buttons/" + button.name(), button.getButton());
-        for(DriverControlAxes axis : DriverControlAxes.values())
-            logger.recordOutput(prefix + "Joystick Axes/" + axis.name(), axis.getAxis());
-        for(DriverControlPOVs POV : DriverControlPOVs.values())
-            logger.recordOutput(prefix + "Joystick POVs/" + POV.name(), POV.getPOV());
+        // TODO: LESS LOGGING
+        // for(DriverControlButtons button : DriverControlButtons.values())
+        //     logger.recordOutput(prefix + "Joystick Buttons/" + button.name(), button.getButton());
+        // for(DriverControlAxes axis : DriverControlAxes.values())
+        //     logger.recordOutput(prefix + "Joystick Axes/" + axis.name(), axis.getAxis());
+        // for(DriverControlPOVs POV : DriverControlPOVs.values())
+        //     logger.recordOutput(prefix + "Joystick POVs/" + POV.name(), POV.getPOV());
     }
 
     @Override protected void exportToTable(LogTable table) {}
