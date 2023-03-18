@@ -15,6 +15,7 @@ import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
 import frc.robot.auto.autoManager.AutoConfiguration.StartPosition;
 import frc.robot.auto.modes.AutoMode;
 import frc.robot.auto.modes.OneGrabBalanceAuto;
+import frc.robot.auto.modes.OnePieceBalanceAuto;
 import frc.robot.auto.modes.TwoPieceAuto;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -24,7 +25,7 @@ public class AutoManagerStatus extends StatusBase {
 
     public enum AutoModesEnum{
         OneGrabBalance("One Piece Grab Balance", OneGrabBalanceAuto.class),
-        // OnePieceBalance("One Piece Balance", OnePieceBalanceAuto.class),
+        OnePieceBalance("One Piece Balance", OnePieceBalanceAuto.class),
         TwoPiece("Two Piece", TwoPieceAuto.class),
         // DriveStraightAuto("Drive Straight Test", DriveStraightAuto.class),
         // RamseteFollowerTest("Ramsete Follower Test", RamseteFollowerTestAuto.class),
