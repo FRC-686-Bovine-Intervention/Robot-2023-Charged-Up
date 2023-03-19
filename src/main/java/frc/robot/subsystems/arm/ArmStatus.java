@@ -369,6 +369,10 @@ public class ArmStatus extends StatusBase {
     public double       getElbowPIDOutput()                         {return elbowPIDOutput;}
     protected ArmStatus setElbowPIDOutput(double elbowPIDOutput)    {this.elbowPIDOutput = elbowPIDOutput; return this;}
 
+    private boolean     elbowRaised;
+    public boolean      getElbowRaised()                    {return elbowRaised;}
+    protected ArmStatus setElbowRaised(boolean elbowRaised) {this.elbowRaised = elbowRaised; return this;}
+
     // Claw
     private boolean     clawGrabbing = true;
     public boolean      getClawGrabbing()                       {return clawGrabbing;}

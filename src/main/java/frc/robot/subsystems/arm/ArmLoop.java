@@ -131,9 +131,10 @@ public class ArmLoop extends LoopBase {
     private final double manualMaxArmAdjustmentRangeDegrees = 45.0;
     private final double manualMaxArmAdjustmentRangeRadians = Units.degreesToRadians(manualMaxArmAdjustmentRangeDegrees);
 
-    private final double manualMaxShoulderSpeedDegreesPerSec = 30.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
+    private final double manualMaxShoulderSpeedDegreesPerSec = 30.0 * 1.5;    // speed the arm is allowed to extend manually in the turret's XZ plane
     private final double manualMaxShoulderSpeedRadiansPerSec = Units.degreesToRadians(manualMaxShoulderSpeedDegreesPerSec);
-    private final double manualMaxElbowSpeedDegreesPerSec = 45.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
+    private final double manualMaxElbowSpeedDegreesPerSec = 45.0 * 1.5;    // speed the arm is allowed to extend manually in the turret's XZ plane
+    private final double manualElbowRaisedDegrees = 15.0;    // speed the arm is allowed to extend manually in the turret's XZ plane
     private final double manualMaxElbowSpeedRadiansPerSec = Units.degreesToRadians(manualMaxElbowSpeedDegreesPerSec);
     private final double manualMaxTurretPercentOutput = 0.2;  // speed the turret is allowed to manually spin
     private final double manualMaxShoulderPercentOutput = 0.2;  // speed the shoulder is allowed to manually spin when in emergency mode
@@ -239,6 +240,8 @@ public class ArmLoop extends LoopBase {
             status.setshoulderThrottle(newCommand.getShoulderAdjustment());
         if(newCommand.getElbowAdjustment() != null)
             status.setElbowThrottle(newCommand.getElbowAdjustment());
+        if(newCommand.getElbowRaised() != null)
+            status.setElbowRaised(newCommand.getElbowRaised());
         if(newCommand.getTurretAdjustment() != null)
             status.setTurretThrottle(newCommand.getTurretAdjustment());
 
@@ -426,6 +429,8 @@ public class ArmLoop extends LoopBase {
             break;
 
             case Adjust:
+                if(stateTimer.get() == 0)
+                    status.setElbowRaised(false);
                 // Rotate turret according to limelight and driver controls
                 status.setTurretControlMode(MotorControlMode.PercentOutput)
                       .setTurretPower(status.getTurretThrottle() * manualMaxTurretPercentOutput);
@@ -443,6 +448,9 @@ public class ArmLoop extends LoopBase {
             break;
 
             case SubstationExtend:
+                if(stateTimer.get() == 0) {
+                    status.setElbowRaised(false);
+                }
                 status.setTargetArmPose(ArmPose.Preset.DOUBLE_SUBSTATION);
             break;
 
@@ -584,6 +592,8 @@ public class ArmLoop extends LoopBase {
                 double shoulderAdj = MathUtil.clamp(status.getShoulderAdjustment() + shoulderIncr, -manualMaxArmAdjustmentRangeRadians, +manualMaxArmAdjustmentRangeRadians);
                 double elbowAdj = MathUtil.clamp(status.getElbowAdjustment() + elbowIncr, -manualMaxArmAdjustmentRangeRadians, +manualMaxArmAdjustmentRangeRadians);
 
+                elbowAdj += (status.getElbowRaised() ? Units.degreesToRadians(manualElbowRaisedDegrees) : 0);
+
                 Vector<N2> thetaFinalTrajectory = new Vector<>(finalTrajectoryState.extractColumnVector(0));
                 double shoulderNew = thetaFinalTrajectory.get(0,0) + shoulderAdj;
                 double elbowNew = thetaFinalTrajectory.get(1,0) + elbowAdj;
@@ -614,9 +624,12 @@ public class ArmLoop extends LoopBase {
                     elbowIncr = Math.max(elbowIncr, 0.0);
                 }
 
+
                 // redo setpoint calcs after clamping increments
                 shoulderAdj = MathUtil.clamp(status.getShoulderAdjustment() + shoulderIncr, -manualMaxArmAdjustmentRangeRadians, +manualMaxArmAdjustmentRangeRadians);
                 elbowAdj = MathUtil.clamp(status.getElbowAdjustment() + elbowIncr, -manualMaxArmAdjustmentRangeRadians, +manualMaxArmAdjustmentRangeRadians);
+
+                // elbowAdj += (status.getElbowRaised() ? Units.degreesToRadians(manualElbowRaisedDegrees) : 0);
 
                 thetaFinalTrajectory = new Vector<>(finalTrajectoryState.extractColumnVector(0));
                 shoulderNew = thetaFinalTrajectory.get(0,0) + shoulderAdj;

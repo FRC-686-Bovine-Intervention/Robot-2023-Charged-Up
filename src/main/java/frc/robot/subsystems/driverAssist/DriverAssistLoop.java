@@ -1,14 +1,6 @@
 package frc.robot.subsystems.driverAssist;
 
-import java.util.ArrayList;
-
 import edu.wpi.first.math.controller.RamseteController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
 import frc.robot.RamseteFollower;
@@ -17,7 +9,6 @@ import frc.robot.subsystems.drive.DriveCommand;
 import frc.robot.subsystems.drive.DriveStatus;
 import frc.robot.subsystems.driverAssist.DriverAssistStatus.DriverAssistState;
 import frc.robot.subsystems.framework.LoopBase;
-import frc.robot.subsystems.odometry.OdometryStatus;
 import frc.robot.subsystems.vision.VisionStatus;
 
 public class DriverAssistLoop extends LoopBase {
@@ -30,11 +21,8 @@ public class DriverAssistLoop extends LoopBase {
 
     private final VisionStatus visionStatus = VisionStatus.getInstance();
 
-    private static final double kForwardPitchThreshold  = 10;
-    private static final double kBackwardPitchThreshold = -10;
-    private static final double kPitchSpeedThreshold    = 10;
-    private static final double kForwardBalancePercent  = 0.28;
-    private static final double kBackwardBalancePercent = -0.28;
+    private static final double kPowerAtMaxPitch = 0.25*0.75;
+    private static final double kMaxPitch = 15;
 
     private DriverAssistLoop() {Subsystem = DriverAssist.getInstance();}
 
@@ -82,7 +70,7 @@ public class DriverAssistLoop extends LoopBase {
                 double output = 0;
                 if(status.getUsingProportional())
                 {
-                    output = Math.max(Math.min(estimatedPitch*0.1875/15, 0.25),-0.25);
+                    output = Math.max(Math.min(estimatedPitch*kPowerAtMaxPitch/kMaxPitch, kPowerAtMaxPitch),-kPowerAtMaxPitch);
                 }
                 else
                 {

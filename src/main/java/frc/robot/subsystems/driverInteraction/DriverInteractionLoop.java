@@ -63,23 +63,19 @@ public class DriverInteractionLoop extends LoopBase {
         return new DriveCommand(DriveControlMode.OPEN_LOOP, leftPower, rightPower, (DriverControlButtons.ParkingBrake.getButton() ? NeutralMode.Brake : NeutralMode.Coast));
     }
 
-    private double[] generateAdjustments() {
-        double shoulderAdjustment = 0;
-        double elbowAdjustment = 0;
-        double turretAdjustment = 0;
+    private ArmCommand generateAdjustments() {
+        ArmCommand command = new ArmCommand();
         if(armStatus.getArmState() == ArmState.Adjust || armStatus.getArmState() == ArmState.Emergency || armStatus.getArmState() == ArmState.SubstationExtend) {
-            shoulderAdjustment = -DriverControlAxes.XBoxLeftY.getAxis();
-            elbowAdjustment = -DriverControlAxes.XBoxRightY.getAxis();
-            turretAdjustment = DriverControlAxes.XBoxRightTrigger.getAxis() - DriverControlAxes.XBoxLeftTrigger.getAxis();
-
-            if(Math.abs(shoulderAdjustment) <= kAdjustmentDeadband)
-                shoulderAdjustment = 0;
-            if(Math.abs(elbowAdjustment) <= kAdjustmentDeadband)
-                elbowAdjustment = 0;
-            if(Math.abs(turretAdjustment) <= kAdjustmentDeadband)
-                turretAdjustment = 0;
+            double shoulderAdjustment = -DriverControlAxes.XBoxLeftY.getAxis();
+            double elbowAdjustment = -DriverControlAxes.XBoxRightY.getAxis();
+            double turretAdjustment = DriverControlAxes.XBoxRightTrigger.getAxis() - DriverControlAxes.XBoxLeftTrigger.getAxis();
+            boolean elbowRaised = DriverControlButtons.RaiseElbow.getRisingEdge();
+            command.setShoulderAdjustment(Math.abs(shoulderAdjustment) > kAdjustmentDeadband ? shoulderAdjustment : 0);
+            command.setElbowAdjustment(Math.abs(elbowAdjustment) > kAdjustmentDeadband ? elbowAdjustment : 0);
+            command.setTurretAdjustment(Math.abs(turretAdjustment) > kAdjustmentDeadband ? turretAdjustment : 0);
+            command.setElbowRaised(armStatus.getElbowRaised() ^ elbowRaised);
         }
-        return new double[]{shoulderAdjustment,elbowAdjustment,turretAdjustment};
+        return command;
     }
 
     @Override
@@ -126,12 +122,7 @@ public class DriverInteractionLoop extends LoopBase {
         }
         intake.setCommand(intakeCommand);
 
-        ArmCommand armCommand = new ArmCommand();
-
-        double[] adjustments = generateAdjustments();
-        armCommand.setShoulderAdjustment(adjustments[0]);
-        armCommand.setElbowAdjustment(adjustments[1]);
-        armCommand.setTurretAdjustment(adjustments[2]);
+        ArmCommand armCommand = generateAdjustments();
 
         // Field orient buttons
         if(DriverControlButtons.ButtonBoard1_1.getRisingEdge())

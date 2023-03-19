@@ -28,6 +28,10 @@ public class ArmCommand {
     public Double       getElbowAdjustment()                    {return elbowAdjustment;}
     public ArmCommand   setElbowAdjustment(double elbowAdjustment)  {this.elbowAdjustment = elbowAdjustment; return this;}
 
+    private Boolean     elbowRaised = null;
+    public Boolean      getElbowRaised()                    {return elbowRaised;}
+    public ArmCommand   setElbowRaised(boolean elbowRaised) {this.elbowRaised = elbowRaised; return this;}
+
     private Double      turretAdjustment = null;
     public Double       getTurretAdjustment()                           {return turretAdjustment;}
     public ArmCommand   setTurretAdjustment(double turretAdjustment)    {this.turretAdjustment = turretAdjustment; return this;}

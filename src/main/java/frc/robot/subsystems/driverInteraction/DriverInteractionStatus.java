@@ -57,6 +57,7 @@ public class DriverInteractionStatus extends StatusBase {
         SecondUndo      (Joysticks.XBox, XBox.kXButton),
         SecondAlign     (Joysticks.XBox, XBox.kAButton),
         Oopsie          (Joysticks.XBox, XBox.kLeftButton, XBox.kRightButton), // Named Oopsie at the request of Mr. Maceikis
+        RaiseElbow      (Joysticks.XBox, XBox.kRightJoyPush),
         ;
 
         private final Joysticks joystick;
