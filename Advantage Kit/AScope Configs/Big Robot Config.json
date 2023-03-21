@@ -1,0 +1,394 @@
+{
+  "version": "2.2.2",
+  "layout": [
+    {
+      "type": 1,
+      "legends": {
+        "left": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Shoulder/Angle (Rad)",
+              "color": "#80588e",
+              "show": true
+            }
+          ]
+        },
+        "discrete": {
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Current Arm State",
+              "color": "#af2437",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Intake/Intake State",
+              "color": "#eb987e",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Hold|Align Locked",
+              "color": "#e5b31b",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Trajectory/Current Trajectory",
+              "color": "#2b66a2",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Trajectory/Internal Disable Reason",
+              "color": "#e48b32",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Current Pose",
+              "color": "#aacaee",
+              "show": true
+            }
+          ]
+        },
+        "right": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Elbow/Angle (Rad)",
+              "color": "#c0b487",
+              "show": true
+            }
+          ]
+        }
+      },
+      "title": "Generic"
+    },
+    {
+      "type": 1,
+      "legends": {
+        "left": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Shoulder/Angle (Rad)",
+              "color": "#e5b31b",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Shoulder/Setpoint",
+              "color": "#2b66a2",
+              "show": true
+            }
+          ]
+        },
+        "discrete": {
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Shoulder/Encoder Status/Calibrated",
+              "color": "#aacaee",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Shoulder/Encoder Status/Moving",
+              "color": "#c0b487",
+              "show": true
+            }
+          ]
+        },
+        "right": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Shoulder/Power",
+              "color": "#af2437",
+              "show": false
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Shoulder/PID Output",
+              "color": "#80588e",
+              "show": false
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Shoulder/Feedforward",
+              "color": "#e48b32",
+              "show": true
+            }
+          ]
+        }
+      },
+      "title": "Shoulder"
+    },
+    {
+      "type": 1,
+      "legends": {
+        "left": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Elbow/Angle (Rad)",
+              "color": "#e5b31b",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Elbow/Setpoint",
+              "color": "#2b66a2",
+              "show": true
+            }
+          ]
+        },
+        "discrete": {
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Elbow/Encoder Status/Calibrated",
+              "color": "#aacaee",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Elbow/Encoder Status/Moving",
+              "color": "#c0b487",
+              "show": true
+            }
+          ]
+        },
+        "right": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Elbow/Power",
+              "color": "#af2437",
+              "show": false
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Elbow/PID Output",
+              "color": "#80588e",
+              "show": false
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Arm/Elbow/Feedforward",
+              "color": "#e48b32",
+              "show": true
+            }
+          ]
+        }
+      },
+      "title": "Elbow"
+    },
+    {
+      "type": 1,
+      "legends": {
+        "left": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Turret/Position (deg)",
+              "color": "#2b66a2",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Turret/Target Angle (deg)",
+              "color": "#af2437",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Turret/PID/Position",
+              "color": "#e48b32",
+              "show": true
+            }
+          ]
+        },
+        "discrete": {
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Turret/Lockout",
+              "color": "#e5b31b",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Turret/Control Mode",
+              "color": "#aacaee",
+              "show": true
+            }
+          ]
+        },
+        "right": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Turret/Power",
+              "color": "#80588e",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Arm/Turret/PID/Velocity",
+              "color": "#c0b487",
+              "show": true
+            }
+          ]
+        }
+      },
+      "title": "Turret"
+    },
+    {
+      "type": 1,
+      "legends": {
+        "left": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": [
+            {
+              "key": "/AdvantageKit/IntakeStatus/Intake Motor Current",
+              "color": "#80588e",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Intake/Intake Motor/Stall Current Limit",
+              "color": "#e48b32",
+              "show": true
+            }
+          ]
+        },
+        "discrete": {
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Intake/Intake State",
+              "color": "#2b66a2",
+              "show": true
+            },
+            {
+              "key": "/AdvantageKit/RealOutputs/Intake/Intake Motor/Neutral Mode",
+              "color": "#e5b31b",
+              "show": true
+            }
+          ]
+        },
+        "right": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Intake/Intake Motor/Power",
+              "color": "#af2437",
+              "show": true
+            }
+          ]
+        }
+      },
+      "title": "Intake"
+    },
+    {
+      "type": 1,
+      "legends": {
+        "left": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/Drive/Gyro/Pitch (Deg)",
+              "color": "#2b66a2",
+              "show": true
+            }
+          ]
+        },
+        "discrete": {
+          "fields": [
+            {
+              "key": "/AdvantageKit/RealOutputs/DriverAssist/usingProportional",
+              "color": "#e5b31b",
+              "show": true
+            }
+          ]
+        },
+        "right": {
+          "lockedRange": null,
+          "unitConversion": {
+            "type": null,
+            "factor": 1
+          },
+          "fields": []
+        }
+      },
+      "title": "Line Graph"
+    },
+    {
+      "type": 3,
+      "field": "/AdvantageKit/RealOutputs/Console",
+      "title": "Console"
+    },
+    {
+      "type": 6,
+      "fields": [],
+      "listFields": [
+        [],
+        [
+          {
+            "type": "Robot",
+            "key": "/AdvantageKit/RealOutputs/Odometry/Robot Pose (Meters, Rad)",
+            "fieldTypeIndex": 0
+          },
+          {
+            "type": "Ghost",
+            "key": "/AdvantageKit/RealOutputs/RamseteFollower/Sampled Robot Pose",
+            "fieldTypeIndex": 0
+          },
+          {
+            "type": "Trajectory",
+            "key": "/AdvantageKit/RealOutputs/RamseteFollower/Trajectory",
+            "fieldTypeIndex": 0
+          },
+          {
+            "type": "Ghost",
+            "key": "/AdvantageKit/RealOutputs/Vision/AprilTags/Vision Poses",
+            "fieldTypeIndex": 0
+          }
+        ]
+      ],
+      "options": {
+        "field": "2023",
+        "alliance": "blue",
+        "robot": "Crab Bot",
+        "unitDistance": "meters",
+        "unitRotation": "radians"
+      },
+      "title": "3D Field"
+    }
+  ]
+}
