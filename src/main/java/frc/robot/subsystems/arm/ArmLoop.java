@@ -389,17 +389,17 @@ public class ArmLoop extends LoopBase {
                     status.setStateLocked(true);
                     
                 if(!status.getStateLocked() && FieldDimensions.communityWithoutChargeStation.withinBounds(odometryStatus.getRobotPose()))
-                    status.setArmState(ArmState.Align);
+                    status.setArmState(ArmState.AlignWall);
             break;
 
-            case Align:
+            case AlignWall:
                 status.setTargetArmPose(ArmPose.Preset.DEFENSE);
                 
                 // unwrap turret angle because odometry wraps it to +/-180
                 
                 double turretAngleDeg = getTurretBestAngle(
                     new Translation2d(
-                        (DriverStation.getAlliance() == Alliance.Red ? FieldDimensions.fieldLength : 0), 
+                        (DriverStation.getAlliance() == Alliance.Red ? 10 : -10) + odometryStatus.getRobotPose().getX(), 
                         odometryStatus.getRobotPose().getY()
                     )
                 );
@@ -412,12 +412,16 @@ public class ArmLoop extends LoopBase {
                 if(stateTimer.get() == 0)
                     status.setStateLocked(false);
 
-                if(newCommand.getArmState() == ArmState.Align)
+                if(newCommand.getArmState() == ArmState.AlignWall)
                     status.setStateLocked(true);
 
                 if(!status.getStateLocked() && !FieldDimensions.communityWithoutChargeStation.withinBounds(odometryStatus.getRobotPose()))
                     status.setArmState(ArmState.Hold);
                 // Check if driver has selected node, if so jump to Extend
+            break;
+
+            case AlignNode:
+                
             break;
 
             case Extend:

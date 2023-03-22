@@ -58,9 +58,10 @@ public class IntakeStatus extends StatusBase {
     public IdleMode getIntakeNeutralMode()                                  {return intakeNeutralMode;}
     public IntakeStatus setIntakeNeutralMode(IdleMode intakeNeutralMode)    {this.intakeNeutralMode = intakeNeutralMode; return this;}
 
+    private boolean     intakeCurrentLimitChanged = true;
     private int         intakeStallCurrentLimit;
     public int          getIntakeStallCurrentLimit()                            {return intakeStallCurrentLimit;}
-    public IntakeStatus setIntakeStallCurrentLimit(int intakeStallCurrentLimit) {this.intakeStallCurrentLimit = intakeStallCurrentLimit; return this;}
+    public IntakeStatus setIntakeStallCurrentLimit(int intakeStallCurrentLimit) {intakeCurrentLimitChanged = (this.intakeStallCurrentLimit != intakeStallCurrentLimit); this.intakeStallCurrentLimit = intakeStallCurrentLimit; return this;}
 
     private boolean deploySolenoid;
     public boolean getDeploySolenoid()                              {return deploySolenoid;}
@@ -83,8 +84,11 @@ public class IntakeStatus extends StatusBase {
     protected void processOutputs(Logger logger, String prefix) {
         HAL.setIntakeMotor(intakePower)
            .setIntakeNeutralMode(intakeNeutralMode)
-           .setDeploySolenoid(deploySolenoid)
-           .setIntakeStallCurrentLimit(intakeStallCurrentLimit);
+           .setDeploySolenoid(deploySolenoid);
+        if(intakeCurrentLimitChanged) {
+            HAL.setIntakeStallCurrentLimit(intakeStallCurrentLimit);
+            intakeCurrentLimitChanged = false;
+        }
 
         // TODO: LESS LOGGING
         // logger.recordOutput(prefix + "Intake State", intakeState.name());

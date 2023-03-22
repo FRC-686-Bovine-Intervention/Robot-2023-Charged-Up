@@ -139,7 +139,7 @@ public class DriveStatus extends StatusBase {
         // logger.recordOutput(prefix + "Encoded Speed (In|Sec)/Left",     getLeftSpeedInchesPerSec());
         // logger.recordOutput(prefix + "Encoded Speed (In|Sec)/Right",    getRightSpeedInchesPerSec());
         // logger.recordOutput(prefix + "Gyro/Heading (Deg)",              getHeadingDeg());
-        // logger.recordOutput(prefix + "Gyro/Pitch (Deg)",                getPitchDeg());
+        logger.recordOutput(prefix + "Gyro/Pitch (Deg)",                getPitchDeg());
         // logger.recordOutput(prefix + "Motor Current (Amps)/Left",       getLeftMotorCurrent());
         // logger.recordOutput(prefix + "Motor Current (Amps)/Right",      getRightMotorCurrent());
         // logger.recordOutput(prefix + "Motor Status/Left",               getLeftMotorStatus());

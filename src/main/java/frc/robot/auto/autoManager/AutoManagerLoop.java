@@ -21,7 +21,7 @@ public class AutoManagerLoop extends LoopBase {
     @Override
     protected void Enabled() {
         if(!DriverStation.isAutonomous()) {
-            ArmTrajectory.setGrannyFactor(1.5);
+            ArmTrajectory.setGrannyFactor(3);
             return;
         }
         ArmTrajectory.setGrannyFactor(1.25);

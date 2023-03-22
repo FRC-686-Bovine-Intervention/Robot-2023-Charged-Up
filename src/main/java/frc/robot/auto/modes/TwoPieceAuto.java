@@ -65,7 +65,7 @@ public class TwoPieceAuto extends AutoMode {
                     new RamseteFollowerAction(trajectories[3], ramseteController),
                     new SeriesAction(
                         new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Hold),
-                        new ArmCommandAction(new ArmCommand(ArmState.Align))
+                        new ArmCommandAction(new ArmCommand(ArmState.AlignWall))
                     )
                 ),
                 new ArmCommandAction(new ArmCommand(ArmState.Extend).setTargetNode(secondNode))/* ,
