@@ -31,22 +31,6 @@ end
 % extend the elbow
 
 
-% elbowOut.theta1 = final_theta1;
-% elbowOut.theta2 = final_theta1 + 140.0 * pi/180;
-% 
-% corner_radius = 0.2;
-% 
-% % elbow out 1
-% elbowOut1.theta1 = elbowOut.theta1 - corner_radius;
-% elbowOut1.theta2 = elbowOut.theta2 - corner_radius;
-% 
-% % elbow out 2
-% elbowOut2.theta1 = elbowOut.theta1;
-% elbowOut2.theta2 = elbowOut.theta2;
-% 
-% % elbow out 3
-% elbowOut3.theta1 = elbowOut.theta1;
-% elbowOut3.theta2 = elbowOut.theta2 - corner_radius;
 
 % angular trajectory
 theta1 = [start_theta1  elbowUp.theta1  shoulderOut.theta1 final_theta1];
