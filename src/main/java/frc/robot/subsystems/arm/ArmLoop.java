@@ -136,6 +136,12 @@ public class ArmLoop extends LoopBase {
     private final double manualMaxTurretPercentOutput = 0.2;  // speed the turret is allowed to manually spin
 
 
+    public void resetTrajectoryState()  {
+        finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
+        setpointState = finalTrajectoryState;
+    }
+
+
     private ArmLoop() {
         Subsystem = arm;
 
@@ -189,10 +195,11 @@ public class ArmLoop extends LoopBase {
 
         double clawLengthPastToolCenterPoint = kMaxElbowPlusClawLength - config.elbow().length() - config.wrist().length();
         xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches() + 48.0 - clawLengthPastToolCenterPoint);
-        finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
-        setpointState = finalTrajectoryState;
+        resetTrajectoryState();
     }
 
+
+    
     @Override
     protected void Update() {
         checkArmCalibration();
