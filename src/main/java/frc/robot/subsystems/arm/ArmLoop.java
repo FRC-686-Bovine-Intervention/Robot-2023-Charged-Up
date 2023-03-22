@@ -147,8 +147,9 @@ public class ArmLoop extends LoopBase {
         // Get config from JSON
         ArmConfigJson config = arm.getConfig();
 
+        JointConfig claw = ArmDynamics.rigidlyCombineJoints(config.wrist(), config.cone());
+        JointConfig elbow = ArmDynamics.rigidlyCombineJoints(config.elbow(), claw);
         JointConfig shoulder = config.shoulder();
-        JointConfig elbow = ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist());
 
         kinematics = new ArmKinematics(new Translation2d(config.origin().getX(), config.origin().getY()),
                                         shoulder.length(), elbow.length(),

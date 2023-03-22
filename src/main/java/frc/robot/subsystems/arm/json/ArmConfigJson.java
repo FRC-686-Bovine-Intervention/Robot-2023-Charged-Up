@@ -26,7 +26,8 @@ public record ArmConfigJson(
     Translation2d origin,
     ArmDynamics.JointConfig shoulder,
     ArmDynamics.JointConfig elbow,
-    ArmDynamics.JointConfig wrist) {
+    ArmDynamics.JointConfig wrist,
+    ArmDynamics.JointConfig cone) {
 
   public static final String jsonFilename = "arm_config.json";
 

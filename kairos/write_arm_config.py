@@ -40,7 +40,7 @@ def main():
                   },
                   "cone": {
                       "mass": (((1 + 7/16) * lb).to("kg")).value.tolist(),
-                      "length": ((8.375 * inch).to("meter")).value.tolist(),
+                      "length": ((0.0 * inch).to("meter")).value.tolist(),
                       "moi": 0.019,
                       "cgRadius": ((0.0 * inch).to("meter")).value.tolist()
                   }}
