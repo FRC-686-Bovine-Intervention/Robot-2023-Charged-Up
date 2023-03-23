@@ -1,5 +1,7 @@
 package frc.robot.subsystems.odometry;
 
+import org.photonvision.EstimatedRobotPose;
+
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
@@ -11,7 +13,6 @@ import frc.robot.subsystems.drive.DriveHAL;
 import frc.robot.subsystems.drive.DriveStatus;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.vision.VisionStatus;
-import frc.robot.subsystems.vision.VisionStatus.VisionData;
 
 public class OdometryLoop extends LoopBase {
     private static OdometryLoop instance;
@@ -39,9 +40,8 @@ public class OdometryLoop extends LoopBase {
                 Units.inchesToMeters(driveStatus.getRightDistanceInches())
             );
 
-        for(VisionData data : visionStatus.getVisionData()) {
-            if(data.isGoodData())
-                poseEstimator.addVisionMeasurement(data.getRobotPose(), data.timestamp(), data.getStdDevs());
+        for(EstimatedRobotPose data : visionStatus.getVisionData()) {
+                poseEstimator.addVisionMeasurement(data.estimatedPose.toPose2d(), data.timestampSeconds);
         }
 
         if(newCommand.getResetPose() != null) {

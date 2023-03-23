@@ -7,6 +7,8 @@ import java.util.stream.DoubleStream;
 import java.util.stream.LongStream;
 
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.Matrix;
@@ -19,8 +21,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.trajectory.Trajectory;
-import frc.robot.subsystems.vision.VisionStatus.VisionData;
+import frc.robot.subsystems.vision.VisionStatus;
 
 public class AdvantageUtil {
     public static double[] deconstruct(Pose3d pose)
@@ -98,19 +99,18 @@ public class AdvantageUtil {
         logger.recordOutput(prefix + "/Poses", deconstructPose3ds(tagPoses));
     }
 
-    public static void recordVisionData(Logger logger, String prefix, List<VisionData> visionData) {
+    public static void recordEstimatedRobotPoses(Logger logger, String prefix, List<EstimatedRobotPose> visionData) {
         ArrayList<AprilTag> aprilTags = new ArrayList<AprilTag>();
         ArrayList<Pose2d> visionPoses = new ArrayList<Pose2d>();
-        double[] kalmanError = new double[0];
 
-        for(VisionData data : visionData) {
-            aprilTags.add(data.aprilTag());
-            visionPoses.add(data.getRobotPose());
-            kalmanError = DoubleStream.concat(Arrays.stream(kalmanError), Arrays.stream(new double[]{data.getKalmanError()})).toArray();
+        for(EstimatedRobotPose data : visionData) {
+            for (PhotonTrackedTarget target : data.targetsUsed) {
+                aprilTags.add(new AprilTag(target.getFiducialId(), VisionStatus.aprilTagFieldLayout.getTagPose(target.getFiducialId()).get()));
+            }
+            visionPoses.add(data.estimatedPose.toPose2d());
         }
 
         recordAprilTags(logger, prefix + "/Visible Tags", aprilTags);
         logger.recordOutput(prefix + "/Vision Poses", deconstructPose2ds(visionPoses));
-        logger.recordOutput(prefix + "/Kalman Error", kalmanError);
     }
 }
