@@ -1,5 +1,7 @@
 function [theta1, theta2] = get_elbow_up_path(start_theta1, start_theta2, final_theta1, final_theta2)
 
+minimum_shoulder_elbow_angle_deg = 27.5;
+
 % shoulder forward
 shoulderFwd.theta1 = -125.0 * pi/180;   % forward enough that elbow can come up
 shoulderFwd.theta2 =   10.0 * pi/180;
@@ -8,13 +10,13 @@ shoulderFwd.theta2 =   10.0 * pi/180;
 % bring the elbow up
 
 elbowUp.theta1 = shoulderFwd.theta1;
-elbowUp.theta2 = elbowUp.theta1 + 140.0 * pi/180;
+elbowUp.theta2 = elbowUp.theta1 + (180.0 - minimum_shoulder_elbow_angle_deg) * pi/180;
 
 % now that the elbow is fully up,
 % bring the shoulder out to its final position
 
 shoulderOut.theta1 = final_theta1;
-shoulderOut.theta2 = shoulderOut.theta1 + 140.0 * pi/180;
+shoulderOut.theta2 = shoulderOut.theta1 + (180.0 - minimum_shoulder_elbow_angle_deg) * pi/180;
 
 % if the elbow ends up going beyond 90 degrees,
 % stop it at 90 degrees by adding another waypoint
