@@ -1,0 +1,12 @@
+{
+  "startPos": "double_substation",
+  "finalPos": "double_substation",
+  "totalTime": 0.0,
+  "grannyFactor": 1.25,
+  "theta1": [
+    -0.6029999999999996
+  ],
+  "theta2": [
+    0.4719999999999994
+  ]
+}

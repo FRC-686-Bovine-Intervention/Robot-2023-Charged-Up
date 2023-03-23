@@ -1,0 +1,12 @@
+{
+  "startPos": "score_high_cube",
+  "finalPos": "score_high_cube",
+  "totalTime": 0.0,
+  "grannyFactor": 1.25,
+  "theta1": [
+    -0.6790000000000004
+  ],
+  "theta2": [
+    0.44199999999999995
+  ]
+}

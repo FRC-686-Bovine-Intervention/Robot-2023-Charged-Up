@@ -25,7 +25,9 @@ spline_T = 0.6;
 points = make_spline_trajectory(startIdx, finalIdx, points, orig_points, spline_T);
 
 % write new spline trajectory
+s.grannyFactor = 1.25;
 s.theta1 = points(1,:);
 s.theta2 = points(2,:);
+
 
 write_spline_trajectory(startIdx, finalIdx, s, false);

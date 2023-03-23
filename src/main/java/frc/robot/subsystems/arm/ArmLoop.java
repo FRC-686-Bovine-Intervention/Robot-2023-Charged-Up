@@ -127,7 +127,7 @@ public class ArmLoop extends LoopBase {
     private final double shoulderMinAngleRad;
     private final double elbowMaxAngleRad;
     private final double elbowMinAngleRad;
-    public static final double kRelativeMaxAngleRad = Math.toRadians(180.0 - 35.0);    // don't let grabber smash into proximal arm
+    public static final double kRelativeMaxAngleRad = Math.toRadians(180.0 - 27.5);    // don't let grabber smash into proximal arm
     public static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
 
     private static final double kMaxElbowPlusClawLength = Units.inchesToMeters(26.0); 
@@ -196,7 +196,7 @@ public class ArmLoop extends LoopBase {
                     points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
                 }
 
-                armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), points);
+                armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), path.grannyFactor(), points);
             }
         }
 

@@ -33,28 +33,30 @@ hXY = subplot(1,2,1);
 plot_xy_space(hXY, obstaclesJson, xyScale, 'Cartesian');
 hAngle = subplot(1,2,2);
 plot_angle_space(hAngle, obstaclesJson, kinematics, angleScale, 'Angle Space');
-for startIdx = 0:7
-    for finalIdx = 0:7
+startIdxList = [0 1 0 0 0 0 0 0 8];
+finalIdxList = [1 0 2 3 4 5 6 7 6];
+for k=1:length(startIdxList)
+    startIdx = startIdxList(k);
+    finalIdx = finalIdxList(k);
 
-        % Read trajectory
-        filename = sprintf('arm_path_%d_%d.json', startIdx, finalIdx);
-        s = jsondecode(fileread(['..\..\src\main\deploy\paths\' filename]));
-        totalTime = max(s.totalTime, 0);
-        theta1 = s.theta1;
-        theta2 = s.theta2;
-        points = [theta1.'; theta2.'];
-    
-        % interpolate trajectory to dt
-        clockPeriod = 0.020;
-        t = 0:clockPeriod:totalTime;
-        [position, velocity, acceleration, jerk] = sample(t, totalTime, points);
-        [torque, voltage, current] = dynamics.feedforward(position, velocity, acceleration);
-    
-        [elbow_loc.x, elbow_loc.y, tip_loc.x, tip_loc.y] = kinematics.forward_kinematics(position(1,:), position(2,:));
+    % Read trajectory
+    filename = sprintf('arm_path_%d_%d.json', startIdx, finalIdx);
+    s = jsondecode(fileread(['..\..\src\main\deploy\paths\' filename]));
+    totalTime = max(s.totalTime, 0);
+    theta1 = s.theta1;
+    theta2 = s.theta2;
+    points = [theta1.'; theta2.'];
 
-        plot_xy_path(hXY, origin, elbow_loc, tip_loc, xyScale);
-        plot_angle_path(hAngle, position(1,:), position(2,:), angleScale);
-    end
+    % interpolate trajectory to dt
+    clockPeriod = 0.020;
+    t = 0:clockPeriod:totalTime;
+    [position, velocity, acceleration, jerk] = sample(t, totalTime, points);
+    [torque, voltage, current] = dynamics.feedforward(position, velocity, acceleration);
+
+    [elbow_loc.x, elbow_loc.y, tip_loc.x, tip_loc.y] = kinematics.forward_kinematics(position(1,:), position(2,:));
+
+    plot_xy_path(hXY, origin, elbow_loc, tip_loc, xyScale);
+    plot_angle_path(hAngle, position(1,:), position(2,:), angleScale);
 end
 
 sgtitle('All Paths')

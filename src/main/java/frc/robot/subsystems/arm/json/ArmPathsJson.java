@@ -12,6 +12,7 @@ public record ArmPathsJson(
   String startPos,
   String finalPos,
   double totalTime,                 // total path time
+  double grannyFactor,              // per-path total time multiplier
   List<Double> theta1,      // angle of shoulder in radians
   List<Double> theta2)      // angle of elbow in radians
   {     
@@ -27,8 +28,12 @@ public record ArmPathsJson(
     }
 
     public double totalTime() {
-        return totalTime;
-    }
+      return totalTime;
+  }
+
+  public double grannyFactor() {
+    return grannyFactor;
+}
 
     public List<Double> theta1() {
         return theta1;
