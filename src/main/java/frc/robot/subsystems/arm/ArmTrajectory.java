@@ -8,6 +8,7 @@
 package frc.robot.subsystems.arm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import edu.wpi.first.math.MatBuilder;
@@ -19,6 +20,7 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
+import frc.robot.Constants;
 
 /**
  * Represents a trajectory of arm states that can be generated asynchronously.
@@ -27,14 +29,16 @@ public class ArmTrajectory {
   private final String startPos;    // starting position
   private final String finalPos;    // final position
   private double totalTime = 0.0;   // total trajectory time
+  private double grannyFactor = 1.0;   // totalTime multiplier in JSON
   private List<Vector<N2>> points = new ArrayList<>(); // rough trajectory of theta1, theta2 at equally spaced times across totalTime
   Matrix<N2, N3> finalState;
 
   /** Creates an arm trajectory with the given parameters. */
-  public ArmTrajectory(String startPos, String finalPos, double totalTime, List<Vector<N2>> points) {
+  public ArmTrajectory(String startPos, String finalPos, double totalTime, double grannyFactor, List<Vector<N2>> points) {
     this.startPos = startPos;
     this.finalPos = finalPos;
     this.totalTime = totalTime;
+    this.grannyFactor = grannyFactor;
     this.points = points;
 
     // precalculate the final state, as we will use this to hold position after
@@ -45,14 +49,22 @@ public class ArmTrajectory {
   /** slow down factor for arm movements 
    * CHANGE IN AUTOMANAGERLOOP AS WELL
   */
-  private static double grannyFactor = 1.5;//TODO: TRAJECTORYDEBUG 1.0; // default to full speed motions
+  private static double globalGrannyFactor = 1.5;//TODO: TRAJECTORYDEBUG 1.0; // default to full speed motions
+
+  public double getGlobalGrannyFactor() {
+    return globalGrannyFactor;
+  }
+
+  public static void setGlobalGrannyFactor(double grannyFactor) {
+    ArmTrajectory.globalGrannyFactor = MathUtil.clamp(grannyFactor, 1.0, 10.0);
+  }
 
   public double getGrannyFactor() {
     return grannyFactor;
   }
 
-  public static void setGrannyFactor(double grannyFactor) {
-    ArmTrajectory.grannyFactor = MathUtil.clamp(grannyFactor, 1.0, 10.0);
+  public void setGrannyFactor(double grannyFactor) {
+    this.grannyFactor = MathUtil.clamp(grannyFactor, 1.0, 10.0);
   }
 
   /** get start position string */
@@ -67,7 +79,7 @@ public class ArmTrajectory {
 
   /**Returns the total time for the trajectory, possibly lengthened by GrannyFactor. */
   public double getTotalTime() {
-    return totalTime * grannyFactor;
+    return totalTime * grannyFactor * globalGrannyFactor;
   }
 
   /** Returns the generated interior points. */
@@ -148,36 +160,84 @@ public class ArmTrajectory {
         .fill(position0, velocity0, acceleration0, position1, velocity1, acceleration1);
   }
 
-  public ArmTrajectory interpolateEndPoints(Double start_theta0, Double start_theta1, Double final_theta0,
-      Double final_theta1) {
-    Matrix<N2, N1> start_dtheta = VecBuilder.fill(0.0, 0.0);
-    Matrix<N2, N1> final_dtheta = VecBuilder.fill(0.0, 0.0);
+  public ArmTrajectory interpolateEndPoints(double start_theta0, double start_theta1, double final_theta0,
+      double final_theta1) {
 
-    // calculate the difference between the actual endpoints and the trajectory endpoints
-    if (start_theta0 != null && start_theta1 != null) {
-      Matrix<N2, N1> theta_actual = VecBuilder.fill(start_theta0, start_theta1);
-      start_dtheta = theta_actual.minus(points.get(0));
-    }
-    if (final_theta0 != null && final_theta1 != null) {
-      Matrix<N2, N1> theta_actual = VecBuilder.fill(final_theta0, final_theta1);
-      final_dtheta = theta_actual.minus(points.get(points.size() - 1));
+      boolean reversePath = false;
+      double score_theta0, score_theta1;
+      if ((startPos.equals("defense")) && (finalPos.contains("cube") || finalPos.contains("cone"))) {
+        reversePath = false;
+        score_theta0 = final_theta0;
+        score_theta1 = final_theta1;
+      } else if ((finalPos.equals("defense")) && (startPos.contains("cube") || startPos.contains("cone"))) {
+        reversePath = true;
+        score_theta0 = start_theta0;
+        score_theta1 = start_theta1;
+      } else {
+        return this;
+      }
+
+      List<Vector<N2>> newPoints = new ArrayList<Vector<N2>>(points);
+
+      if (reversePath) {
+        // reverse path so scoring position is always at the back end
+        Collections.reverse(newPoints);
+      }
+
+      // we will split the path at the maximum shoulder angle.  find it
+      double max_theta0 = -Double.MAX_VALUE;
+      int idx = 0;
+      for (int k=0; k<newPoints.size(); k++) {
+        double theta0 = newPoints.get(k).get(0,0);
+        if (theta0 > max_theta0) {
+          max_theta0 = theta0;
+          idx = k;
+        }
+      }
+
+      // calculate total distance to move final trajectory points
+      double delta_theta0 = score_theta0 - newPoints.get(newPoints.size()-1).get(0,0);
+      double delta_theta1 = score_theta1 - newPoints.get(newPoints.size()-1).get(1,0);
+      // Vector<N2> delta_theta = VecBuilder.fill(delta_theta0, delta_theta1);
+      Vector<N2> delta_theta = VecBuilder.fill(delta_theta0, delta_theta1);
+      double delta_dist = delta_theta.norm();
+
+      // calculate speed of arm at interpolation point
+      double v_theta0 = newPoints.get(idx).get(0,0) - newPoints.get(idx-1).get(0,0);
+      double v_theta1 = newPoints.get(idx).get(1,0) - newPoints.get(idx-1).get(1,0);
+      double v = Math.sqrt(v_theta0*v_theta0 + v_theta1*v_theta1);
+
+      // calculate number interpolation points to add to list
+      int npoints = (int)Math.ceil(delta_dist / v);
+
+      // new path from 0 to idx-1 will be the same
+
+      // new path from idx to end will be moved by delta_theta
+      for (int k=idx; k<newPoints.size(); k++) {
+        newPoints.set(k, VecBuilder.fill(newPoints.get(k).get(0,0) + delta_theta0,
+                                         newPoints.get(k).get(1,0) + delta_theta1));
+      }
+
+      // now linearly interpolate between these two segments
+      for (int k=1; k<=npoints; k++) {
+        double alpha = (double)k/(npoints+1);
+        double interp_theta0 = newPoints.get(idx-1).get(0,0) + alpha*delta_theta0;
+        double interp_theta1 = newPoints.get(idx-1).get(1,0) + alpha*delta_theta1;
+        newPoints.add(idx-1+k, VecBuilder.fill(interp_theta0, interp_theta1));
+      }
+
+      totalTime += npoints * Constants.loopPeriodSecs;
+
+    if (reversePath) {
+        // undo the earlier reversal
+        Collections.reverse(newPoints);
     }
 
-    // linearly interpolate that error along the path
-    // full start_dtheta at the start, zero at the end
-    // zero final_dtheta at the start, full at the end
-    int N = points.size();
-    List<Vector<N2>> newPoints = new ArrayList<Vector<N2>>();
-    for (int k = 0; k < N; k++) {
-      Matrix<N2, N1> theta = points.get(k);
-      double beta = (double) (N - 1 - k) / (N - 1);
-      theta = theta.plus(start_dtheta.times(beta)).plus(final_dtheta.times(1.0 - beta));
-      newPoints.add(new Vector<N2>(theta));
-    }
-
-    return new ArmTrajectory(startPos, finalPos, totalTime, newPoints);
+    return new ArmTrajectory(startPos, finalPos, totalTime, grannyFactor, newPoints);
   }
 
+
+  
   public boolean startIsNear(double theta0_actual, double theta1_actual, double threshold) {
     Matrix<N2, N1> theta_actual = VecBuilder.fill(theta0_actual, theta1_actual);
     Matrix<N2, N1> theta_error = theta_actual.minus(points.get(0));

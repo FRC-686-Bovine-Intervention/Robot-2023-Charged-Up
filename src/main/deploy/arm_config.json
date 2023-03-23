@@ -24,7 +24,7 @@
     "moi": 0.013,
     "cgRadius": 0.0635,
     "minAngle": -1.57,
-    "maxAngle": 2.0,
+    "maxAngle": 3.0,
     "motor": {
       "type": "falcon",
       "count": 1,

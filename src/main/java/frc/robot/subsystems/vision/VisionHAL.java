@@ -1,7 +1,6 @@
 package frc.robot.subsystems.vision;
 
 import org.photonvision.PhotonCamera;
-import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.lib.util.LimelightHelpers;
@@ -12,24 +11,22 @@ public class VisionHAL {
 
     private static final String kLimelightName = "limelight";
 
-    private static final String kLeftCamName = "Left Cam",
-                                kRightCamName = "Right Cam";
-    private final PhotonCamera cam1, cam2;
+    private static final String[] camNames = {
+        // "Left Cam",
+        "Right 2",
+        "Back Cam"
+    };
+    public final PhotonCamera[] aprilTagCameras = new PhotonCamera[camNames.length];
 
     private VisionHAL()
     {
         if(RobotBase.isReal()) {
-            cam1 = new PhotonCamera(kLeftCamName);
-            cam2 = new PhotonCamera(kRightCamName);
+            for(int i = 0; i < aprilTagCameras.length; i++) {
+                aprilTagCameras[i] = new PhotonCamera(camNames[i]);
+            }
         } else {
-            cam1 = null;
-            cam2 = null;
         }
     }
-
-    // AprilTags
-    public PhotonPipelineResult getCamera1Result() {return cam1 != null ? cam1.getLatestResult() : null;}
-    public PhotonPipelineResult getCamera2Result() {return cam2 != null ? cam2.getLatestResult() : null;}
 
     // Limelight
     public boolean getTargetExists() {return LimelightHelpers.getTV(kLimelightName);}

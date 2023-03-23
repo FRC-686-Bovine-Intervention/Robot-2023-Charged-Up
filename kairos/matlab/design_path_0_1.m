@@ -13,8 +13,8 @@ orig_theta2 = orig_points(2,:);
 
 [corner1_theta1, corner1_theta2, corner2_theta1, corner2_theta2] = get_safe_path_corners();
 
-theta1 = [orig_theta1(1)*180/pi  -148  orig_theta1(end)*180/pi] * pi/180;
-theta2 = [orig_theta2(1)*180/pi  -30   orig_theta2(end)*180/pi] * pi/180;
+theta1 = [orig_theta1(1)  -2.296  orig_theta1(end)];
+theta2 = [orig_theta2(1)  -0.510  orig_theta2(end)];
 
 points = [theta1; theta2];
 
@@ -25,6 +25,7 @@ spline_T = 0.6;
 points = make_spline_trajectory(startIdx, finalIdx, points, orig_points, spline_T);
 
 % write new spline trajectory
+s.grannyFactor = 1.25;
 s.theta1 = points(1,:);
 s.theta2 = points(2,:);
 

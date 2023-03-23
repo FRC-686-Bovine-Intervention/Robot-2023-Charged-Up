@@ -178,5 +178,7 @@ kairos/.idea/*
 
 
 *.asv
+*.wpilog
+*.mp4
 
 logs/

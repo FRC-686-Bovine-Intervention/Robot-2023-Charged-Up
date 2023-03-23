@@ -1,18 +1,10 @@
 package frc.robot.subsystems.vision;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Optional;
 
-import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.EstimatedRobotPose;
 
-import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.geometry.Pose3d;
 import frc.robot.subsystems.framework.LoopBase;
-import frc.robot.subsystems.vision.VisionStatus.LimelightPipeline;
-import frc.robot.subsystems.vision.VisionStatus.VisionData;
 
 public class VisionLoop extends LoopBase {
     private static VisionLoop instance;
@@ -20,60 +12,36 @@ public class VisionLoop extends LoopBase {
 
     private final VisionStatus status = VisionStatus.getInstance();
 
-    private final AprilTagFieldLayout aprilTagFieldLayout;
-
-    private VisionLoop() {
-        Subsystem = Vision.getInstance();
-        
-        try {
-            aprilTagFieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
-        } catch (IOException e) {
-            throw new NullPointerException("Failed to load AprilTagFieldLayout");
-        }
-    }
+    private VisionLoop() {Subsystem = Vision.getInstance();}
 
     @Override
     public void Update() {
         VisionCommand newCommand = status.getCommand();
 
         // AprilTags
-        // Camera 1
-        ArrayList<VisionData> camera1Data = new ArrayList<VisionData>();
-        if (status.getCamera1Result() != null) {
-            for(PhotonTrackedTarget target : status.getCamera1Result().targets) {
-                Optional<Pose3d> fiducialPose = aprilTagFieldLayout.getTagPose(target.getFiducialId());
-                if (fiducialPose.isEmpty()) {continue;}
-                
-                camera1Data.add(
-                    new VisionData(
-                        new AprilTag(target.getFiducialId(), fiducialPose.get()), 
-                        target.getBestCameraToTarget(), 
-                        status.getRobotToCamera1(), 
-                        status.getCamera1Result().getTimestampSeconds()
-                    )
-                );
+        ArrayList<EstimatedRobotPose> cameraData = new ArrayList<EstimatedRobotPose>();
+        for(PhotonHalHelper cam : status.getAprilTagCameras()) {
+            if(cam.getLatestEstimatedPose().isPresent()) {
+                cameraData.add(cam.getLatestEstimatedPose().get());
             }
+            // PhotonPipelineResult camResult = cam.getLatestCameraResult();
+            // Optional<EstimatedRobotPose> estimatedPose = cam.getLatestEstimatedPose();
+            // if(camResult != null) {
+            //     for(PhotonTrackedTarget target : camResult.targets) {
+            //         Optional<Pose3d> fiducialPose = cam.getAprilTagFieldLayout().getTagPose(target.getFiducialId());
+            //         if (fiducialPose.isEmpty()) {continue;}
+                    
+            //         cameraData.add(
+            //             new VisionData(
+            //                 new AprilTag(target.getFiducialId(), fiducialPose.get()), 
+            //                 target.getBestCameraToTarget(), 
+            //                 status.getRobotToCamera1(), 
+            //                 status.getCamera1Result().getTimestampSeconds()
+            //             )
+            //         );
+            //     }
+            // }
         }
-        // Camera 2
-        ArrayList<VisionData> camera2Data = new ArrayList<VisionData>();
-        if (status.getCamera2Result() != null) {
-            for(PhotonTrackedTarget target : status.getCamera2Result().targets) {
-                Optional<Pose3d> fiducialPose = aprilTagFieldLayout.getTagPose(target.getFiducialId());
-                if (fiducialPose.isEmpty()) {continue;}
-                
-                camera2Data.add(
-                    new VisionData(
-                        new AprilTag(target.getFiducialId(), fiducialPose.get()), 
-                        target.getBestCameraToTarget(), 
-                        status.getRobotToCamera2(), 
-                        status.getCamera2Result().getTimestampSeconds()
-                    )
-                );
-            }
-        }
-        ArrayList<VisionData> cameraData = new ArrayList<VisionData>();
-        cameraData.addAll(camera1Data);
-        cameraData.addAll(camera2Data);
 
         status.setVisionData(cameraData);
         
@@ -82,20 +50,20 @@ public class VisionLoop extends LoopBase {
         {
             status.setTargetPipeline(newCommand.getTargetPipeline());
         }
-        else if(status.getTargetPipeline() == LimelightPipeline.Pole)
-        {
-            status.setTargetPipeline(LimelightPipeline.Cone);
-        }
+        // else if(status.getTargetPipeline() == LimelightPipeline.Pole)
+        // {
+        //     status.setTargetPipeline(LimelightPipeline.Cone);
+        // }
 
-        if(status.getCurrentPipeline() == status.getTargetPipeline())
-        {
-            switch(status.getCurrentPipeline())
-            {
-                case Cone:  status.setTargetPipeline(LimelightPipeline.Cube);   break;
-                case Cube:  status.setTargetPipeline(LimelightPipeline.Cone);   break;
-                default:    break;
-            }
-        }
+        // if(status.getCurrentPipeline() == status.getTargetPipeline())
+        // {
+        //     switch(status.getCurrentPipeline())
+        //     {
+        //         case Cone:  status.setTargetPipeline(LimelightPipeline.Cube);   break;
+        //         case Cube:  status.setTargetPipeline(LimelightPipeline.Cone);   break;
+        //         default:    break;
+        //     }
+        // }
 
         if(status.getTargetExists())
         {

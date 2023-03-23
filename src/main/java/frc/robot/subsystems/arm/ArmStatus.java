@@ -41,8 +41,9 @@ public class ArmStatus extends StatusBase {
         Defense,            // Arm is idling, retracted fully and waiting for the intake to do something
         Grab,               // Arm has identified the location of the piece and arm is grabbing the piece from the intake
         Hold,               // Arm has grabbed the piece and is holding it in the defense position
-        Align,              // Robot has entered the community and the turret should align to the alliance wall
-        Extend,             // Driver has selected a node to extend to and arm is extending to it
+        AlignWall,          // Robot has entered the community and the turret should align to the alliance wall
+        AlignNode,          // Driver has selected a node and the turret is using the robot position to align to the selected node
+        Extend,             // Limelight sees cone node or turret has reached target angle from robot position
         Adjust,             // Driver and limelight are fudging the position of the turret to align piece on the node
         Release,            // Driver has decided the piece will score on the node and tells the arm to release the piece
         SubstationExtend,   // Driver has decided to grab a piece from the substation

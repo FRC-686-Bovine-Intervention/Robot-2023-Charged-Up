@@ -26,6 +26,11 @@ copyfile(spline_filename, traj_filename);
     
 
 if writeReversePath
+    if (finalIdx >= 4) && (finalIdx <= 7) && (startIdx == 0)
+        % go faster when returning from a scoring position
+        s.grannyFactor = 1.0;
+    end
+
     % write reverse path
     base_filename = fullfile('..\..\src\main\deploy\paths\', sprintf('arm_path_%d_%d', finalIdx, startIdx));
     traj_filename = [base_filename '.json'];

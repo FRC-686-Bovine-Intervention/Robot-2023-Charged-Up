@@ -42,6 +42,10 @@ import frc.robot.subsystems.intake.IntakeCommand;
 import frc.robot.subsystems.intake.IntakeStatus;
 import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
 import frc.robot.subsystems.odometry.OdometryStatus;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionCommand;
+import frc.robot.subsystems.vision.VisionStatus;
+import frc.robot.subsystems.vision.VisionStatus.LimelightPipeline;
 import frc.robot.util.AllianceFlipUtil;
 
 public class ArmLoop extends LoopBase {
@@ -53,10 +57,14 @@ public class ArmLoop extends LoopBase {
     private final Intake intake = Intake.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
     private final OdometryStatus odometryStatus = OdometryStatus.getInstance();
+    private final Vision vision = Vision.getInstance();
+    private final VisionStatus visionStatus = VisionStatus.getInstance();
 
     private static final double kTurretMaxAngularVelocity = 180;
     private static final double kTurretMaxAngularAcceleration = kTurretMaxAngularVelocity * 2;
     private final TrapezoidProfile.Constraints turretPIDConstraints = new TrapezoidProfile.Constraints(kTurretMaxAngularVelocity, kTurretMaxAngularAcceleration);
+    private static final double kTurretFastP = 0.015;
+    private static final double kTurretSlowP = 0.015;
     private final ProfiledPIDController turretPID = 
         new ProfiledPIDController(
             0.015, 
@@ -65,6 +73,7 @@ public class ArmLoop extends LoopBase {
             turretPIDConstraints
         );
     private static final double kTurretPIDMaxError = 10;
+    private static final double kTurretExtendMaxError = 3;
 
     private static final double kDistalZeroPower =      0.15;
     private static final double kProximalZeroPower =    0.1;
@@ -118,7 +127,7 @@ public class ArmLoop extends LoopBase {
     private final double shoulderMinAngleRad;
     private final double elbowMaxAngleRad;
     private final double elbowMinAngleRad;
-    public static final double kRelativeMaxAngleRad = Math.toRadians(180.0 - 35.0);    // don't let grabber smash into proximal arm
+    public static final double kRelativeMaxAngleRad = Math.toRadians(180.0 - 27.5);    // don't let grabber smash into proximal arm
     public static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
 
     private static final double kMaxElbowPlusClawLength = Units.inchesToMeters(26.0); 
@@ -188,7 +197,7 @@ public class ArmLoop extends LoopBase {
                     points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
                 }
 
-                armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), points);
+                armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), path.grannyFactor(), points);
             }
         }
 
@@ -235,8 +244,17 @@ public class ArmLoop extends LoopBase {
 
         if(newCommand.getArmState() != null)
             status.setArmState(newCommand.getArmState());
-        if(newCommand.getTargetNode() != null)
-            status.setTargetNode(newCommand.getTargetNode());
+        if(newCommand.getTargetNode() != null) {
+            switch(status.getArmState()) {
+                case AlignNode:
+                case Extend:
+                case Release:
+                break;
+                default:
+                    status.setTargetNode(newCommand.getTargetNode());
+                break;
+            }
+        }
         if(newCommand.getShoulderAdjustment() != null)
             status.setshoulderThrottle(newCommand.getShoulderAdjustment());
         if(newCommand.getElbowAdjustment() != null)
@@ -253,6 +271,7 @@ public class ArmLoop extends LoopBase {
               .setShoulderPower(0)
               .setElbowPower(0);
 
+        LimelightPipeline pipeline = LimelightPipeline.Cone;
         // ================= Trajectory Logic =================
 
         runTrajectory();
@@ -389,18 +408,20 @@ public class ArmLoop extends LoopBase {
                 if(FieldDimensions.chargeStation.withinBounds(odometryStatus.getRobotPose()))
                     status.setStateLocked(true);
                     
-                if(!status.getStateLocked() && FieldDimensions.communityWithoutChargeStation.withinBounds(odometryStatus.getRobotPose()))
-                    status.setArmState(ArmState.Align);
+                // if(!status.getStateLocked() && FieldDimensions.communityWithoutChargeStation.withinBounds(odometryStatus.getRobotPose()))
+                //     status.setArmState(ArmState.AlignWall);
             break;
 
-            case Align:
+            case AlignWall:
+                turretPID.setP(kTurretFastP);
                 status.setTargetArmPose(ArmPose.Preset.DEFENSE);
+                pipeline = LimelightPipeline.Pole;
                 
                 // unwrap turret angle because odometry wraps it to +/-180
                 
                 double turretAngleDeg = getTurretBestAngle(
                     new Translation2d(
-                        (DriverStation.getAlliance() == Alliance.Red ? FieldDimensions.fieldLength : 0), 
+                        (DriverStation.getAlliance() == Alliance.Red ? 10 : -10) + odometryStatus.getRobotPose().getX(), 
                         odometryStatus.getRobotPose().getY()
                     )
                 );
@@ -413,12 +434,26 @@ public class ArmLoop extends LoopBase {
                 if(stateTimer.get() == 0)
                     status.setStateLocked(false);
 
-                if(newCommand.getArmState() == ArmState.Align)
+                if(newCommand.getArmState() == ArmState.AlignWall)
                     status.setStateLocked(true);
 
-                if(!status.getStateLocked() && !FieldDimensions.communityWithoutChargeStation.withinBounds(odometryStatus.getRobotPose()))
-                    status.setArmState(ArmState.Hold);
+                // if(!status.getStateLocked() && !FieldDimensions.communityWithoutChargeStation.withinBounds(odometryStatus.getRobotPose()))
+                //     status.setArmState(ArmState.Hold);
                 // Check if driver has selected node, if so jump to Extend
+            break;
+
+            case AlignNode:
+                pipeline = LimelightPipeline.Pole;
+                status.setTargetTurretAngleDeg(getTurretBestAngle(getClosestNodeXY(status.getTargetNode(), status.getTurretToField().getTranslation().toTranslation2d()).get()))
+                      .setTurretControlMode(MotorControlMode.PID);
+                if(status.getTargetNode().isCone && visionStatus.getCurrentPipeline() == pipeline && visionStatus.getTargetExists()) {
+                    turretPID.setP(kTurretSlowP);
+                    status.setTargetTurretAngleDeg(status.getTurretAngleDeg() + visionStatus.getTargetYAngle())
+                          .setArmState(ArmState.Extend);
+                }
+                if(!status.getTargetNode().isCone || Math.abs(status.getTargetTurretAngleDeg() - status.getTurretAngleDeg()) < kTurretExtendMaxError) {
+                    status.setArmState(ArmState.Extend);
+                }
             break;
 
             case Extend:
@@ -430,6 +465,7 @@ public class ArmLoop extends LoopBase {
             break;
 
             case Adjust:
+                turretPID.setP(kTurretFastP);
                 if(stateTimer.get() == 0)
                     status.setElbowRaised(false);
                 // Rotate turret according to limelight and driver controls
@@ -462,6 +498,8 @@ public class ArmLoop extends LoopBase {
             break;
         }
 
+        vision.setVisionCommand(new VisionCommand(pipeline));
+
         runTurret();
 
         if(status.getCurrentArmPose() != null && status.getTargetArmPose() != status.getCurrentArmPose())
@@ -483,9 +521,6 @@ public class ArmLoop extends LoopBase {
         if(status.getTurretControlMode() == MotorControlMode.PID)
             status.setTurretPower(status.getTurretPIDOutput());
     }
-
-
-
 
     public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos) {
 
@@ -532,7 +567,7 @@ public class ArmLoop extends LoopBase {
                 }
             }
             // set outputs
-            status.setTargetTurretAngleDeg(turretAngleToTarget);
+            // status.setTargetTurretAngleDeg(turretAngleToTarget);
         }
         status.setCurrentArmTrajectory(baseTrajectory.interpolateEndPoints(startShoulderAngleRad, startElbowAngleRad, finalShoulderAngleRad, finalElbowAngleRad));
         trajectoryTimer.reset();
@@ -703,10 +738,6 @@ public class ArmLoop extends LoopBase {
         // yAdjustmentInches += yThrottle * manualMaxSpeedDegreesPerSec * Constants.loopPeriodSecs;
     }    
 
-
-
-    
-
     public Optional<Translation2d> getClosestNodeXY(ArmStatus.NodeEnum _targetNode, Translation2d turretLoc) {
         // target node selects which node in a 3x3 grid
         // this function finds the closest node out of the 3 possible choices
@@ -742,8 +773,6 @@ public class ArmLoop extends LoopBase {
 
         return bestTranslation;
     }
-
-
 
     private final Timer disabledTimer = new Timer();
     @Override

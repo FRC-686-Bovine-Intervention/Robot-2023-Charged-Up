@@ -30,6 +30,8 @@ public class DriverInteractionLoop extends LoopBase {
 
     private static final double kExtendedThreshold = Units.degreesToRadians(15);
     private static final double kExtendedDrivePowerMultiplier = 0.5;
+    private static final double kHandoffPowerMultiplier = 0.5;
+
     private static final double kAdjustmentDeadband = 0.1;
 
     private final Drive drive = Drive.getInstance();
@@ -52,14 +54,16 @@ public class DriverInteractionLoop extends LoopBase {
         throttle = 0.7*throttle*throttle*throttle - 0.7*throttle + throttle;
 
         turn *= 0.7;
+        turn *= (armStatus.getShoulderAngleRad() + Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
 
         if(invertDriveControls)
             throttle *= -1;
 
         double leftPower = throttle+turn;
         double rightPower = throttle-turn;
-        leftPower *= (armStatus.getShoulderAngleRad() + Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
-        rightPower *= (armStatus.getShoulderAngleRad() + Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
+        double handoffPowerMultiplier = (armStatus.getArmState() == ArmState.Grab ? kHandoffPowerMultiplier : 1);
+        leftPower *= handoffPowerMultiplier;
+        rightPower *= handoffPowerMultiplier;
         return new DriveCommand(DriveControlMode.OPEN_LOOP, leftPower, rightPower, (DriverControlButtons.ParkingBrake.getButton() ? NeutralMode.Brake : NeutralMode.Coast));
     }
 
@@ -67,7 +71,7 @@ public class DriverInteractionLoop extends LoopBase {
         ArmCommand command = new ArmCommand();
         if(armStatus.getArmState() == ArmState.Adjust || armStatus.getArmState() == ArmState.Emergency || armStatus.getArmState() == ArmState.SubstationExtend) {
             double shoulderAdjustment = -DriverControlAxes.XBoxLeftY.getAxis();
-            double elbowAdjustment = -DriverControlAxes.XBoxRightY.getAxis();
+            double elbowAdjustment = DriverControlAxes.XBoxRightY.getAxis();
             double turretAdjustment = DriverControlAxes.XBoxRightTrigger.getAxis() - DriverControlAxes.XBoxLeftTrigger.getAxis();
             boolean elbowRaised = DriverControlButtons.RaiseElbow.getRisingEdge();
             command.setShoulderAdjustment(Math.abs(shoulderAdjustment) > kAdjustmentDeadband ? shoulderAdjustment : 0);
@@ -153,18 +157,16 @@ public class DriverInteractionLoop extends LoopBase {
 
             case Hold:
                 if(DriverControlButtons.MainAction.getRisingEdge() || DriverControlButtons.SecondAlign.getRisingEdge())
-                    armCommand.setArmState(ArmState.Align);
+                    armCommand.setArmState(ArmState.AlignWall);
                 if(DriverControlButtons.Undo.getRisingEdge())
                     armCommand.setArmState(ArmState.Defense);
             break;
             
-            case Align:
-                if(DriverControlButtons.MainAction.getRisingEdge())
-                    armCommand.setArmState(ArmState.Align); // Locks State
+            case AlignWall:
                 if(DriverControlButtons.Undo.getRisingEdge())
                     armCommand.setArmState(ArmState.Hold);
-                if(armCommand.getTargetNode() != null) {
-                    armCommand.setArmState(ArmState.Extend);
+                if(DriverControlButtons.MainAction.getRisingEdge()) {
+                    armCommand.setArmState(ArmState.AlignNode);
                     invertDriveControls = false;
                 }
             break;
@@ -175,7 +177,7 @@ public class DriverInteractionLoop extends LoopBase {
                 else if(armCommand.getTargetNode() != null && armCommand.getTargetNode() != armStatus.getTargetNode())
                     armCommand.setArmState(ArmState.Extend);
                 else if(DriverControlButtons.Undo.getRisingEdge() || DriverControlButtons.SecondUndo.getRisingEdge())
-                    armCommand.setArmState(ArmState.Align);
+                    armCommand.setArmState(ArmState.AlignWall);
             break;
             
             case SubstationExtend:

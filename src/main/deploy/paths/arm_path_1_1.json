@@ -2,10 +2,11 @@
   "startPos": "intake",
   "finalPos": "intake",
   "totalTime": 0.0,
+  "grannyFactor": 1.25,
   "theta1": [
-    -2.05
+    -2.04
   ],
   "theta2": [
-    -0.6
+    -0.48699999999999977
   ]
 }
