@@ -255,6 +255,51 @@ public class ArmTrajectoryTest {
     //     ArmTrajectory currentArmTraj = trajCaptor.getValue();        
     //     Matrix<N2,N3> finalState = currentArmTraj.getFinalState();
 
+    //     var baseTraj = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
+    //     var basePath = baseTraj.getPoints();
+    //     var interpPath = currentArmTraj.getPoints();
+
+    //     System.out.printf("totalTime = %.2f, %.2f\n", baseTraj.getTotalTime(), currentArmTraj.getTotalTime());
+
+    //     for (int k=0; k<interpPath.size(); k++) {
+    //         if (k < basePath.size()) {
+    //             System.out.printf("%5.2f\t%5.2f\t", basePath.get(k).get(0,0), basePath.get(k).get(1,0));
+    //         } else {
+    //             System.out.printf("-----\t-----\t");
+    //         }
+    //         System.out.printf("%5.2f\t%5.2f\n", interpPath.get(k).get(0,0), interpPath.get(k).get(1,0));
+    //     }
+
+    //     // Test High Cone in left-most grid
+
+    //     startPos = ArmPose.Preset.SCORE_HIGH_CONE;
+    //     finalPos = ArmPose.Preset.DEFENSE;
+
+    //     when(mockStatus.getShoulderAngleRad()).thenReturn(interpPath.get(interpPath.size()-1).get(0,0));
+    //     when(mockStatus.getElbowAngleRad()).thenReturn(interpPath.get(interpPath.size()-1).get(1,0));
+    //     when(mockStatus.getCurrentArmTrajectory()).thenReturn(armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()]);       
+    //     ArmLoop.getInstance().startTrajectory(startPos, finalPos);
+
+    //     verify(mockStatus, times(2)).setCurrentArmTrajectory(trajCaptor.capture());
+    //     currentArmTraj = trajCaptor.getValue();        
+    //     finalState = currentArmTraj.getFinalState();
+
+    //     baseTraj = armTrajectories[startPos.getFileIdx()][finalPos.getFileIdx()];
+    //     basePath = baseTraj.getPoints();
+    //     interpPath = currentArmTraj.getPoints();
+
+    //     System.out.printf("totalTime = %.2f, %.2f\n", baseTraj.getTotalTime(), currentArmTraj.getTotalTime());
+
+    //     for (int k=0; k<interpPath.size(); k++) {
+    //         if (k < basePath.size()) {
+    //             System.out.printf("%5.2f\t%5.2f\t", basePath.get(k).get(0,0), basePath.get(k).get(1,0));
+    //         } else {
+    //             System.out.printf("-----\t-----\t");
+    //         }
+    //         System.out.printf("%5.2f\t%5.2f\n", interpPath.get(k).get(0,0), interpPath.get(k).get(1,0));
+    //     }        
+    // }
+
     //     Translation2d turretExtension = kinematics.forward(finalState.get(0,0), finalState.get(1,0));
     //     double d = turretExtension.getX();
     //     double turretAngleRelField = turretAngleToTarget - robotXY.getRotation().getRadians();
