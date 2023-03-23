@@ -12,8 +12,8 @@ public class VisionHAL {
     private static final String kLimelightName = "limelight";
 
     private static final String[] camNames = {
-        "Left Cam",
-        "Right Cam",
+        // "Left Cam",
+        "Right 2",
         "Back Cam"
     };
     public final PhotonCamera[] aprilTagCameras = new PhotonCamera[camNames.length];

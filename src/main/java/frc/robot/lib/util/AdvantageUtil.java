@@ -100,17 +100,17 @@ public class AdvantageUtil {
     }
 
     public static void recordEstimatedRobotPoses(Logger logger, String prefix, List<EstimatedRobotPose> visionData) {
-        ArrayList<AprilTag> aprilTags = new ArrayList<AprilTag>();
+        // ArrayList<AprilTag> aprilTags = new ArrayList<AprilTag>();
         ArrayList<Pose2d> visionPoses = new ArrayList<Pose2d>();
 
         for(EstimatedRobotPose data : visionData) {
-            for (PhotonTrackedTarget target : data.targetsUsed) {
-                aprilTags.add(new AprilTag(target.getFiducialId(), VisionStatus.aprilTagFieldLayout.getTagPose(target.getFiducialId()).get()));
-            }
+            // for (PhotonTrackedTarget target : data.targetsUsed) {
+            //     aprilTags.add(new AprilTag(target.getFiducialId(), VisionStatus.aprilTagFieldLayout.getTagPose(target.getFiducialId()).get()));
+            // }
             visionPoses.add(data.estimatedPose.toPose2d());
         }
 
-        recordAprilTags(logger, prefix + "/Visible Tags", aprilTags);
+        // recordAprilTags(logger, prefix + "/Visible Tags", aprilTags);
         logger.recordOutput(prefix + "/Vision Poses", deconstructPose2ds(visionPoses));
     }
 }

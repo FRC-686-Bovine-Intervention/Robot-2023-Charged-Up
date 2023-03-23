@@ -163,12 +163,10 @@ public class DriverInteractionLoop extends LoopBase {
             break;
             
             case AlignWall:
-                if(DriverControlButtons.MainAction.getRisingEdge())
-                    armCommand.setArmState(ArmState.AlignWall); // Locks State
                 if(DriverControlButtons.Undo.getRisingEdge())
                     armCommand.setArmState(ArmState.Hold);
-                if(armCommand.getTargetNode() != null) {
-                    armCommand.setArmState(ArmState.Extend);
+                if(DriverControlButtons.MainAction.getRisingEdge()) {
+                    armCommand.setArmState(ArmState.AlignNode);
                     invertDriveControls = false;
                 }
             break;

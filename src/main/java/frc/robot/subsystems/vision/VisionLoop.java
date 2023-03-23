@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import org.photonvision.EstimatedRobotPose;
 
 import frc.robot.subsystems.framework.LoopBase;
-import frc.robot.subsystems.vision.VisionStatus.LimelightPipeline;
 
 public class VisionLoop extends LoopBase {
     private static VisionLoop instance;
@@ -51,20 +50,20 @@ public class VisionLoop extends LoopBase {
         {
             status.setTargetPipeline(newCommand.getTargetPipeline());
         }
-        else if(status.getTargetPipeline() == LimelightPipeline.Pole)
-        {
-            status.setTargetPipeline(LimelightPipeline.Cone);
-        }
+        // else if(status.getTargetPipeline() == LimelightPipeline.Pole)
+        // {
+        //     status.setTargetPipeline(LimelightPipeline.Cone);
+        // }
 
-        if(status.getCurrentPipeline() == status.getTargetPipeline())
-        {
-            switch(status.getCurrentPipeline())
-            {
-                case Cone:  status.setTargetPipeline(LimelightPipeline.Cube);   break;
-                case Cube:  status.setTargetPipeline(LimelightPipeline.Cone);   break;
-                default:    break;
-            }
-        }
+        // if(status.getCurrentPipeline() == status.getTargetPipeline())
+        // {
+        //     switch(status.getCurrentPipeline())
+        //     {
+        //         case Cone:  status.setTargetPipeline(LimelightPipeline.Cube);   break;
+        //         case Cube:  status.setTargetPipeline(LimelightPipeline.Cone);   break;
+        //         default:    break;
+        //     }
+        // }
 
         if(status.getTargetExists())
         {

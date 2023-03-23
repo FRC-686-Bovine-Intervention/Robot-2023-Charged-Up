@@ -28,9 +28,9 @@ public class VisionStatus extends StatusBase {
     private final ArmStatus armStatus = ArmStatus.getInstance();
 
     public enum LimelightPipeline {
-        Pole(0),
-        Cone(1),
-        Cube(2);
+        Pole(2),
+        Cone(0),
+        Cube(1);
         public final int id;
         LimelightPipeline(int id){this.id = id;}
         public static LimelightPipeline getFromName(String name)
@@ -91,19 +91,19 @@ public class VisionStatus extends StatusBase {
     public VisionStatus         setTargetPipeline(LimelightPipeline targetPipeline) {this.targetPipeline = targetPipeline; return this;}
 
     private double          targetXAngle;
-    protected double        getTargetXAngle()                       {return targetXAngle;}
+    public double        getTargetXAngle()                       {return targetXAngle;}
     private VisionStatus    setTargetXAngle(double targetXAngle)    {this.targetXAngle = targetXAngle; return this;}
 
     private double          targetYAngle;
-    protected double        getTargetYAngle()                       {return targetYAngle;}
+    public double        getTargetYAngle()                       {return targetYAngle;}
     private VisionStatus    setTargetYAngle(double targetYAngle)    {this.targetYAngle = targetYAngle; return this;}
 
     private double          currentArea;
-    protected double        getCurrentArea()                    {return currentArea;}
+    public double        getCurrentArea()                    {return currentArea;}
     private VisionStatus    setCurrentArea(double currentArea)  {this.currentArea = currentArea; return this;}
 
     private boolean         targetExists;
-    protected boolean       getTargetExists()                       {return targetExists;}
+    public boolean       getTargetExists()                       {return targetExists;}
     private VisionStatus    setTargetExists(boolean targetExists)   {this.targetExists = targetExists; return this;}
 
 
@@ -119,9 +119,9 @@ public class VisionStatus extends StatusBase {
     public double           getLatestConeArea()                             {return latestConeArea;}
     protected VisionStatus  setLatestConeArea(double latestConeArea)        {this.latestConeArea = latestConeArea; return this;}
 
-    private boolean          coneExists;
-    public boolean           getConeExists()                             {return coneExists;}
-    protected VisionStatus   setConeExists(Boolean coneExists)        {this.coneExists = coneExists; return this;}
+    private boolean         coneExists;
+    public boolean          getConeExists()                             {return coneExists;}
+    protected VisionStatus  setConeExists(Boolean coneExists)        {this.coneExists = coneExists; return this;}
 
 
     private double          latestCubeXAngle;
@@ -169,20 +169,20 @@ public class VisionStatus extends StatusBase {
     protected VisionStatus                  setVisionData(ArrayList<EstimatedRobotPose> visionData) {this.visionData = visionData; return this;}
 
     private static final Transform3d[] turretToCameras = {
-        // Camera 1
-        new Transform3d(
-            new Translation3d(
-                Units.inchesToMeters(6.212),
-                Units.inchesToMeters(+7.639),
-                Units.inchesToMeters(23.375)
-            ),
-            new Rotation3d(
-                0,
-                0,
-                Units.degreesToRadians(-30.0)
-            )
-        ),
-        // Camera 2
+        // Left Cam
+        // new Transform3d(
+        //     new Translation3d(
+        //         Units.inchesToMeters(6.212),
+        //         Units.inchesToMeters(+7.639),
+        //         Units.inchesToMeters(23.375)
+        //     ),
+        //     new Rotation3d(
+        //         0,
+        //         0,
+        //         Units.degreesToRadians(-30.0)
+        //     )
+        // ),
+        // Right Cam
         new Transform3d(
             new Translation3d(
                 Units.inchesToMeters(6.212),
@@ -195,12 +195,12 @@ public class VisionStatus extends StatusBase {
                 Units.degreesToRadians(+30.0)
             )
         ),
-        // Camera 3
+        // Back Cam
         new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(6.212),
-                Units.inchesToMeters(-7.639),
-                Units.inchesToMeters(23.375)
+                Units.inchesToMeters(-4),
+                Units.inchesToMeters(+11.25/20),
+                Units.inchesToMeters(+24.75)
             ),
             new Rotation3d(
                 0,
