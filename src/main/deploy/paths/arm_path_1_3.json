@@ -2,6 +2,7 @@
   "startPos": "intake",
   "finalPos": "score_hybrid",
   "totalTime": 0.44128086224059526,
+  "grannyFactor": 1.25,
   "theta1": [
     -2.05,
     -2.0505383937277033,

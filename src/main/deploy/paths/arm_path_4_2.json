@@ -2,6 +2,7 @@
   "startPos": "score_mid_cube",
   "finalPos": "double_substation",
   "totalTime": 0.487306038282435,
+  "grannyFactor": 1.25,
   "theta1": [
     -1.4109999999999998,
     -1.4081748246923929,

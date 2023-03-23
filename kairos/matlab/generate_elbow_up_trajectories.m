@@ -26,8 +26,10 @@ for startPreset = [presetEnum.AUTO_START presetEnum.DEFENSE]
         sout.startPos = preset(startPreset).name;
         sout.finalPos = preset(finalPreset).name;
         sout.totalTime = totalTime;
+        sout.grannyFactor = 1.25;
         sout.theta1 = points(1,:);
         sout.theta2 = points(2,:);
+
         
         write_spline_trajectory(preset(startPreset).info.fileIdx, preset(finalPreset).info.fileIdx, sout);
     end

@@ -2,6 +2,7 @@
   "startPos": "auto_start",
   "finalPos": "score_high_cone",
   "totalTime": 1.07319078074919,
+  "grannyFactor": 1.25,
   "theta1": [
     -2.34,
     -2.3394783223658817,

@@ -63,8 +63,8 @@ if __name__ == "__main__":
 
             if result is not None:
 
-                json_output = {"startPos": start, "finalPos": final, "totalTime": result[0], "theta1": result[1],
-                               "theta2": result[2]}
+                json_output = {"startPos": start, "finalPos": final, "totalTime": result[0], "grannyFactor": 1.25,
+                               "theta1": result[1], "theta2": result[2]}
 
                 filename = "src/main/deploy/paths/arm_path_{0}_{1}.json".format(
                     preset_poses[start]["fileIdx"], preset_poses[final]["fileIdx"])

@@ -2,6 +2,7 @@
   "startPos": "score_mid_cone",
   "finalPos": "double_substation",
   "totalTime": 0.4638835090593878,
+  "grannyFactor": 1.25,
   "theta1": [
     -1.2999999999999998,
     -1.2975629366257666,

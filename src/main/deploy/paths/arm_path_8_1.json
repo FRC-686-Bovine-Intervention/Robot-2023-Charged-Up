@@ -2,6 +2,7 @@
   "startPos": "auto_start",
   "finalPos": "intake",
   "totalTime": 0.3463091925355083,
+  "grannyFactor": 1.25,
   "theta1": [
     -2.34,
     -2.338986013742367,

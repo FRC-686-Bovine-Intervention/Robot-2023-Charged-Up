@@ -2,6 +2,7 @@
   "startPos": "auto_start",
   "finalPos": "double_substation",
   "totalTime": 1.1454275188921201,
+  "grannyFactor": 1.25,
   "theta1": [
     -2.34,
     -2.339570564027464,

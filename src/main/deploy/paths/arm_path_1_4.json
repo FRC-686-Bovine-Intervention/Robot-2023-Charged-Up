@@ -2,6 +2,7 @@
   "startPos": "intake",
   "finalPos": "score_mid_cube",
   "totalTime": 0.6758712856319425,
+  "grannyFactor": 1.25,
   "theta1": [
     -2.05,
     -2.057537472000923,

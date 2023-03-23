@@ -187,7 +187,7 @@ public class ArmLoop extends LoopBase {
                     points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
                 }
 
-                armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), points);
+                armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), path.grannyFactor(), points);
             }
         }
 

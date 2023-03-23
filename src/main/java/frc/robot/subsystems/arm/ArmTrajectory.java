@@ -29,14 +29,16 @@ public class ArmTrajectory {
   private final String startPos;    // starting position
   private final String finalPos;    // final position
   private double totalTime = 0.0;   // total trajectory time
+  private double grannyFactor = 1.0;   // totalTime multiplier in JSON
   private List<Vector<N2>> points = new ArrayList<>(); // rough trajectory of theta1, theta2 at equally spaced times across totalTime
   Matrix<N2, N3> finalState;
 
   /** Creates an arm trajectory with the given parameters. */
-  public ArmTrajectory(String startPos, String finalPos, double totalTime, List<Vector<N2>> points) {
+  public ArmTrajectory(String startPos, String finalPos, double totalTime, double grannyFactor, List<Vector<N2>> points) {
     this.startPos = startPos;
     this.finalPos = finalPos;
     this.totalTime = totalTime;
+    this.grannyFactor = grannyFactor;
     this.points = points;
 
     // precalculate the final state, as we will use this to hold position after
@@ -47,14 +49,22 @@ public class ArmTrajectory {
   /** slow down factor for arm movements 
    * CHANGE IN AUTOMANAGERLOOP AS WELL
   */
-  private static double grannyFactor = 1.5;//TODO: TRAJECTORYDEBUG 1.0; // default to full speed motions
+  private static double globalGrannyFactor = 1.5;//TODO: TRAJECTORYDEBUG 1.0; // default to full speed motions
+
+  public double getGlobalGrannyFactor() {
+    return globalGrannyFactor;
+  }
+
+  public static void setGlobalGrannyFactor(double grannyFactor) {
+    ArmTrajectory.globalGrannyFactor = MathUtil.clamp(grannyFactor, 1.0, 10.0);
+  }
 
   public double getGrannyFactor() {
     return grannyFactor;
   }
 
-  public static void setGrannyFactor(double grannyFactor) {
-    ArmTrajectory.grannyFactor = MathUtil.clamp(grannyFactor, 1.0, 10.0);
+  public void setGrannyFactor(double grannyFactor) {
+    this.grannyFactor = MathUtil.clamp(grannyFactor, 1.0, 10.0);
   }
 
   /** get start position string */
@@ -69,7 +79,7 @@ public class ArmTrajectory {
 
   /**Returns the total time for the trajectory, possibly lengthened by GrannyFactor. */
   public double getTotalTime() {
-    return totalTime * grannyFactor;
+    return totalTime * grannyFactor * globalGrannyFactor;
   }
 
   /** Returns the generated interior points. */
@@ -223,7 +233,7 @@ public class ArmTrajectory {
         Collections.reverse(newPoints);
     }
 
-    return new ArmTrajectory(startPos, finalPos, totalTime, newPoints);
+    return new ArmTrajectory(startPos, finalPos, totalTime, grannyFactor, newPoints);
   }
 
 

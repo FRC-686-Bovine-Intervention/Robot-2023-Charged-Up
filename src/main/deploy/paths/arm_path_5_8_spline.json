@@ -2,6 +2,7 @@
   "startPos": "score_high_cube",
   "finalPos": "auto_start",
   "totalTime": 1.1344536275476333,
+  "grannyFactor": 1.25,
   "theta1": [
     -0.679,
     -0.67726362853642652,

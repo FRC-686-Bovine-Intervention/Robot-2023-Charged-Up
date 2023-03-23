@@ -2,6 +2,7 @@
   "startPos": "double_substation",
   "finalPos": "intake",
   "totalTime": 0.7860581763500081,
+  "grannyFactor": 1.25,
   "theta1": [
     -0.6029999999999996,
     -0.6089840529062698,

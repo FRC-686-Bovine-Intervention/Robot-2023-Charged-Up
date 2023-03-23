@@ -2,6 +2,7 @@
   "startPos": "defense",
   "finalPos": "score_high_cone",
   "totalTime": 0.884771093261585,
+  "grannyFactor": 1.25,
   "theta1": [
     -2.26,
     -2.2585056201192524,

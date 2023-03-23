@@ -2,6 +2,7 @@
   "startPos": "defense",
   "finalPos": "auto_start",
   "totalTime": 0.4627716076982251,
+  "grannyFactor": 1.25,
   "theta1": [
     -2.26,
     -2.259953277858112,

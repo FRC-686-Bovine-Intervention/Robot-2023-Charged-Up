@@ -2,6 +2,7 @@
   "startPos": "score_mid_cone",
   "finalPos": "intake",
   "totalTime": 0.6039256065408554,
+  "grannyFactor": 1.25,
   "theta1": [
     -1.2999999999999998,
     -1.3052704271197568,

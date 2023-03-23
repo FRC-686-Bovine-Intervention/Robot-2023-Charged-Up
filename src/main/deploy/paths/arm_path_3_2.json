@@ -2,6 +2,7 @@
   "startPos": "score_hybrid",
   "finalPos": "double_substation",
   "totalTime": 0.6575900317721034,
+  "grannyFactor": 1.25,
   "theta1": [
     -2.1,
     -2.098493495959355,

@@ -2,6 +2,7 @@
   "startPos": "defense",
   "finalPos": "double_substation",
   "totalTime": 0.95500202380065391,
+  "grannyFactor": 1.25,
   "theta1": [
     -2.26,
     -2.2585711581228312,

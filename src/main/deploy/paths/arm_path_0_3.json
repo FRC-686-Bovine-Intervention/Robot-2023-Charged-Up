@@ -2,6 +2,7 @@
   "startPos": "defense",
   "finalPos": "score_hybrid",
   "totalTime": 0.33815769643942784,
+  "grannyFactor": 1.25,
   "theta1": [
     -2.26,
     -2.2592365979038593,
