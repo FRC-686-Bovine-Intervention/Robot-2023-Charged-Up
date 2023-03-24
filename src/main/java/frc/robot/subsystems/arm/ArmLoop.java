@@ -204,8 +204,7 @@ public class ArmLoop extends LoopBase {
 
         double clawLengthPastToolCenterPoint = kMaxElbowPlusClawLength - config.elbow().length() - config.wrist().length();
         xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches() + 48.0 - clawLengthPastToolCenterPoint);
-        finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
-        setpointState = finalTrajectoryState;
+        resetTrajectoryState();
     }
 
     @Override
@@ -573,6 +572,11 @@ public class ArmLoop extends LoopBase {
         trajectoryTimer.reset();
     }
 
+
+    public void resetTrajectoryState()  {
+        finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
+        setpointState = finalTrajectoryState;
+    }
 
 
     public void runTrajectory() {
