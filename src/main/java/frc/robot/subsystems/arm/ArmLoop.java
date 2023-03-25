@@ -156,8 +156,9 @@ public class ArmLoop extends LoopBase {
         // Get config from JSON
         ArmConfigJson config = arm.getConfig();
 
-        JointConfig claw = ArmDynamics.rigidlyCombineJoints(config.wrist(), config.cone());
-        JointConfig elbow = ArmDynamics.rigidlyCombineJoints(config.elbow(), claw);
+        // JointConfig claw = ArmDynamics.rigidlyCombineJoints(config.wrist(), config.cone());
+        // JointConfig elbow = ArmDynamics.rigidlyCombineJoints(config.elbow(), claw);
+        JointConfig elbow = ArmDynamics.rigidlyCombineJoints(config.elbow(), config.wrist());
         JointConfig shoulder = config.shoulder();
 
         kinematics = new ArmKinematics(new Translation2d(config.origin().getX(), config.origin().getY()),
@@ -241,8 +242,6 @@ public class ArmLoop extends LoopBase {
         // ================= Pulling Data from Command =================
         ArmCommand newCommand = status.getCommand();
 
-        if(newCommand.getArmState() != null)
-            status.setArmState(newCommand.getArmState());
         if(newCommand.getTargetNode() != null) {
             switch(status.getArmState()) {
                 case AlignNode:
@@ -254,6 +253,8 @@ public class ArmLoop extends LoopBase {
                 break;
             }
         }
+        if(newCommand.getArmState() != null)
+            status.setArmState(newCommand.getArmState());
         if(newCommand.getShoulderAdjustment() != null)
             status.setshoulderThrottle(newCommand.getShoulderAdjustment());
         if(newCommand.getElbowAdjustment() != null)

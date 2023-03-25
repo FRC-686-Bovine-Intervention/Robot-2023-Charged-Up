@@ -68,17 +68,17 @@ public class DriverAssistLoop extends LoopBase {
                 }
                 DriveCommand driveCommand = DriveCommand.BRAKE();
                 double output = 0;
-                if(status.getUsingProportional())
-                {
+                // if(status.getUsingProportional())
+                // {
                     output = Math.max(Math.min(estimatedPitch*kPowerAtMaxPitch/kMaxPitch, kPowerAtMaxPitch),-kPowerAtMaxPitch);
-                }
-                else
-                {
-                    output = Math.signum(driveStatus.getPitchDeg()) * 0.25;
-                    // if(Math.signum(driveStatus.getPitchDeg()) != Math.signum(prevPitch))
-                    if(Math.abs(averageEncoderDist - startEncoderDist) >= 15)
-                        status.setUsingProportional(true);
-                }
+                // }
+                // else
+                // {
+                //     output = Math.signum(driveStatus.getPitchDeg()) * 0.25;
+                //     // if(Math.signum(driveStatus.getPitchDeg()) != Math.signum(prevPitch))
+                //     if(Math.abs(averageEncoderDist - startEncoderDist) >= 15)
+                //         status.setUsingProportional(true);
+                // }
                 driveCommand.setWheelSpeed(new WheelSpeeds(output,output));
                 // if(estimatedPitch >= kForwardPitchThreshold)
                 //     driveCommand.setWheelSpeed(new WheelSpeeds(kForwardBalancePercent, kForwardBalancePercent));

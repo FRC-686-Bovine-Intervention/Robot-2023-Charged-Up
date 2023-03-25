@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.RobotConfiguration;
 import frc.robot.auto.actions.ArmCommandAction;
 import frc.robot.auto.actions.DriveOnChargeStationEdgeAction;
+import frc.robot.auto.actions.DrivePercentAction;
 import frc.robot.auto.actions.DriverAssistCommandAction;
 import frc.robot.auto.actions.RamseteFollowerAction;
 import frc.robot.auto.actions.WaitUntilAction;
@@ -37,7 +38,8 @@ public class OneSkipBalanceAuto extends AutoMode {
         addAction(new ArmCommandAction(new ArmCommand(ArmState.Release)));
         addAction(new WaitUntilAction(() -> armStatus.getClawGrabbing() == false));
         addAction(new RamseteFollowerAction(trajectory, ramseteController));
-        addAction(new DriveOnChargeStationEdgeAction(true));
+        addAction(new DriveOnChargeStationEdgeAction(true).setTimeout(3));
+        addAction(new DrivePercentAction(12, -0.3));
         addAction(new DriverAssistCommandAction(new DriverAssistCommand(DriverAssistState.AutoBalance)));
     }
 }
