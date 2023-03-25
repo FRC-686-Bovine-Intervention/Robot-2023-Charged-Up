@@ -337,11 +337,10 @@ public class ArmLoop extends LoopBase {
                     status.setElbowPower(kDistalZeroPower * Math.signum(ArmPose.Preset.DEFENSE.getElbowAngleRad() - elbowAngleRad));
                     if(Math.abs(elbowAngleRad - ArmPose.Preset.DEFENSE.getElbowAngleRad()) <= kDistalZeroErrorThreshold)
                     {
+                        resetTrajectoryState();
                         status.setArmState(ArmState.Defense)
                               .setCurrentArmPose(ArmPose.Preset.DEFENSE)
                               .setTargetArmPose(ArmPose.Preset.DEFENSE)
-                              .setCurrentTrajState(ArmTrajectory.getFixedState(ArmPose.Preset.DEFENSE.getShoulderAngleRad(), ArmPose.Preset.DEFENSE.getElbowAngleRad()))
-                              .setCurrentArmTrajectory(null)
                               .setInternalDisable(false, "");     // enable arm trajectories
                     }
                 }

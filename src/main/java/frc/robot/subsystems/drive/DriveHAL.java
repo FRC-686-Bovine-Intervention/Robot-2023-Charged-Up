@@ -56,7 +56,7 @@ public class DriveHAL {
 
     //TODO: Update Drive Coefficients
 	// Wheels
-	public static final double kDriveWheelCircumInches    = 4.25*Math.PI;
+	public static final double kDriveWheelCircumInches    = 4*Math.PI;
 	public static final double kTrackWidthInches          = 24.500;//20.5;
 	public static final double kTrackEffectiveDiameter    = 22.5; //Went 707in in 10 rotations       (kTrackWidthInches * kTrackWidthInches + kTrackLengthInches * kTrackLengthInches) / kTrackWidthInches;
 	public static final double kTrackScrubFactor          = 1.0;

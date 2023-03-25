@@ -47,9 +47,9 @@ public class ArmTrajectory {
   }
 
   /** slow down factor for arm movements 
-   * CHANGE IN AUTOMANAGERLOOP AS WELL
+   * CHANGE IN AUTOMANAGERLOOP OOOOOOOOOOOOONNNNNNNNNNNNNNLLLLLLLLLLLLLYYYYYYYYYYYYY
   */
-  private static double globalGrannyFactor = 1.5;//TODO: TRAJECTORYDEBUG 1.0; // default to full speed motions
+  private static double globalGrannyFactor = 1.0;   // change in AutoManagerLoop to change speed in auto/teleop 
 
   public double getGlobalGrannyFactor() {
     return globalGrannyFactor;
@@ -178,6 +178,7 @@ public class ArmTrajectory {
       }
 
       List<Vector<N2>> newPoints = new ArrayList<Vector<N2>>(points);
+      double newTotalTime = totalTime;
 
       if (reversePath) {
         // reverse path so scoring position is always at the back end
@@ -226,14 +227,14 @@ public class ArmTrajectory {
         newPoints.add(idx-1+k, VecBuilder.fill(interp_theta0, interp_theta1));
       }
 
-      totalTime += npoints * Constants.loopPeriodSecs;
+      newTotalTime += npoints * Constants.loopPeriodSecs;
 
     if (reversePath) {
         // undo the earlier reversal
         Collections.reverse(newPoints);
     }
 
-    return new ArmTrajectory(startPos, finalPos, totalTime, grannyFactor, newPoints);
+    return new ArmTrajectory(startPos, finalPos, newTotalTime, grannyFactor, newPoints);
   }
 
 

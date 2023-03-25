@@ -1,6 +1,5 @@
 package frc.robot.auto.modes;
 
-import frc.robot.auto.actions.DrivePercentAction;
 import frc.robot.auto.actions.DriveVelocityAction;
 
 public class DriveStraightAuto extends AutoMode {

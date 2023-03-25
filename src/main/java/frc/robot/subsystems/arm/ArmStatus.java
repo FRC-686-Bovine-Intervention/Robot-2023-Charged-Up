@@ -507,6 +507,9 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable",         internalDisable);
         logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable Reason",  internalDisableReason);
         logger.recordOutput(prefix + "Arm/Trajectory/Current Trajectory",   currentArmTrajectory != null ? "Start pose: " + currentArmTrajectory.getStartString() + " Final pose: " + currentArmTrajectory.getFinalString() : "null");
+        logger.recordOutput(prefix + "Arm/Trajectory/Granny Factor", currentArmTrajectory != null ? currentArmTrajectory.getGrannyFactor() : -686);
+        logger.recordOutput(prefix + "Arm/Trajectory/Global Granny Factor", currentArmTrajectory != null ? currentArmTrajectory.getGlobalGrannyFactor() : -686);
+        logger.recordOutput(prefix + "Arm/Trajectory/TotalTime", currentArmTrajectory != null ? currentArmTrajectory.getTotalTime() : -686);
         trajectoryEntry.setString(currentArmTrajectory != null ? "Start pose: " + currentArmTrajectory.getStartString() + " Final pose: " + currentArmTrajectory.getFinalString() : "null");
         AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta1", getCurrentTrajState().extractRowVector(0));
         AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta2", getCurrentTrajState().extractRowVector(1));
