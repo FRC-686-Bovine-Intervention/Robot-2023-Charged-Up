@@ -1,6 +1,6 @@
 function [theta1, theta2] = get_elbow_up_path(start_theta1, start_theta2, final_theta1, final_theta2)
 
-minimum_shoulder_elbow_angle_deg = 30;
+minimum_shoulder_elbow_angle_deg = 32.5;
 
 % shoulder forward
 shoulderFwd.theta1 = -125.0 * pi/180;   % forward enough that elbow can come up
