@@ -17,6 +17,7 @@ import frc.robot.auto.modes.AutoMode;
 import frc.robot.auto.modes.DriveStraightAuto;
 import frc.robot.auto.modes.OneGrabBalanceAuto;
 import frc.robot.auto.modes.OneSkipBalanceAuto;
+import frc.robot.auto.modes.ScoreBackupAuto;
 import frc.robot.auto.modes.TwoPieceAuto;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -25,10 +26,11 @@ public class AutoManagerStatus extends StatusBase {
     public static AutoManagerStatus getInstance(){if(instance == null){instance = new AutoManagerStatus();}return instance;}
 
     public enum AutoModesEnum{
-        OneGrabBalance("One Piece Grab Balance", OneGrabBalanceAuto.class),
         OneSkipBalance("One Piece Skip Balance", OneSkipBalanceAuto.class),
         TwoPiece("Two Piece", TwoPieceAuto.class),
-        DriveStraightAuto("D rive Straight Test", DriveStraightAuto.class),
+        OneGrabBalance("One Piece Grab Balance", OneGrabBalanceAuto.class),
+        ScoreBackup("Score Backup", ScoreBackupAuto.class),
+        DriveStraightAuto("Drive Straight Test", DriveStraightAuto.class),
         // RamseteFollowerTest("Ramsete Follower Test", RamseteFollowerTestAuto.class),
         // Blank("Blank Mode Test", BlankAutoMode.class),
         ;

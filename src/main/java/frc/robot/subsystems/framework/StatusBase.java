@@ -7,6 +7,7 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.RobotConfiguration;
+import frc.robot.subsystems.arm.Arm;
 
 public abstract class StatusBase implements LoggableInputs{
 
@@ -95,9 +96,11 @@ public abstract class StatusBase implements LoggableInputs{
         if(Subsystem == null)
             throw new NullPointerException(this.getClass().getName() + " has not defined the super variable Subsystem\n");
         String prefix = Subsystem.getClass().getSimpleName() + "/";
-        Logger.getInstance().recordOutput(prefix + "Enabled Switch", EnabledSwitch);
-        Logger.getInstance().recordOutput(prefix + "Enabled State", EnabledState.name());
-        processOutputs(Logger.getInstance(), prefix);
+        if(DriverStation.isEnabled() || Subsystem.getClass() == Arm.class) {
+            Logger.getInstance().recordOutput(prefix + "Enabled Switch", EnabledSwitch);
+            Logger.getInstance().recordOutput(prefix + "Enabled State", EnabledState.name());
+            processOutputs(Logger.getInstance(), prefix);
+        }
     }
 
     /**

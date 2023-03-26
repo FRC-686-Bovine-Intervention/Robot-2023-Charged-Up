@@ -1,6 +1,7 @@
 package frc.robot.subsystems.vision;
 
 import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.lib.util.LimelightHelpers;
@@ -26,6 +27,15 @@ public class VisionHAL {
             }
         } else {
         }
+    }
+
+    // AprilTags
+    public PhotonPipelineResult[] getCameraResults() {
+        PhotonPipelineResult[] results = new PhotonPipelineResult[aprilTagCameras.length];
+        for (int i = 0; i < aprilTagCameras.length; i++) {
+            results[i] = aprilTagCameras[i] != null ? aprilTagCameras[i].getLatestResult() : null;
+        }
+        return results;
     }
 
     // Limelight

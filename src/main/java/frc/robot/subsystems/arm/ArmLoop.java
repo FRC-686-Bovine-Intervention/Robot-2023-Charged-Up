@@ -342,7 +342,9 @@ public class ArmLoop extends LoopBase {
                         status.setArmState(ArmState.Defense)
                               .setCurrentArmPose(ArmPose.Preset.DEFENSE)
                               .setTargetArmPose(ArmPose.Preset.DEFENSE)
-                              .setInternalDisable(false, "");     // enable arm trajectories
+                              .setInternalDisable(false, "")
+                              .setElbowAdjustment(0)
+                              .setShoulderAdjustment(0);     // enable arm trajectories
                     }
                 }
             break;
