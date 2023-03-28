@@ -6,7 +6,7 @@ import frc.robot.subsystems.drive.DriveStatus;
 
 public class DriveOnChargeStationEdgeAction extends Action {
     private static final double kUpperPitchThreshold = 15;
-    private static final double kLowerPitchThreshold = 13;
+    private static final double kLowerPitchThreshold = 14;
     private static final double kDrivePercentOutput = 0.3;
     private final boolean reversed;
 
@@ -19,6 +19,7 @@ public class DriveOnChargeStationEdgeAction extends Action {
     }
 
     private boolean hitUpperThreshold;
+    private double prevPitch;
 
     @Override
     protected void start() {}
@@ -26,13 +27,20 @@ public class DriveOnChargeStationEdgeAction extends Action {
     @Override
     protected void run() {
         drive.setDriveCommand(new DriveCommand(kDrivePercentOutput * (reversed ? -1 : 1), kDrivePercentOutput * (reversed ? -1 : 1)));
-        if(!hitUpperThreshold) {
-            if(Math.abs(driveStatus.getPitchDeg()) >= kUpperPitchThreshold)
-                hitUpperThreshold = true;
-        } else {
-            if(Math.abs(driveStatus.getPitchDeg()) <= kLowerPitchThreshold)
-                setFinished(true);
+        if(getPitchVelo() * (reversed ? -1 : 1) <= -0.2) {
+            setFinished(true);
         }
+        // if(!hitUpperThreshold) {
+        //     if(Math.abs(driveStatus.getPitchDeg()) >= kUpperPitchThreshold)
+        //         hitUpperThreshold = true;
+        // } else {
+        //     if(Math.abs(driveStatus.getPitchDeg()) <= kLowerPitchThreshold)
+        // }
+        prevPitch = driveStatus.getPitchDeg();
+    }
+
+    private double getPitchVelo() {
+        return driveStatus.getPitchDeg() - prevPitch;
     }
 
     @Override

@@ -7,6 +7,7 @@ import frc.robot.RobotConfiguration;
 import frc.robot.auto.actions.ArmCommandAction;
 import frc.robot.auto.actions.ConditionalAction;
 import frc.robot.auto.actions.DriveOnChargeStationEdgeAction;
+import frc.robot.auto.actions.DrivePercentAction;
 import frc.robot.auto.actions.DriverAssistCommandAction;
 import frc.robot.auto.actions.IntakeCommandAction;
 import frc.robot.auto.actions.ParallelAction;
@@ -44,7 +45,7 @@ public class OneGrabBalanceAuto extends AutoMode {
         RamseteController ramseteController = new RamseteController(2, 0.7);
 
         addAction(new WaitUntilAction(() -> armStatus.getCurrentArmPose() == ArmPose.Preset.DEFENSE));
-        addAction(new ArmCommandAction(new ArmCommand(ArmState.Extend).setTargetNode(config.startingPiece == GamePiece.Cube ? NodeEnum.TopCenter : (config.startingPosition == StartPosition.Loading ? NodeEnum.TopWall : NodeEnum.TopLoading))));
+        addAction(new ArmCommandAction(new ArmCommand(ArmState.AlignNode).setTargetNode(config.startingPiece == GamePiece.Cube ? NodeEnum.TopCenter : (config.startingPosition == StartPosition.Loading ? NodeEnum.TopWall : NodeEnum.TopLoading))));
         addAction(new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Adjust));
         addAction(new ArmCommandAction(new ArmCommand(ArmState.Release)));
         addAction(new WaitUntilAction(() -> armStatus.getTargetArmPose() == ArmPose.Preset.DEFENSE));
@@ -55,6 +56,7 @@ public class OneGrabBalanceAuto extends AutoMode {
             new SeriesAction(
                 new RamseteFollowerAction(trajectories[2], ramseteController),
                 new DriveOnChargeStationEdgeAction(true).setTimeout(3),
+                new DrivePercentAction(12, -0.3),
                 new DriverAssistCommandAction(new DriverAssistCommand(DriverAssistState.AutoBalance))
             ),
             new SeriesAction(

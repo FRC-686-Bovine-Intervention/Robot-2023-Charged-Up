@@ -45,13 +45,16 @@ public class DriverInteractionLoop extends LoopBase {
 
     private boolean invertDriveControls = false;
 
+    private static final double kTurnPercent = 0.8;
+    private static final double kThrottlePercent = 0.7;
+
     private DriveCommand generateDriveCommand()
     {
         double turn =       DriverControlAxes.ThrustmasterX.getAxis();
         double throttle =   DriverControlAxes.ThrustmasterY.getAxis();
 
-        turn = 0.8*turn*turn*turn - 0.8*turn + turn;
-        throttle = 0.7*throttle*throttle*throttle - 0.7*throttle + throttle;
+        turn = kTurnPercent*turn*turn*turn - kTurnPercent*turn + turn;
+        throttle = kThrottlePercent*throttle*throttle*throttle - kThrottlePercent*throttle + throttle;
 
         turn *= 0.7;
         turn *= (armStatus.getShoulderAngleRad() + Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
@@ -69,6 +72,9 @@ public class DriverInteractionLoop extends LoopBase {
 
     private ArmCommand generateAdjustments() {
         ArmCommand command = new ArmCommand();
+        command.setShoulderAdjustment(0)
+               .setElbowAdjustment(0)
+               .setTurretAdjustment(0);
         if(armStatus.getArmState() == ArmState.Adjust || armStatus.getArmState() == ArmState.Emergency || armStatus.getArmState() == ArmState.SubstationExtend) {
             double shoulderAdjustment = -DriverControlAxes.XBoxLeftY.getAxis();
             double elbowAdjustment = DriverControlAxes.XBoxRightY.getAxis();
@@ -197,8 +203,11 @@ public class DriverInteractionLoop extends LoopBase {
             default: break;
         }
 
+        if(DriverControlButtons.ReZeroArm.getRisingEdge())
+            armCommand.setArmState(ArmState.ZeroDistalUp);
         if(DriverControlButtons.Oopsie.getRisingEdge())
             armCommand.setArmState(armStatus.getArmState() != ArmState.Emergency ? ArmState.Emergency : ArmState.ZeroDistalUp);
+        
         arm.setCommand(armCommand);
     }
 

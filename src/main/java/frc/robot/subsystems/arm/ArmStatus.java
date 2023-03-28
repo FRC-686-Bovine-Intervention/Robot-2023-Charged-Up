@@ -64,7 +64,7 @@ public class ArmStatus extends StatusBase {
         TopCenter       (1,2,ArmPose.Preset.SCORE_HIGH_CUBE, false),
         TopLoading      (2,2,ArmPose.Preset.SCORE_HIGH_CONE, true);
 
-        public static final NodeEnum DEFAULT = MiddleCenter;
+        public static final NodeEnum DEFAULT = TopCenter;
 
         public final int xPos;
         public final int yPos;

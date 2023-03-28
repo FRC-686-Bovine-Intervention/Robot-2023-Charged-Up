@@ -1,18 +1,18 @@
 package frc.robot.subsystems.odometry;
 
-import org.photonvision.EstimatedRobotPose;
-
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.drive.DriveHAL;
 import frc.robot.subsystems.drive.DriveStatus;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.vision.VisionStatus;
+import frc.robot.subsystems.vision.VisionStatus.VisionData;
 
 public class OdometryLoop extends LoopBase {
     private static OdometryLoop instance;
@@ -21,6 +21,9 @@ public class OdometryLoop extends LoopBase {
     private final OdometryStatus status = OdometryStatus.getInstance();
     private final DriveStatus driveStatus = DriveStatus.getInstance();
     private final VisionStatus visionStatus = VisionStatus.getInstance();
+
+    private static final Translation3d camOrigin = new Translation3d();
+    private static final double kMaxTrustedCamDistance = 5;
 
     private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(DriveHAL.kTrackWidthInches));
     private final DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, Rotation2d.fromDegrees(180), 0, 0, new Pose2d(),
@@ -40,8 +43,21 @@ public class OdometryLoop extends LoopBase {
                 Units.inchesToMeters(driveStatus.getRightDistanceInches())
             );
 
-        for(EstimatedRobotPose data : visionStatus.getVisionData()) {
-                poseEstimator.addVisionMeasurement(data.estimatedPose.toPose2d(), data.timestampSeconds);
+        // for(EstimatedRobotPose data : visionStatus.getVisionData()) {
+        //     boolean goodData = false;
+        //     for (PhotonTrackedTarget targetsUsed : data.targetsUsed) {
+        //         if(camOrigin.getDistance(targetsUsed.getBestCameraToTarget().getTranslation()) <= kMaxTrustedCamDistance) {
+        //             goodData = true;
+        //             break;
+        //         }
+        //     }
+        //     if(goodData)
+        //         poseEstimator.addVisionMeasurement(data.estimatedPose.toPose2d(), data.timestampSeconds);
+        // }
+
+        for(VisionData data : visionStatus.getVisionData()) {
+            if(data.isGoodData())
+                poseEstimator.addVisionMeasurement(data.getRobotPose(), data.timestamp(), data.getStdDevs());
         }
 
         if(newCommand.getResetPose() != null) {

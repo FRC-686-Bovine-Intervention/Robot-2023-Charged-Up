@@ -134,10 +134,10 @@ public class DriveStatus extends StatusBase {
         // TODO: LESS LOGGING
         // logger.recordOutput(prefix + "Control Mode",                    getTalonMode().name());
         // logger.recordOutput(prefix + "Neutral Mode",                    getNeutralMode().name());
-        // logger.recordOutput(prefix + "Encoded Distance (In)/Left",      getLeftDistanceInches());
-        // logger.recordOutput(prefix + "Encoded Distance (In)/Right",     getRightDistanceInches());
-        // logger.recordOutput(prefix + "Encoded Speed (In|Sec)/Left",     getLeftSpeedInchesPerSec());
-        // logger.recordOutput(prefix + "Encoded Speed (In|Sec)/Right",    getRightSpeedInchesPerSec());
+        logger.recordOutput(prefix + "Encoded Distance (In)/Left",      getLeftDistanceInches());
+        logger.recordOutput(prefix + "Encoded Distance (In)/Right",     getRightDistanceInches());
+        logger.recordOutput(prefix + "Encoded Speed (In|Sec)/Left",     getLeftSpeedInchesPerSec());
+        logger.recordOutput(prefix + "Encoded Speed (In|Sec)/Right",    getRightSpeedInchesPerSec());
         // logger.recordOutput(prefix + "Gyro/Heading (Deg)",              getHeadingDeg());
         logger.recordOutput(prefix + "Gyro/Pitch (Deg)",                getPitchDeg());
         // logger.recordOutput(prefix + "Motor Current (Amps)/Left",       getLeftMotorCurrent());
