@@ -357,8 +357,6 @@ public class ArmLoop extends LoopBase {
                       .setTargetTurretAngleDeg(0)
                       .setTargetArmPose(ArmPose.Preset.DEFENSE)
                       .setClawGrabbing(false);
-                if(intakeStatus.getIntakeState() == IntakeState.Hold)
-                    status.setArmState(ArmState.Grab);
             break;
 
             case Emergency:

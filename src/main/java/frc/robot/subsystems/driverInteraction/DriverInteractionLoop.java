@@ -117,17 +117,23 @@ public class DriverInteractionLoop extends LoopBase {
             break;
 
             case Hold:
-                if(armStatus.EnabledState.IsEnabled)
-                    break;
-                if(DriverControlButtons.MainAction.getRisingEdge())
+                if(!armStatus.EnabledState.IsEnabled && DriverControlButtons.MainAction.getRisingEdge()) {
                     intakeCommand.setIntakeState(IntakeState.Release);
+                    break;
+                }
+                if(DriverControlButtons.MainAction.getButton() && DriverControlButtons.Undo.getRisingEdge()) {
+                    intakeCommand.setIntakeState(IntakeState.Release);
+                }
             break;
             
             case Release:
-                if(armStatus.EnabledState.IsEnabled)
-                    break;
-                if(!DriverControlButtons.MainAction.getButton())
+                if(!armStatus.EnabledState.IsEnabled && !DriverControlButtons.MainAction.getButton()) {
                     intakeCommand.setIntakeState(IntakeState.Defense);
+                    break;
+                }
+                if(armStatus.getArmState() != ArmState.Grab && (DriverControlButtons.MainAction.getFallingEdge() || DriverControlButtons.Undo.getFallingEdge())){
+                    intakeCommand.setIntakeState(IntakeState.Defense);
+                }
             break;
         }
         intake.setCommand(intakeCommand);
@@ -159,6 +165,9 @@ public class DriverInteractionLoop extends LoopBase {
             case Defense:
                 if(DriverControlButtons.Undo.getRisingEdge())
                     armCommand.setArmState(ArmState.SubstationExtend);
+
+                if(intakeStatus.getIntakeState() == IntakeState.Hold && !DriverControlButtons.MainAction.getButton())
+                    armCommand.setArmState(ArmState.Grab);
             break;
 
             case Grab:
