@@ -350,6 +350,9 @@ public class ArmLoop extends LoopBase {
             break;
 
             case Defense:
+                if(stateTimer.get() == 0) {
+                    intake.setCommand(new IntakeCommand(IntakeState.Defense));
+                }
                 status.setTurretControlMode(MotorControlMode.PID)
                       .setTargetTurretAngleDeg(0)
                       .setTargetArmPose(ArmPose.Preset.DEFENSE)

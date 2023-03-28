@@ -45,13 +45,16 @@ public class DriverInteractionLoop extends LoopBase {
 
     private boolean invertDriveControls = false;
 
+    private static final double kTurnPercent = 0.8;
+    private static final double kThrottlePercent = 0.7;
+
     private DriveCommand generateDriveCommand()
     {
         double turn =       DriverControlAxes.ThrustmasterX.getAxis();
         double throttle =   DriverControlAxes.ThrustmasterY.getAxis();
 
-        turn = 0.8*turn*turn*turn - 0.8*turn + turn;
-        throttle = 0.7*throttle*throttle*throttle - 0.7*throttle + throttle;
+        turn = kTurnPercent*turn*turn*turn - kTurnPercent*turn + turn;
+        throttle = kThrottlePercent*throttle*throttle*throttle - kThrottlePercent*throttle + throttle;
 
         turn *= 0.7;
         turn *= (armStatus.getShoulderAngleRad() + Math.PI / 2 >= kExtendedThreshold ? kExtendedDrivePowerMultiplier : 1);
