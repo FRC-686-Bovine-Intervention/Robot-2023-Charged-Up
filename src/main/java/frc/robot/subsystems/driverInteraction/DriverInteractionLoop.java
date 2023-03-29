@@ -163,7 +163,7 @@ public class DriverInteractionLoop extends LoopBase {
         switch(ArmStatus.getInstance().getArmState())
         {
             case Defense:
-                if(DriverControlButtons.Undo.getRisingEdge())
+                if(DriverControlButtons.Undo.getRisingEdge() && !DriverControlButtons.MainAction.getButton())
                     armCommand.setArmState(ArmState.SubstationExtend);
 
                 if(intakeStatus.getIntakeState() == IntakeState.Hold && !DriverControlButtons.MainAction.getButton())
