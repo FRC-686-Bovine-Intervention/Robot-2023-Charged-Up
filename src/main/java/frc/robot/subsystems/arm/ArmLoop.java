@@ -413,11 +413,11 @@ public class ArmLoop extends LoopBase {
                         status.setClawGrabbing(true);
                         // Set intake to release
                         intake.setCommand(new IntakeCommand(IntakeState.Release));
-                        status.setTargetArmPose(ArmPose.Preset.DEFENSE);
+                        status.setTargetArmPose(ArmPose.Preset.HOLD);
                     }
                 } else {
-                    status.setTargetArmPose(ArmPose.Preset.DEFENSE);
-                    if(status.getCurrentArmPose() == ArmPose.Preset.DEFENSE)
+                    status.setTargetArmPose(ArmPose.Preset.HOLD);
+                    if(status.getCurrentArmPose() == ArmPose.Preset.HOLD)
                         status.setArmState(ArmState.Hold);
                 }
             break;
@@ -445,7 +445,7 @@ public class ArmLoop extends LoopBase {
 
             case AlignWall:
                 turretPID.setP(kTurretFastP);
-                status.setTargetArmPose(ArmPose.Preset.DEFENSE);
+                status.setTargetArmPose(ArmPose.Preset.HOLD);
                 pipeline = LimelightPipeline.Pole;
                 
                 // unwrap turret angle because odometry wraps it to +/-180
