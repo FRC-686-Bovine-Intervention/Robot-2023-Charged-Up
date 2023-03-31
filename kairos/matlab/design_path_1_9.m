@@ -21,7 +21,7 @@ points = [theta1; theta2];
 
 % Make Trajectory ====================================
 
-spline_T = 1.25;    % slowing down
+spline_T = 2.0;    % slowing down
 points = make_spline_trajectory(startIdx, finalIdx, points, orig_points, spline_T);
 
 % write new spline trajectory
