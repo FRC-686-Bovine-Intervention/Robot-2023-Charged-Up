@@ -42,12 +42,12 @@ public class OdometryStatus extends StatusBase {
     @Override
     protected void processOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "Robot Pose (Meters, Rad)", AdvantageUtil.deconstruct(getRobotPose()));
-        logger.recordOutput(prefix + "Robot Speed (M|Sec)/Left", getRobotSpeedMeterPerSec().left);
-        logger.recordOutput(prefix + "Robot Speed (M|Sec)/Right", getRobotSpeedMeterPerSec().right);
+        // logger.recordOutput(prefix + "Robot Speed (M|Sec)/Left", getRobotSpeedMeterPerSec().left);
+        // logger.recordOutput(prefix + "Robot Speed (M|Sec)/Right", getRobotSpeedMeterPerSec().right);
 
-        logger.recordOutput(prefix + "Pose Bounding Boxes/In Community", FieldDimensions.community.withinBounds(AllianceFlipUtil.apply(robotPose)));
-        logger.recordOutput(prefix + "Pose Bounding Boxes/In Community without Charge Station", FieldDimensions.communityWithoutChargeStation.withinBounds(AllianceFlipUtil.apply(robotPose)));
-        logger.recordOutput(prefix + "Pose Bounding Boxes/In Charge Station", FieldDimensions.chargeStation.withinBounds(AllianceFlipUtil.apply(robotPose)));
+        // logger.recordOutput(prefix + "Pose Bounding Boxes/In Community", FieldDimensions.community.withinBounds(AllianceFlipUtil.apply(robotPose)));
+        // logger.recordOutput(prefix + "Pose Bounding Boxes/In Community without Charge Station", FieldDimensions.communityWithoutChargeStation.withinBounds(AllianceFlipUtil.apply(robotPose)));
+        // logger.recordOutput(prefix + "Pose Bounding Boxes/In Charge Station", FieldDimensions.chargeStation.withinBounds(AllianceFlipUtil.apply(robotPose)));
 
         odometry.setCommand(new OdometryCommand());
     }

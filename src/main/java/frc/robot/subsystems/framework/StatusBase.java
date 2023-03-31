@@ -97,8 +97,8 @@ public abstract class StatusBase implements LoggableInputs{
             throw new NullPointerException(this.getClass().getName() + " has not defined the super variable Subsystem\n");
         String prefix = Subsystem.getClass().getSimpleName() + "/";
         if(!DriverStation.isFMSAttached() || DriverStation.isEnabled() || Subsystem.getClass() == Arm.class) {
-            Logger.getInstance().recordOutput(prefix + "Enabled Switch", EnabledSwitch);
-            Logger.getInstance().recordOutput(prefix + "Enabled State", EnabledState.name());
+            // Logger.getInstance().recordOutput(prefix + "Enabled Switch", EnabledSwitch);
+            // Logger.getInstance().recordOutput(prefix + "Enabled State", EnabledState.name());
             processOutputs(Logger.getInstance(), prefix);
         }
     }

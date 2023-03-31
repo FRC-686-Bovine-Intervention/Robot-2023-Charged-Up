@@ -2,7 +2,10 @@ package frc.robot.subsystems.framework;
 
 import java.util.ArrayList;
 
+import org.littletonrobotics.junction.Logger;
+
 import frc.robot.RobotConfiguration;
+import frc.robot.subsystems.arm.Arm;
 
 public class SubsystemController {
     private static SubsystemController instance;
@@ -37,9 +40,24 @@ public class SubsystemController {
     {
         for (SubsystemBase sub : subsystems)
         {
+            long beforeLoop = Logger.getInstance().getRealTimestamp();
             sub.Status.runPreLoop();
+            long statusPreLoop = Logger.getInstance().getRealTimestamp();
+            Logger.getInstance().recordOutput("SubsystemController/" + sub.getClass().getSimpleName() + "/Status Preloop", statusPreLoop - beforeLoop);
             sub.Loop.onLoop();
+            long loop = Logger.getInstance().getRealTimestamp();
+            Logger.getInstance().recordOutput("SubsystemController/" + sub.getClass().getSimpleName() + "/Loop", loop - statusPreLoop);
             sub.Status.runPostLoop();
+            long statusPostLoop = Logger.getInstance().getRealTimestamp();
+            Logger.getInstance().recordOutput("SubsystemController/" + sub.getClass().getSimpleName() + "/Status Postloop", statusPostLoop - loop);
+            Logger.getInstance().recordOutput("SubsystemController/" + sub.getClass().getSimpleName() + "/Full Loop", statusPostLoop - beforeLoop);
+            // if(sub instanceof Arm) {
+            //     System.out.println(sub.getClass().getSimpleName() + "'s timestamp stats:" + 
+            //         "\n*  Before Loop Timestamp: " + beforeLoop + 
+            //         "\n*  Preloop time.........: " + (statusPreLoop - beforeLoop) + 
+            //         "\n*  Loop time............: " + (loop - statusPreLoop) + 
+            //         "\n*  Postloop time........: " + (statusPostLoop - loop));
+            // }
         }
         return this;
     }

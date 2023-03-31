@@ -459,16 +459,16 @@ public class ArmStatus extends StatusBase {
     @Override
     public void processOutputs(Logger logger, String prefix) {
         // Generic
-        command.recordOutputs(logger, prefix + "Command");
+        // command.recordOutputs(logger, prefix + "Command");
         arm.setCommand(new ArmCommand());
         logger.recordOutput(prefix + "Current Arm State", armState != null ? armState.name() : "null");
         stateEntry.setString(armState != null ? armState.name() : "null");
-        logger.recordOutput(prefix + "Hold|Align Locked", stateLocked);
-        lockedEntry.setBoolean(stateLocked);
+        // logger.recordOutput(prefix + "Hold|Align Locked", stateLocked);
+        // lockedEntry.setBoolean(stateLocked);
 
         // Claw
         HAL.setClawGrabbing(clawGrabbing);
-        logger.recordOutput(prefix + "Claw Grabbing", clawGrabbing);
+        // logger.recordOutput(prefix + "Claw Grabbing", clawGrabbing);
 
         // Turret
         if(!turretLockout) {
@@ -479,17 +479,17 @@ public class ArmStatus extends StatusBase {
                .setTurretNeutralMode(NeutralMode.Coast);
         }
 
-        logger.recordOutput(prefix + "Turret/Power",                getTurretPower());
-        logger.recordOutput(prefix + "Turret/PID/Output",           getTurretPIDOutput());
-        logger.recordOutput(prefix + "Turret/PID/Position",         getTurretPIDPosition());
-        logger.recordOutput(prefix + "Turret/PID/Velocity",         getTurretPIDVelocity());
-        logger.recordOutput(prefix + "Turret/Control Mode",         turretControlMode != null ? turretControlMode.name() : "null");
-        logger.recordOutput(prefix + "Turret/Neutral Mode",         turretNeutralMode != null ? turretNeutralMode.name() : "null");
+        // logger.recordOutput(prefix + "Turret/Power",                getTurretPower());
+        // logger.recordOutput(prefix + "Turret/PID/Output",           getTurretPIDOutput());
+        // logger.recordOutput(prefix + "Turret/PID/Position",         getTurretPIDPosition());
+        // logger.recordOutput(prefix + "Turret/PID/Velocity",         getTurretPIDVelocity());
+        // logger.recordOutput(prefix + "Turret/Control Mode",         turretControlMode != null ? turretControlMode.name() : "null");
+        // logger.recordOutput(prefix + "Turret/Neutral Mode",         turretNeutralMode != null ? turretNeutralMode.name() : "null");
         logger.recordOutput(prefix + "Turret/Position (deg)",       getTurretAngleDeg());
         turretAngleEntry.setDouble(getTurretAngleDeg());
-        logger.recordOutput(prefix + "Turret/Target Angle (deg)",   getTargetTurretAngleDeg());
-        logger.recordOutput(prefix + "Turret/Encoder/Relative",     HAL.getTurretRelative());
-        logger.recordOutput(prefix + "Turret/Encoder/Absolute",     HAL.getTurretAbsolute());
+        // logger.recordOutput(prefix + "Turret/Target Angle (deg)",   getTargetTurretAngleDeg());
+        // logger.recordOutput(prefix + "Turret/Encoder/Relative",     HAL.getTurretRelative());
+        // logger.recordOutput(prefix + "Turret/Encoder/Absolute",     HAL.getTurretAbsolute());
         logger.recordOutput(prefix + "Turret/Lockout",              getTurretLockout());
         lockoutEntry.setBoolean(getTurretLockout());
 
@@ -498,23 +498,23 @@ public class ArmStatus extends StatusBase {
         targetPoseEntry.setString(targetArmPose != null ? targetArmPose.name() : "null");
         logger.recordOutput(prefix + "Arm/Current Pose",            currentArmPose != null ? currentArmPose.name() : "null");
         currentPoseEntry.setString(currentArmPose != null ? currentArmPose.name() : "null");
-        logger.recordOutput(prefix + "Arm/Target Node",             targetNode != null ? targetNode.name() : "null");
-        nodeEntry.setString(targetNode != null ? targetNode.name() : "null");
-        logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Shoulder",  shoulderThrottle);
-        logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Elbow",  elbowThrottle);
-        logger.recordOutput(prefix + "Arm/Adjustments/Shoulder",           shoulderAdjustment);
-        logger.recordOutput(prefix + "Arm/Adjustments/Elbow",           elbowAdjustment);
-        logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable",         internalDisable);
-        logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable Reason",  internalDisableReason);
+        // logger.recordOutput(prefix + "Arm/Target Node",             targetNode != null ? targetNode.name() : "null");
+        // nodeEntry.setString(targetNode != null ? targetNode.name() : "null");
+        // logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Shoulder",  shoulderThrottle);
+        // logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Elbow",  elbowThrottle);
+        // logger.recordOutput(prefix + "Arm/Adjustments/Shoulder",           shoulderAdjustment);
+        // logger.recordOutput(prefix + "Arm/Adjustments/Elbow",           elbowAdjustment);
+        // logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable",         internalDisable);
+        // logger.recordOutput(prefix + "Arm/Trajectory/Internal Disable Reason",  internalDisableReason);
         logger.recordOutput(prefix + "Arm/Trajectory/Current Trajectory",   currentArmTrajectory != null ? "Start pose: " + currentArmTrajectory.getStartString() + " Final pose: " + currentArmTrajectory.getFinalString() : "null");
-        logger.recordOutput(prefix + "Arm/Trajectory/Granny Factor", currentArmTrajectory != null ? currentArmTrajectory.getGrannyFactor() : -686);
-        logger.recordOutput(prefix + "Arm/Trajectory/Global Granny Factor", currentArmTrajectory != null ? currentArmTrajectory.getGlobalGrannyFactor() : -686);
-        logger.recordOutput(prefix + "Arm/Trajectory/TotalTime", currentArmTrajectory != null ? currentArmTrajectory.getTotalTime() : -686);
+        // logger.recordOutput(prefix + "Arm/Trajectory/Granny Factor", currentArmTrajectory != null ? currentArmTrajectory.getGrannyFactor() : -686);
+        // logger.recordOutput(prefix + "Arm/Trajectory/Global Granny Factor", currentArmTrajectory != null ? currentArmTrajectory.getGlobalGrannyFactor() : -686);
+        // logger.recordOutput(prefix + "Arm/Trajectory/TotalTime", currentArmTrajectory != null ? currentArmTrajectory.getTotalTime() : -686);
         trajectoryEntry.setString(currentArmTrajectory != null ? "Start pose: " + currentArmTrajectory.getStartString() + " Final pose: " + currentArmTrajectory.getFinalString() : "null");
-        AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta1", getCurrentTrajState().extractRowVector(0));
-        AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta2", getCurrentTrajState().extractRowVector(1));
-        AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Setpoint State/Theta1", getSetpointTrajState().extractRowVector(0));
-        AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Setpoint State/Theta2", getSetpointTrajState().extractRowVector(1));
+        // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta1", getCurrentTrajState().extractRowVector(0));
+        // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Current State/Theta2", getCurrentTrajState().extractRowVector(1));
+        // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Setpoint State/Theta1", getSetpointTrajState().extractRowVector(0));
+        // AdvantageUtil.recordTrajectoryVector(logger, prefix + "Arm/Trajectory/Setpoint State/Theta2", getSetpointTrajState().extractRowVector(1));
 
         // Shoulder
         if (getShoulderFalconCalibrated() && oneShotShoulderCalibrationEnabled) {
@@ -523,15 +523,15 @@ public class ArmStatus extends StatusBase {
             oneShotShoulderCalibrationEnabled = false;
         }
         HAL.setShoulderMotorPower(shoulderPower);
-        shoulderPotEncStatus.recordOutputs(logger, prefix + "Arm/Shoulder/Encoder Status");
+        // shoulderPotEncStatus.recordOutputs(logger, prefix + "Arm/Shoulder/Encoder Status");
         logger.recordOutput(prefix + "Arm/Shoulder/Power",          shoulderPower);
-        logger.recordOutput(prefix + "Arm/Shoulder/Current",          getShoulderCurrent());
-        logger.recordOutput(prefix + "Arm/Shoulder/PotEnc Angle (Rad)",    Units.degreesToRadians(getShoulderPotEncStatus().positionDeg));
-        logger.recordOutput(prefix + "Arm/Shoulder/Falcon Angle (Rad)",    shoulderSensorUnitsToRadians(getShoulderFalconSensorPosition()));
+        // logger.recordOutput(prefix + "Arm/Shoulder/Current",          getShoulderCurrent());
+        // logger.recordOutput(prefix + "Arm/Shoulder/PotEnc Angle (Rad)",    Units.degreesToRadians(getShoulderPotEncStatus().positionDeg));
+        // logger.recordOutput(prefix + "Arm/Shoulder/Falcon Angle (Rad)",    shoulderSensorUnitsToRadians(getShoulderFalconSensorPosition()));
         logger.recordOutput(prefix + "Arm/Shoulder/Angle (Rad)",    getShoulderAngleRad());
         logger.recordOutput(prefix + "Arm/Shoulder/Setpoint",       getShoulderAngleRadSetpoint());
-        logger.recordOutput(prefix + "Arm/Shoulder/Feedforward",    getShoulderFeedforward());
-        logger.recordOutput(prefix + "Arm/Shoulder/PID Output",     getShoulderPIDOutput());
+        // logger.recordOutput(prefix + "Arm/Shoulder/Feedforward",    getShoulderFeedforward());
+        // logger.recordOutput(prefix + "Arm/Shoulder/PID Output",     getShoulderPIDOutput());
         
         // Elbow
         if (getElbowFalconCalibrated() && oneShotElbowCalibrationEnabled) {
@@ -542,12 +542,12 @@ public class ArmStatus extends StatusBase {
         HAL.setElbowMotorPower(elbowPower);
         elbowPotEncStatus.recordOutputs(logger, prefix + "Arm/Elbow/Encoder Status");
         logger.recordOutput(prefix + "Arm/Elbow/Power",         elbowPower);
-        logger.recordOutput(prefix + "Arm/Elbow/Current",          getElbowCurrent());
-        logger.recordOutput(prefix + "Arm/Elbow/PotEnc Angle (Rad)",    Units.degreesToRadians(getElbowPotEncStatus().positionDeg));
-        logger.recordOutput(prefix + "Arm/Elbow/Falcon Angle (Rad)",    elbowSensorUnitsToRadians(getElbowFalconSensorPosition()));
+        // logger.recordOutput(prefix + "Arm/Elbow/Current",          getElbowCurrent());
+        // logger.recordOutput(prefix + "Arm/Elbow/PotEnc Angle (Rad)",    Units.degreesToRadians(getElbowPotEncStatus().positionDeg));
+        // logger.recordOutput(prefix + "Arm/Elbow/Falcon Angle (Rad)",    elbowSensorUnitsToRadians(getElbowFalconSensorPosition()));
         logger.recordOutput(prefix + "Arm/Elbow/Angle (Rad)",    getElbowAngleRad());
         logger.recordOutput(prefix + "Arm/Elbow/Setpoint",      getElbowAngleRadSetpoint());
-        logger.recordOutput(prefix + "Arm/Elbow/Feedforward",   getElbowFeedforward());
-        logger.recordOutput(prefix + "Arm/Elbow/PID Output",    getElbowPIDOutput());
+        // logger.recordOutput(prefix + "Arm/Elbow/Feedforward",   getElbowFeedforward());
+        // logger.recordOutput(prefix + "Arm/Elbow/PID Output",    getElbowPIDOutput());
     }
 }

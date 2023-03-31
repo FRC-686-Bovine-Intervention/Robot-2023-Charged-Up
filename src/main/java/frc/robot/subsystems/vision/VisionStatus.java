@@ -302,13 +302,13 @@ public class VisionStatus extends StatusBase {
         HAL.setPipeline(getTargetPipeline().id);
 
         // Limelight
-        logger.recordOutput(prefix + "Limelight/Target Pipeline", getTargetPipeline().name());
-        logger.recordOutput(prefix + "Limelight/Latest Cone X Angle (Deg)", getLatestConeXAngle());
-        logger.recordOutput(prefix + "Limelight/Latest Cone Y Angle (Deg)", getLatestConeYAngle());
-        logger.recordOutput(prefix + "Limelight/Latest Cone Area (Deg)",    getLatestConeArea());
-        logger.recordOutput(prefix + "Limelight/Latest Cube X Angle (Deg)", getLatestCubeXAngle());
-        logger.recordOutput(prefix + "Limelight/Latest Cube Y Angle (Deg)", getLatestCubeYAngle());
-        logger.recordOutput(prefix + "Limelight/Latest Cube Area (Deg)",    getLatestCubeArea());
+        // logger.recordOutput(prefix + "Limelight/Target Pipeline", getTargetPipeline().name());
+        // logger.recordOutput(prefix + "Limelight/Latest Cone X Angle (Deg)", getLatestConeXAngle());
+        // logger.recordOutput(prefix + "Limelight/Latest Cone Y Angle (Deg)", getLatestConeYAngle());
+        // logger.recordOutput(prefix + "Limelight/Latest Cone Area (Deg)",    getLatestConeArea());
+        // logger.recordOutput(prefix + "Limelight/Latest Cube X Angle (Deg)", getLatestCubeXAngle());
+        // logger.recordOutput(prefix + "Limelight/Latest Cube Y Angle (Deg)", getLatestCubeYAngle());
+        // logger.recordOutput(prefix + "Limelight/Latest Cube Area (Deg)",    getLatestCubeArea());
         
         // AprilTags
         // AdvantageUtil.recordEstimatedRobotPoses(logger, prefix + "AprilTags", visionData);
