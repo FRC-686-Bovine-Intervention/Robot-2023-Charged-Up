@@ -127,10 +127,10 @@ public class ArmLoop extends LoopBase {
     private final double shoulderMinAngleRad;
     private final double elbowMaxAngleRad;
     private final double elbowMinAngleRad;
-    public static final double kRelativeMaxAngleRad = Math.toRadians(180.0 - 25.0);    // don't let grabber smash into proximal arm
+    public static final double kRelativeMaxAngleRad = Math.toRadians(180.0);    // don't let grabber smash into proximal arm
     public static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
 
-    private static final double kMaxElbowPlusClawLength = Units.inchesToMeters(26.0); 
+    private static final double kMaxElbowPlusClawLength = Units.inchesToMeters(33.0); 
  
     private final double xMinSetpoint = Units.inchesToMeters(0.0);
     private final double xMaxSetpoint;  // calculated
@@ -182,31 +182,58 @@ public class ArmLoop extends LoopBase {
         
         // Get paths from JSON
         // also create trajectories for each path
-        for (ArmPose.Preset startPos : ArmPose.Preset.values()) {
-            for (ArmPose.Preset finalPos : ArmPose.Preset.values()) {
-                int startIdx = startPos.getFileIdx();
-                int finalIdx = finalPos.getFileIdx();
+        loadArmTrajectory(ArmPose.Preset.DEFENSE, ArmPose.Preset.INTAKE);
+        loadArmTrajectory(ArmPose.Preset.DEFENSE, ArmPose.Preset.DOUBLE_SUBSTATION);
 
-                String pathFilename = String.format(ArmPathsJson.jsonFilename, startIdx, finalIdx);
-                
-                File pathFile = new File(Filesystem.getDeployDirectory(), pathFilename);
-                var path = ArmPathsJson.loadJson(pathFile);
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.DEFENSE);
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.DOUBLE_SUBSTATION);
 
-                // create trajectory for each path
-                List<Vector<N2>> points = new ArrayList<>();
-                for (int k=0; k<path.theta1().size(); k++) {
-                    points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
-                }
+        loadArmTrajectory(ArmPose.Preset.INTAKE, ArmPose.Preset.HOLD);
+        loadArmTrajectory(ArmPose.Preset.DOUBLE_SUBSTATION, ArmPose.Preset.HOLD);
 
-                armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), path.grannyFactor(), points);
-            }
-        }
+        loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_HYBRID);
+        loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_MID_CUBE);
+        loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_HIGH_CUBE);
+        loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_MID_CONE);
+        loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_HIGH_CONE);
 
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.SCORE_HYBRID);
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.SCORE_MID_CUBE);
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.SCORE_HIGH_CUBE);
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.SCORE_MID_CONE);
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.SCORE_HIGH_CONE);
+
+        loadArmTrajectory(ArmPose.Preset.SCORE_HYBRID, ArmPose.Preset.DEFENSE);
+        loadArmTrajectory(ArmPose.Preset.SCORE_MID_CUBE, ArmPose.Preset.DEFENSE);
+        loadArmTrajectory(ArmPose.Preset.SCORE_HIGH_CUBE, ArmPose.Preset.DEFENSE);
+        loadArmTrajectory(ArmPose.Preset.SCORE_MID_CONE, ArmPose.Preset.DEFENSE);
+        loadArmTrajectory(ArmPose.Preset.SCORE_HIGH_CONE, ArmPose.Preset.DEFENSE);
 
         double clawLengthPastToolCenterPoint = kMaxElbowPlusClawLength - config.elbow().length() - config.wrist().length();
         xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches() + 48.0 - clawLengthPastToolCenterPoint);
         resetTrajectoryState();
     }
+
+
+    private void loadArmTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos)
+    {
+        int startIdx = startPos.getFileIdx();
+        int finalIdx = finalPos.getFileIdx();
+
+        String pathFilename = String.format(ArmPathsJson.jsonFilename, startIdx, finalIdx);
+        
+        File pathFile = new File(Filesystem.getDeployDirectory(), pathFilename);
+        var path = ArmPathsJson.loadJson(pathFile);
+
+        // create trajectory for each path
+        List<Vector<N2>> points = new ArrayList<>();
+        for (int k=0; k<path.theta1().size(); k++) {
+            points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
+        }
+
+        armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), path.grannyFactor(), points);
+    }
+
 
     @Override
     protected void Update() {

@@ -23,7 +23,8 @@ public record ArmPresetsJson(
   PresetEntry score_high_cube,
   PresetEntry score_mid_cone,
   PresetEntry score_high_cone,
-  PresetEntry auto_start) {
+  PresetEntry auto_start,
+  PresetEntry hold) {
 
   public static final String jsonFilename = "arm_preset_poses.json";
 
