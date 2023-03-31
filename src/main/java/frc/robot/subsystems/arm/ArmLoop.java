@@ -110,7 +110,7 @@ public class ArmLoop extends LoopBase {
         );
     private final PIDController elbowPID = 
         new PIDController(
-            20.0, 
+            15.0, 
             0.0, 
             0.0, 
             Constants.loopPeriodSecs
@@ -521,8 +521,8 @@ public class ArmLoop extends LoopBase {
                 status.setClawGrabbing(false);
                 // Wait a bit then jump to Defense
                 if(stateTimer.hasElapsed(0.25))
-                    status.setTargetArmPose(ArmPose.Preset.DEFENSE);
-                if(status.getCurrentArmPose() == ArmPose.Preset.DEFENSE)
+                    status.setTargetArmPose(ArmPose.Preset.HOLD);
+                if(status.getCurrentArmPose() == ArmPose.Preset.HOLD)
                     status.setArmState(ArmState.Defense);
             break;
 
