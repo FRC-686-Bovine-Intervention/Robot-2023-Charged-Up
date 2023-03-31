@@ -3,6 +3,7 @@ design_path_1_9
 design_path_8_9
 design_path_9_0
 design_path_9_3
+design_path_3_9
 
 generate_elbow_up_trajectories
 concatenate_elbow_up_trajectories

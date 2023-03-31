@@ -1,6 +1,6 @@
 % Read trajectory
-startIdx = 9;
-finalIdx = 3;
+startIdx = 3;
+finalIdx = 9;
 filename = fullfile('..\..\src\main\deploy\paths\', sprintf('arm_path_%d_%d_orig.json', startIdx, finalIdx));
 if ~exist(filename, 'file')
     filename = fullfile('..\..\src\main\deploy\paths\', sprintf('arm_path_%d_%d.json', startIdx, finalIdx));
