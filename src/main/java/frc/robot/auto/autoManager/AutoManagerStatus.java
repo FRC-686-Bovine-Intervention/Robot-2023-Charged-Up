@@ -130,7 +130,7 @@ public class AutoManagerStatus extends StatusBase {
     private AutoManagerStatus setNT_SelectedAutoMode(AutoModesEnum NT_SelectedAutoMode) {this.NT_SelectedAutoMode = NT_SelectedAutoMode; return this;}
 
     private AutoModesEnum selectedAutoMode;
-    public AutoModesEnum getSelectedAutoMode()                                      {return AutoModesEnum.ScoreBackup;}
+    public AutoModesEnum getSelectedAutoMode()                                      {return selectedAutoMode;}
     public AutoManagerStatus setSelectedAutoMode(AutoModesEnum selectedAutoMode)    {this.selectedAutoMode = selectedAutoMode; return this;}
     public Class<? extends AutoMode> getAutomode()                                  {return (getSelectedAutoMode() != null ? getSelectedAutoMode().autoMode : null);}
     public AutoMode getNewAutomode() {
@@ -162,7 +162,7 @@ public class AutoManagerStatus extends StatusBase {
     public AutoManagerStatus incrementActionIndex(int increment) {this.actionIndex += increment; return this;}
 
     private AutoConfiguration   autoConfiguration = new AutoConfiguration();
-    public AutoConfiguration    getAutoConfiguration()                                      {return new AutoConfiguration(StartPosition.Loading, GamePiece.Cube);}
+    public AutoConfiguration    getAutoConfiguration()                                      {return autoConfiguration;}
     protected AutoManagerStatus setAutoConfiguration(AutoConfiguration autoConfiguration)   {this.autoConfiguration = autoConfiguration; return this;}
     
     @Override
@@ -206,9 +206,9 @@ public class AutoManagerStatus extends StatusBase {
     @Override
     protected void processOutputs(Logger logger, String prefix) {
         // TODO: LESS LOGGING
-        autoConfiguration.log(logger, prefix +  "Auto Configuration");
-        logger.recordOutput(prefix + "Selected Auto Mode", getSelectedAutoMode() != null ? getSelectedAutoMode().name() : null);
-        logger.recordOutput(prefix + "Auto Mode Class", getAutomode() != null ? getAutomode().getSimpleName() : null);
+        // autoConfiguration.log(logger, prefix +  "Auto Configuration");
+        // logger.recordOutput(prefix + "Selected Auto Mode", getSelectedAutoMode() != null ? getSelectedAutoMode().name() : null);
+        // logger.recordOutput(prefix + "Auto Mode Class", getAutomode() != null ? getAutomode().getSimpleName() : null);
         // logger.recordOutput(prefix + "Auto Running", autoRunning);
         // logger.recordOutput(prefix + "Action Index", actionIndex);
     }

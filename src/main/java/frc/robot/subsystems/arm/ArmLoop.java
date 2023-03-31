@@ -83,7 +83,7 @@ public class ArmLoop extends LoopBase {
     private static final double kTurretZeroErrorThreshold = 2.5;
     private static final double kProximalZeroErrorThreshold = Units.degreesToRadians(2.5);
 
-    private static final double kDistalZeroRadUp = Units.degreesToRadians(125);
+    private static final double kDistalZeroRadUp = Units.degreesToRadians(150);
 
     private ArmState prevState;
 
@@ -103,14 +103,14 @@ public class ArmLoop extends LoopBase {
 
     private final PIDController shoulderPID = 
         new PIDController(
-            10.0, 
+            20.0, 
             0.0, 
             0.0, 
             Constants.loopPeriodSecs
         );
     private final PIDController elbowPID = 
         new PIDController(
-            10.0, 
+            15.0, 
             0.0, 
             0.0, 
             Constants.loopPeriodSecs
@@ -186,7 +186,7 @@ public class ArmLoop extends LoopBase {
         loadArmTrajectory(ArmPose.Preset.DEFENSE, ArmPose.Preset.DOUBLE_SUBSTATION);
 
         loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.DEFENSE);
-        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.DOUBLE_SUBSTATION);
+        loadArmTrajectory(ArmPose.Preset.DOUBLE_SUBSTATION, ArmPose.Preset.DEFENSE);
 
         loadArmTrajectory(ArmPose.Preset.INTAKE, ArmPose.Preset.HOLD);
         loadArmTrajectory(ArmPose.Preset.DOUBLE_SUBSTATION, ArmPose.Preset.HOLD);
@@ -208,6 +208,12 @@ public class ArmLoop extends LoopBase {
         loadArmTrajectory(ArmPose.Preset.SCORE_HIGH_CUBE, ArmPose.Preset.DEFENSE);
         loadArmTrajectory(ArmPose.Preset.SCORE_MID_CONE, ArmPose.Preset.DEFENSE);
         loadArmTrajectory(ArmPose.Preset.SCORE_HIGH_CONE, ArmPose.Preset.DEFENSE);
+
+        loadArmTrajectory(ArmPose.Preset.SCORE_HYBRID, ArmPose.Preset.HOLD);
+        loadArmTrajectory(ArmPose.Preset.SCORE_MID_CUBE, ArmPose.Preset.HOLD);
+        loadArmTrajectory(ArmPose.Preset.SCORE_HIGH_CUBE, ArmPose.Preset.HOLD);
+        loadArmTrajectory(ArmPose.Preset.SCORE_MID_CONE, ArmPose.Preset.HOLD);
+        loadArmTrajectory(ArmPose.Preset.SCORE_HIGH_CONE, ArmPose.Preset.HOLD);
 
         double clawLengthPastToolCenterPoint = kMaxElbowPlusClawLength - config.elbow().length() - config.wrist().length();
         xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches() + 48.0 - clawLengthPastToolCenterPoint);
@@ -234,6 +240,7 @@ public class ArmLoop extends LoopBase {
         armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), path.grannyFactor(), points);
     }
 
+    double clawGrabTimestamp;
 
     @Override
     protected void Update() {
@@ -403,7 +410,7 @@ public class ArmLoop extends LoopBase {
                 status.setTurretControlMode(MotorControlMode.PercentOutput)
                       .setTurretPower(0)
                       .setTurretNeutralMode(NeutralMode.Coast);
-                if(!stateTimer.hasElapsed(0.5))
+                if(!stateTimer.hasElapsed(1))
                     break;
                 if(!status.getClawGrabbing()) {
                     status.setTargetArmPose(ArmPose.Preset.INTAKE);
@@ -411,21 +418,25 @@ public class ArmLoop extends LoopBase {
                     {
                         // Grab piece
                         status.setClawGrabbing(true);
-                        // Set intake to release
-                        intake.setCommand(new IntakeCommand(IntakeState.Release));
-                        status.setTargetArmPose(ArmPose.Preset.HOLD);
+                        clawGrabTimestamp = stateTimer.get();
                     }
                 } else {
-                    status.setTargetArmPose(ArmPose.Preset.HOLD);
-                    if(status.getCurrentArmPose() == ArmPose.Preset.HOLD)
-                        status.setArmState(ArmState.Hold);
+                    // Set intake to release
+                    if(stateTimer.hasElapsed(clawGrabTimestamp + 0.5)) {
+                        intake.setCommand(new IntakeCommand(IntakeState.Release));
+                    }
+                    if(stateTimer.hasElapsed(clawGrabTimestamp + 0.75)) {
+                        status.setTargetArmPose(ArmPose.Preset.HOLD);
+                        if(status.getCurrentArmPose() == ArmPose.Preset.HOLD)
+                            status.setArmState(ArmState.Hold);
+                    }
                 }
             break;
 
             case Hold:
                 intake.setCommand(new IntakeCommand(IntakeState.Defense));
                 // Move arm to hold position
-                status.setTargetArmPose(ArmPose.Preset.DEFENSE)
+                status.setTargetArmPose(ArmPose.Preset.HOLD)
                       .setTargetTurretAngleDeg(0)
                       .setTurretControlMode(MotorControlMode.PID)
                       .setClawGrabbing(true);
@@ -510,8 +521,8 @@ public class ArmLoop extends LoopBase {
                 status.setClawGrabbing(false);
                 // Wait a bit then jump to Defense
                 if(stateTimer.hasElapsed(0.25))
-                    status.setTargetArmPose(ArmPose.Preset.DEFENSE);
-                if(status.getCurrentArmPose() == ArmPose.Preset.DEFENSE)
+                    status.setTargetArmPose(ArmPose.Preset.HOLD);
+                if(status.getCurrentArmPose() == ArmPose.Preset.HOLD)
                     status.setArmState(ArmState.Defense);
             break;
 
@@ -606,7 +617,7 @@ public class ArmLoop extends LoopBase {
 
 
     public void resetTrajectoryState()  {
-        finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
+        finalTrajectoryState = armTrajectories[ArmPose.Preset.HOLD.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
         setpointState = finalTrajectoryState;
     }
 
