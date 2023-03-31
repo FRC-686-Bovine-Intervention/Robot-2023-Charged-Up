@@ -12,6 +12,7 @@ class ArmPresetEnum(IntEnum):
     SCORE_MID_CONE = 6
     SCORE_HIGH_CONE = 7
     AUTO_START = 8
+    HOLD = 9
 
 
 class ArmPresetPoses:
@@ -26,30 +27,16 @@ class ArmPresetPoses:
 
         # preset = [None] * ((ArmPresetEnum.SCORE_HIGH_CONE).value+1)
         preset = {
-            # "auto_start":        {"fileIdx": ArmPresetEnum.AUTO_START, "xy": np.array([13.483, 37.597]).tolist()},
-            # "defense":           {"fileIdx": ArmPresetEnum.DEFENSE, "xy": np.array([13.916, 32.975]).tolist()},
-            # "intake":            {"fileIdx": ArmPresetEnum.INTAKE, "xy": np.array([13.790, 18.725]).tolist()},
-            # "double_substation": {"fileIdx": ArmPresetEnum.DOUBLE_SUBSTATION, "xy": [54.0, 44.0]},
-            # # "score_hybrid":      {"fileIdx": ArmPresetEnum.SCORE_HYBRID, "xy": (np.array([bumper_width_inches/2 + shelf_depth/2, 0]) + np.array([0, 6+scoring_margin])).tolist()},
-            # # "score_mid_cube":    {"fileIdx": ArmPresetEnum.SCORE_MID_CUBE, "xy": (np.array([bumper_width_inches/2 + 14.25  + shelf_depth/2, 23.5]) + np.array([0, scoring_margin])).tolist()},
-            # # "score_high_cube":   {"fileIdx": ArmPresetEnum.SCORE_HIGH_CUBE, "xy": (np.array([bumper_width_inches/2 + 31.625 + shelf_depth/2, 35.5]) + np.array([0, scoring_margin])).tolist()},
-            # # "score_mid_cone":    {"fileIdx": ArmPresetEnum.SCORE_MID_CONE, "xy": (np.array([bumper_width_inches/2 + 22.75, 34.0]) + np.array([0, scoring_margin])).tolist()},
-            # # "score_high_cone":   {"fileIdx": ArmPresetEnum.SCORE_HIGH_CONE, "xy": (np.array([bumper_width_inches/2 + 39.75, 46.0]) + np.array([0, scoring_margin])).tolist()}
-            # "score_hybrid": {"fileIdx": ArmPresetEnum.SCORE_HYBRID, "xy": (np.array([16, 33])).tolist()},
-            # "score_mid_cube": {"fileIdx": ArmPresetEnum.SCORE_MID_CONE, "xy": (np.array([37, 31])).tolist()},
-            # "score_high_cube": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CONE, "xy": (np.array([57, 42])).tolist()},
-            # "score_mid_cone": {"fileIdx": ArmPresetEnum.SCORE_MID_CUBE, "xy": (np.array([34, 37])).tolist()},
-            # "score_high_cone": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CUBE, "xy": (np.array([52, 48.5])).tolist()}
-
-            "auto_start": {"fileIdx": ArmPresetEnum.AUTO_START, "theta1": -2.340, "theta2": -0.422},
-            "defense": {"fileIdx": ArmPresetEnum.DEFENSE, "theta1": -2.26, "theta2": 0.270},
-            "intake": {"fileIdx": ArmPresetEnum.INTAKE, "theta1": -2.040, "theta2": -0.487},#"theta1": -2.050, "theta2": -0.600},
-            "double_substation": {"fileIdx": ArmPresetEnum.DOUBLE_SUBSTATION, "theta1": -0.603, "theta2": 0.472},
-            "score_hybrid": {"fileIdx": ArmPresetEnum.SCORE_HYBRID, "theta1": -2.100, "theta2": 0.000},
-            "score_mid_cube": {"fileIdx": ArmPresetEnum.SCORE_MID_CUBE, "theta1": -1.411, "theta2": 0.485},
-            "score_high_cube": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CUBE, "theta1": -0.679, "theta2": 0.442},
-            "score_mid_cone": {"fileIdx": ArmPresetEnum.SCORE_MID_CONE, "theta1": -1.33, "theta2": 1.08},
-            "score_high_cone": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CONE, "theta1": -0.45, "theta2": 1.04}
+            "auto_start": {"fileIdx": ArmPresetEnum.AUTO_START, "theta1": -2.592, "theta2": -0.882},
+            "defense": {"fileIdx": ArmPresetEnum.DEFENSE, "theta1": -2.703, "theta2": -0.915},
+            "intake": {"fileIdx": ArmPresetEnum.INTAKE, "theta1": -2.405, "theta2": -0.938},
+            "hold": {"fileIdx": ArmPresetEnum.HOLD, "theta1": -1.591, "theta2": 1.271},
+            "double_substation": {"fileIdx": ArmPresetEnum.DOUBLE_SUBSTATION, "theta1": -0.624, "theta2": 0.177},
+            "score_hybrid": {"fileIdx": ArmPresetEnum.SCORE_HYBRID, "theta1": -2.688, "theta2": -0.516},
+            "score_mid_cube": {"fileIdx": ArmPresetEnum.SCORE_MID_CUBE, "theta1": -1.800, "theta2": 0.284},
+            "score_high_cube": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CUBE, "theta1": -0.727, "theta2": 0.322},
+            "score_mid_cone": {"fileIdx": ArmPresetEnum.SCORE_MID_CONE, "theta1": -1.763, "theta2": 0.448},
+            "score_high_cone": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CONE, "theta1": -0.733, "theta2": 0.608}
         }
 
         return preset

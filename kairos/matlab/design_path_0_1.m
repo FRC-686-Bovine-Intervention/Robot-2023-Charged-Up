@@ -13,8 +13,8 @@ orig_theta2 = orig_points(2,:);
 
 [corner1_theta1, corner1_theta2, corner2_theta1, corner2_theta2] = get_safe_path_corners();
 
-theta1 = [orig_theta1(1)  -2.296  orig_theta1(end)];
-theta2 = [orig_theta2(1)  -0.510  orig_theta2(end)];
+theta1 = [orig_theta1(1)  orig_theta1(end)];
+theta2 = [orig_theta2(1)  orig_theta2(end)];
 
 points = [theta1; theta2];
 
