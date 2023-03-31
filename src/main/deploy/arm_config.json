@@ -22,7 +22,7 @@
     "mass": 1.1339809250000001,
     "length": 0.5334,
     "moi": 0.013,
-    "cgRadius": 0.0635,
+    "cgRadius": 0.4064,
     "minAngle": -1.57,
     "maxAngle": 3.0,
     "motor": {

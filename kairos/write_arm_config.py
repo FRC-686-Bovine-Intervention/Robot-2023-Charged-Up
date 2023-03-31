@@ -25,7 +25,7 @@ def main():
                       "mass": ((2.5 * lb).to("kg")).value.tolist(),
                       "length": ((21.0 * inch).to("meter")).value.tolist(),
                       "moi": 0.013,
-                      "cgRadius": ((2.5 * inch).to("meter")).value.tolist(),
+                      "cgRadius": ((16.0 * inch).to("meter")).value.tolist(),
                       "minAngle": -1.57,
                       "maxAngle": 3.00,
                       "motor": {
