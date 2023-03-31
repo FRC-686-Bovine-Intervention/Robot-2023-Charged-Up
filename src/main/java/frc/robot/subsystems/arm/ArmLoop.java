@@ -57,9 +57,11 @@ public class ArmLoop extends LoopBase {
     private static final double kTurretMaxAngularVelocity = 180;
     private static final double kTurretMaxAngularAcceleration = kTurretMaxAngularVelocity * 2;
     private final TrapezoidProfile.Constraints turretPIDConstraints = new TrapezoidProfile.Constraints(kTurretMaxAngularVelocity, kTurretMaxAngularAcceleration);
+    private static final double kTurretFastP = 0.015;
+    private static final double kTurretSlowP = 0.015;
     private final ProfiledPIDController turretPID = 
         new ProfiledPIDController(
-            0.015, 
+            kTurretFastP, 
             0, 
             0, 
             turretPIDConstraints
@@ -252,6 +254,7 @@ public class ArmLoop extends LoopBase {
               .setShoulderPower(0)
               .setElbowPower(0);
 
+        turretPID.setP(kTurretFastP);
         // ================= Trajectory Logic =================
 
         runTrajectory();

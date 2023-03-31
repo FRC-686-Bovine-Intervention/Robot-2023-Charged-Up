@@ -34,8 +34,8 @@ public class AutoTrajectories {
         double kMaxVelocityMPS =      Units.inchesToMeters(48);
         double kMaxAccelerationMPSS = kMaxVelocityMPS / 1;
 
-        TrajectoryConfig forwardConfig = new TrajectoryConfig(kMaxVelocityMPS, kMaxAccelerationMPSS);
-        TrajectoryConfig backwardConfig = new TrajectoryConfig(kMaxVelocityMPS, kMaxAccelerationMPSS);
+        TrajectoryConfig forwardConfig =    new TrajectoryConfig(kMaxVelocityMPS, kMaxAccelerationMPSS);
+        TrajectoryConfig backwardConfig =   new TrajectoryConfig(kMaxVelocityMPS, kMaxAccelerationMPSS);
         backwardConfig.setReversed(true);
 
         // Scoring Poses

@@ -41,7 +41,10 @@ public class DriverAssistLoop extends LoopBase {
         double currentTimestamp = Timer.getFPGATimestamp();
 
         // Determine new state
-        status.setDriverAssistState(newCommand.getDriverAssistState());
+        if(newCommand.getDriverAssistState() != null)
+            status.setDriverAssistState(newCommand.getDriverAssistState());
+        if(newCommand.getTargetGamePiece() != null)
+            status.setTargetPiece(newCommand.getTargetGamePiece());
 
         // Execute new state
 
@@ -119,7 +122,7 @@ public class DriverAssistLoop extends LoopBase {
                 }
 
                 double threshold = 5;
-                double speed = 1;
+                double speed = drive.getDriveCommand().getSpeed();
                 double kp = 0.1;
                 if(xOff > threshold){
                     status.setDriveCommand(new DriveCommand(new WheelSpeeds(speed + xOff * kp, speed - xOff * kp)));
