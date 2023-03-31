@@ -13,15 +13,15 @@ orig_theta2 = orig_points(2,:);
 
 [corner1_theta1, corner1_theta2, corner2_theta1, corner2_theta2] = get_safe_path_corners();
 
-theta1 = [orig_theta1(1)  -135*pi/180  -170*pi/180   orig_theta1(end)];
-theta2 = [orig_theta2(1)   -50*pi/180   -20*pi/180   orig_theta2(end)];
+theta1 = [orig_theta1(1)  -130*pi/180  -160*pi/180  -120*pi/180  orig_theta1(end)];
+theta2 = [orig_theta2(1)   -45*pi/180   -20*pi/180   +40*pi/180  orig_theta2(end)];
 
 points = [theta1; theta2];
 
 
 % Make Trajectory ====================================
 
-spline_T = orig_T;
+spline_T = 1.25;    % slowing down
 points = make_spline_trajectory(startIdx, finalIdx, points, orig_points, spline_T);
 
 % write new spline trajectory
