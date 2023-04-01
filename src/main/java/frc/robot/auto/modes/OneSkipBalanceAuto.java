@@ -32,7 +32,7 @@ public class OneSkipBalanceAuto extends AutoMode {
 
         RamseteController ramseteController = new RamseteController(2, 0.7);
 
-        addAction(new WaitUntilAction(() -> armStatus.getCurrentArmPose() == ArmPose.Preset.DEFENSE));
+        addAction(new WaitUntilAction(() -> armStatus.getCurrentArmPose() == ArmPose.Preset.HOLD));
         addAction(new ArmCommandAction(new ArmCommand(ArmState.AlignNode).setTargetNode(config.startingPiece == GamePiece.Cube ? NodeEnum.TopCenter : (config.startingPosition == StartPosition.Loading ? NodeEnum.TopWall : NodeEnum.TopLoading))));
         addAction(new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Adjust));
         addAction(new ArmCommandAction(new ArmCommand(ArmState.Release)));

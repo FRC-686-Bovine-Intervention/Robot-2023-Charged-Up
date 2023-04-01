@@ -198,6 +198,7 @@ public class ArmLoop extends LoopBase {
         loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_HIGH_CUBE);
         loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_MID_CONE);
         loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_HIGH_CONE);
+        loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.HOLD);
 
         loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.SCORE_HYBRID);
         loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.SCORE_MID_CUBE);
