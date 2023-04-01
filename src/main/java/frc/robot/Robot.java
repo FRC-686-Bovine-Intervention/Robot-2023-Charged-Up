@@ -58,6 +58,8 @@ public class Robot extends LoggedRobot {
     subsystemController.register(Drive.getInstance());
     subsystemController.register(Odometry.getInstance());
     subsystemController.start();
+
+    gcTimer.start();
   }
 
   final Timer gcTimer = new Timer();

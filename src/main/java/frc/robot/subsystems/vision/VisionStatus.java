@@ -6,7 +6,8 @@ import java.util.List;
 
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -84,9 +85,9 @@ public class VisionStatus extends StatusBase {
 
     private VisionStatus() {
         Subsystem = vision;
-        // for(int i = 0; i < aprilTagCameras.length; i++) {
-        //     aprilTagCameras[i] = new PhotonHalHelper(HAL.aprilTagCameras[i], turretToCameras[i], PoseStrategy.MULTI_TAG_PNP, aprilTagFieldLayout);
-        // }
+        for(int i = 0; i < aprilTagCameras.length; i++) {
+            aprilTagCameras[i] = new PhotonHalHelper(HAL.aprilTagCameras[i], turretToCameras[i], PoseStrategy.MULTI_TAG_PNP, aprilTagFieldLayout);
+        }
     }
 
     private VisionCommand   command = new VisionCommand();
@@ -193,9 +194,9 @@ public class VisionStatus extends StatusBase {
             logger.recordOutput(prefix + "/Vision Poses", AdvantageUtil.deconstructPose2ds(visionPoses));
         }
     }
-    private ArrayList<VisionData>   visionData = new ArrayList<VisionData>();
-    public ArrayList<VisionData>    getVisionData()                                         {return visionData;}
-    protected VisionStatus                  setVisionData(ArrayList<VisionData> visionData) {this.visionData = visionData; return this;}
+    private ArrayList<EstimatedRobotPose>   visionData = new ArrayList<EstimatedRobotPose>();
+    public ArrayList<EstimatedRobotPose>    getVisionData()                                         {return visionData;}
+    protected VisionStatus                  setVisionData(ArrayList<EstimatedRobotPose> visionData) {this.visionData = visionData; return this;}
 
     public static final Transform3d[] turretToCameras = {
         // Right Cam
@@ -239,15 +240,16 @@ public class VisionStatus extends StatusBase {
         // )
     };
 
-    private final PhotonPipelineResult[]    camResults = new PhotonPipelineResult[HAL.aprilTagCameras.length];
-    public PhotonPipelineResult[]           getCamResults() {return camResults;}
+    // private final PhotonPipelineResult[]    camResults = new PhotonPipelineResult[HAL.aprilTagCameras.length];
+    // public PhotonPipelineResult[]           getCamResults() {return camResults;}
 
-    // private final PhotonHalHelper[] aprilTagCameras = new PhotonHalHelper[HAL.aprilTagCameras.length];
-    // public PhotonHalHelper[]        getAprilTagCameras()        {return aprilTagCameras;}
-    // public PhotonHalHelper          getAprilTagCamera(int i)    {return aprilTagCameras[i];}
+    private final PhotonHalHelper[] aprilTagCameras = new PhotonHalHelper[HAL.aprilTagCameras.length];
+    public PhotonHalHelper[]        getAprilTagCameras()        {return aprilTagCameras;}
+    public PhotonHalHelper          getAprilTagCamera(int i)    {return aprilTagCameras[i];}
 
     private ShuffleboardTab tab = Shuffleboard.getTab("Vision");
     private GenericEntry yawEntry = tab.add("Camera Yaw", -686).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private GenericEntry widthEntry = tab.add("Camera Width", -686).withWidget(BuiltInWidgets.kTextView).getEntry();
     private GenericEntry setLeftEntry = tab.add("Set Left Camera", false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
     private GenericEntry setRightEntry = tab.add("Set Right Camera", false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
 
@@ -256,19 +258,21 @@ public class VisionStatus extends StatusBase {
         setCommand(vision.getVisionCommand());
 
         if(setLeftEntry.getBoolean(false)) {
-            turretToCameras[1] = new Transform3d(turretToCameras[1].getTranslation(), new Rotation3d(0,0,yawEntry.getDouble(0)));
+            turretToCameras[1] = new Transform3d(new Translation3d(turretToCameras[1].getX(), Units.inchesToMeters(widthEntry.getDouble(0)),turretToCameras[1].getZ()), new Rotation3d(0,0,-Units.degreesToRadians(yawEntry.getDouble(0))));
+            setLeftEntry.setBoolean(false);
         }
         if(setRightEntry.getBoolean(false)) {
-            turretToCameras[0] = new Transform3d(turretToCameras[0].getTranslation(), new Rotation3d(0,0,yawEntry.getDouble(0)));
+            turretToCameras[0] = new Transform3d(new Translation3d(turretToCameras[0].getX(), -Units.inchesToMeters(widthEntry.getDouble(0)),turretToCameras[0].getZ()), new Rotation3d(0,0,Units.degreesToRadians(yawEntry.getDouble(0))));
+            setRightEntry.setBoolean(false);
         }
 
-        // for(int i = 0; i < aprilTagCameras.length; i++) {
-        //     aprilTagCameras[i].setCameraTransform(armStatus.getRobotToTurret().plus(turretToCameras[i]))
-        //                       .updateInputs();
-        // }
-        for (int i = 0; i < camResults.length; i++) {
-            camResults[i] = HAL.getCameraResults()[i];
+        for(int i = 0; i < aprilTagCameras.length; i++) {
+            aprilTagCameras[i].setCameraTransform(armStatus.getRobotToTurret().plus(turretToCameras[i]))
+                              .updateInputs();
         }
+        // for (int i = 0; i < camResults.length; i++) {
+        //     camResults[i] = HAL.getCameraResults()[i];
+        // }
         
         setCurrentPipeline(LimelightPipeline.getFromIndex(HAL.getCurrentPipeline()));
         setTargetXAngle(HAL.getTargetXAngle());
@@ -279,9 +283,9 @@ public class VisionStatus extends StatusBase {
 
     @Override
     protected void exportToTable(LogTable table) {
-        // for(PhotonHalHelper cam : aprilTagCameras) {
-        //     cam.exportToTable(table);
-        // }
+        for(PhotonHalHelper cam : aprilTagCameras) {
+            cam.exportToTable(table);
+        }
 
         table.put("Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null");
 
@@ -293,9 +297,9 @@ public class VisionStatus extends StatusBase {
 
     @Override
     protected void importFromTable(LogTable table) {
-        // for(PhotonHalHelper cam : aprilTagCameras) {
-        //     cam.importFromTable(table);
-        // }
+        for(PhotonHalHelper cam : aprilTagCameras) {
+            cam.importFromTable(table);
+        }
 
         setCurrentPipeline(LimelightPipeline.getFromName(table.getString("Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null")));
         setTargetXAngle(table.getDouble("Limelight/Target X Angle (Deg)", targetXAngle));
@@ -306,9 +310,9 @@ public class VisionStatus extends StatusBase {
 
     @Override
     protected void processTable() {
-        // for(PhotonHalHelper cam : aprilTagCameras) {
-        //     cam.processTable();
-        // }
+        for(PhotonHalHelper cam : aprilTagCameras) {
+            cam.processTable();
+        }
     }
 
     @Override
@@ -325,8 +329,8 @@ public class VisionStatus extends StatusBase {
         // logger.recordOutput(prefix + "Limelight/Latest Cube Area (Deg)",    getLatestCubeArea());
         
         // AprilTags
-        // AdvantageUtil.recordEstimatedRobotPoses(logger, prefix + "AprilTags", visionData);
-        VisionData.record(logger, prefix + "AprilTags", visionData);
+        AdvantageUtil.recordEstimatedRobotPoses(logger, prefix + "AprilTags", visionData);
+        // VisionData.record(logger, prefix + "AprilTags", visionData);
     }
 
     
