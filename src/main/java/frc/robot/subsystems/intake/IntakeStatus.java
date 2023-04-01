@@ -50,6 +50,10 @@ public class IntakeStatus extends StatusBase {
     public double getIntakeCurrent()                            {return intakeCurrent;}
     private IntakeStatus setIntakeCurrent(double intakeCurrent) {this.intakeCurrent = intakeCurrent; return this;}
 
+    private double intakeRotations;
+    public double getIntakeRotations()                            {return intakeRotations;}
+    private IntakeStatus setIntakeRotations(double intakeRotations) {this.intakeRotations = intakeRotations; return this;}
+
     private double intakePower;
     public double getIntakePower()                          {return intakePower;}
     public IntakeStatus setIntakePower(double intakePower)  {this.intakePower = intakePower; return this;}
@@ -71,14 +75,17 @@ public class IntakeStatus extends StatusBase {
     protected void updateInputs() {
         setIntakeCommand(intake.getCommand());
         setIntakeCurrent(HAL.getIntakeCurrent());
+        setIntakeRotations(HAL.getIntakeRotations());
     }
     @Override
     protected void exportToTable(LogTable table) {
         table.put("Intake Motor Current", intakeCurrent);
+        table.put("Intake Motor Rotations", intakeRotations);
     }
     @Override
     protected void importFromTable(LogTable table) {
         setIntakeCurrent(table.getDouble("Intake Motor Current", intakeCurrent));
+        setIntakeRotations(table.getDouble("Intake Motor Rotations", intakeRotations));
     }
     @Override
     protected void processOutputs(Logger logger, String prefix) {

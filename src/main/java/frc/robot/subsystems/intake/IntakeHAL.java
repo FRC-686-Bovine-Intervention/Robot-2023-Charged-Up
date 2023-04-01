@@ -22,6 +22,8 @@ public class IntakeHAL {
     private static final int kStallCurrentLimit = 20;
     private static final int kFreeCurrentLimit = 20;
 
+    private static final double kMotorToRollerRatio = 16/1;
+
     private IntakeHAL()
     {
         if(RobotBase.isReal())
@@ -44,6 +46,7 @@ public class IntakeHAL {
     }
 
     public double getIntakeCurrent() {return intakeMotor != null ? intakeMotor.getOutputCurrent() : 0;}
+    public double getIntakeRotations() {return intakeMotor != null ? intakeMotor.getEncoder().getPosition() / kMotorToRollerRatio : 0;}
 
     public IntakeHAL setIntakeMotor(double power)
     {

@@ -270,6 +270,8 @@ public class ArmLoop extends LoopBase {
     }
     
     private final Timer stateTimer = new Timer();
+
+    double intakeRotations;
     
     @Override
     protected void Enabled() {
@@ -423,7 +425,9 @@ public class ArmLoop extends LoopBase {
                 } else {
                     // Set intake to release
                     if(stateTimer.hasElapsed(clawGrabTimestamp + 0.5)) {
-                        intake.setCommand(new IntakeCommand(IntakeState.Release));
+                        intake.setCommand(new IntakeCommand(Math.abs(intakeStatus.getIntakeRotations() - intakeRotations) >= 0.25 ? IntakeState.Defense : IntakeState.Release));
+                    } else {
+                        intakeRotations = intakeStatus.getIntakeRotations();
                     }
                     if(stateTimer.hasElapsed(clawGrabTimestamp + 0.75)) {
                         status.setTargetArmPose(ArmPose.Preset.HOLD);
