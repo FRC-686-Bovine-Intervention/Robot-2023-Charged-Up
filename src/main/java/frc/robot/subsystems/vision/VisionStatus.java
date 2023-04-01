@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.EstimatedRobotPose;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTag;
@@ -16,13 +15,16 @@ import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.FieldDimensions;
 import frc.robot.RobotConfiguration;
 import frc.robot.lib.util.AdvantageUtil;
@@ -244,9 +246,21 @@ public class VisionStatus extends StatusBase {
     // public PhotonHalHelper[]        getAprilTagCameras()        {return aprilTagCameras;}
     // public PhotonHalHelper          getAprilTagCamera(int i)    {return aprilTagCameras[i];}
 
+    private ShuffleboardTab tab = Shuffleboard.getTab("Vision");
+    private GenericEntry yawEntry = tab.add("Camera Yaw", -686).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private GenericEntry setLeftEntry = tab.add("Set Left Camera", false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    private GenericEntry setRightEntry = tab.add("Set Right Camera", false).withWidget(BuiltInWidgets.kTextView).getEntry();
+
     @Override
     protected void updateInputs() {
         setCommand(vision.getVisionCommand());
+
+        if(setLeftEntry.getBoolean(false)) {
+            turretToCameras[1] = new Transform3d(turretToCameras[1].getTranslation(), new Rotation3d(0,0,yawEntry.getDouble(0)));
+        }
+        if(setRightEntry.getBoolean(false)) {
+            turretToCameras[0] = new Transform3d(turretToCameras[0].getTranslation(), new Rotation3d(0,0,yawEntry.getDouble(0)));
+        }
 
         // for(int i = 0; i < aprilTagCameras.length; i++) {
         //     aprilTagCameras[i].setCameraTransform(armStatus.getRobotToTurret().plus(turretToCameras[i]))
