@@ -5,6 +5,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.trajectory.Trajectory;
 import frc.robot.RobotConfiguration;
+import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
 import frc.robot.subsystems.drive.DriveCommand;
 import frc.robot.subsystems.framework.StatusBase;
 
@@ -28,6 +29,10 @@ public class DriverAssistStatus extends StatusBase {
     private DriverAssistState driverAssistState = DriverAssistState.Disabled;
     public DriverAssistState getDriverAssistState()                                     {return driverAssistState;}
     public DriverAssistStatus setDriverAssistState(DriverAssistState driverAssistState) {this.driverAssistState = driverAssistState; return this;}
+
+    private     GamePiece           targetPiece;
+    public      GamePiece           getTargetPiece()                        {return targetPiece;}
+    protected   DriverAssistStatus  setTargetPiece(GamePiece targetPiece)   {this.targetPiece = targetPiece; return this;}
 
     private Trajectory trajectory = new Trajectory();
     public Trajectory getTrajectory()                               {return trajectory;}

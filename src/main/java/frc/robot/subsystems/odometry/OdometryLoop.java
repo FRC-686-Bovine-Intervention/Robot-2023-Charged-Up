@@ -1,5 +1,7 @@
 package frc.robot.subsystems.odometry;
 
+import org.photonvision.EstimatedRobotPose;
+
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
@@ -23,7 +25,7 @@ public class OdometryLoop extends LoopBase {
     private final VisionStatus visionStatus = VisionStatus.getInstance();
 
     private static final Translation3d camOrigin = new Translation3d();
-    private static final double kMaxTrustedCamDistance = 5;
+    private static final double kMaxTrustedCamDistance = 1.5;
 
     private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(DriveHAL.kTrackWidthInches));
     private final DifferentialDrivePoseEstimator poseEstimator = new DifferentialDrivePoseEstimator(kinematics, Rotation2d.fromDegrees(180), 0, 0, new Pose2d(),
@@ -55,9 +57,9 @@ public class OdometryLoop extends LoopBase {
         //         poseEstimator.addVisionMeasurement(data.estimatedPose.toPose2d(), data.timestampSeconds);
         // }
 
-        for(VisionData data : visionStatus.getVisionData()) {
-            if(data.isGoodData())
-                poseEstimator.addVisionMeasurement(data.getRobotPose(), data.timestamp(), data.getStdDevs());
+        for(EstimatedRobotPose data : visionStatus.getVisionData()) {
+            if(data.targetsUsed.size() > 1 || (data.targetsUsed.size() == 1 && data.targetsUsed.get(0).getBestCameraToTarget().getTranslation().getDistance(camOrigin) <= kMaxTrustedCamDistance))
+                poseEstimator.addVisionMeasurement(data.estimatedPose.toPose2d(), data.timestampSeconds/* , data.getStdDevs() */);
         }
 
         if(newCommand.getResetPose() != null) {

@@ -13,6 +13,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.Timer;
 
 public class PhotonHalHelper {
     private final PhotonCamera camera;
@@ -22,9 +23,10 @@ public class PhotonHalHelper {
     public PhotonHalHelper(PhotonCamera camera, Transform3d robotToCamera, PoseStrategy poseStrategy, AprilTagFieldLayout aprilTagLayout) {
         this.camera = camera;
         this.poseEstimator = new PhotonPoseEstimator(aprilTagLayout, poseStrategy, camera, robotToCamera);
+        estimateTimer.start();
     }
 
-    private PhotonPipelineResult    latestCameraResult = new PhotonPipelineResult();
+    private PhotonPipelineResult    latestCameraResult;
     public PhotonPipelineResult     getLatestCameraResult() {return latestCameraResult;}
     
     private Optional<EstimatedRobotPose>    latestEstimatedPose = Optional.empty();
@@ -53,9 +55,13 @@ public class PhotonHalHelper {
         return this;
     }
 
+    private static final double kEstimatePeriod = 0.1;
+    final Timer estimateTimer = new Timer();
     public PhotonHalHelper processTable() {
         if(latestCameraResult != null) {
-            latestEstimatedPose = poseEstimator.update(latestCameraResult);
+            if(estimateTimer.advanceIfElapsed(kEstimatePeriod)) {
+                latestEstimatedPose = poseEstimator.update(latestCameraResult);
+            }
         }
         return this;
     }

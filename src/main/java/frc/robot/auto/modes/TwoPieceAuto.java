@@ -39,7 +39,7 @@ public class TwoPieceAuto extends AutoMode {
 
         RamseteController ramseteController = new RamseteController(2, 0.7);
 
-        addAction(new WaitUntilAction(() -> armStatus.getCurrentArmPose() == ArmPose.Preset.DEFENSE));
+        addAction(new WaitUntilAction(() -> armStatus.getCurrentArmPose() == ArmPose.Preset.HOLD));
         addAction(new ArmCommandAction(new ArmCommand(ArmState.AlignNode).setTargetNode(config.startingPiece == GamePiece.Cube ? NodeEnum.TopCenter : (config.startingPosition == StartPosition.Loading ? NodeEnum.TopWall : NodeEnum.TopLoading))));
         addAction(new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Adjust));
         addAction(new ArmCommandAction(new ArmCommand(ArmState.Release)));
@@ -68,9 +68,9 @@ public class TwoPieceAuto extends AutoMode {
                         new ArmCommandAction(new ArmCommand(ArmState.AlignWall))
                     )
                 ),
-                new ArmCommandAction(new ArmCommand(ArmState.AlignNode).setTargetNode(secondNode))/* ,
+                new ArmCommandAction(new ArmCommand(ArmState.Extend).setTargetNode(secondNode)),
                 new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Adjust),
-                new ArmCommandAction(new ArmCommand(ArmState.Release)) */
+                new ArmCommandAction(new ArmCommand(ArmState.Release))
             ),
             new IntakeCommandAction(new IntakeCommand(IntakeState.Defense))
         ));
