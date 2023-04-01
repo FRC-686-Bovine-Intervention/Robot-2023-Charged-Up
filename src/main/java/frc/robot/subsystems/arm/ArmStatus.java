@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.RobotConfiguration;
+import frc.robot.auto.autoManager.AutoManagerStatus;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
 import frc.robot.lib.util.AdvantageUtil;
 import frc.robot.subsystems.framework.StatusBase;
@@ -527,7 +528,9 @@ public class ArmStatus extends StatusBase {
             HAL.enableShoulderSoftLimits(shoulderRadiansToSensorUnits(getShoulderMinAngleRad()), shoulderRadiansToSensorUnits(getShoulderMaxAngleRad()));
             oneShotShoulderCalibrationEnabled = false;
         }
-        HAL.setShoulderMotorPower(shoulderPower);
+        if(!AutoManagerStatus.getInstance().EnabledState.IsInitState) {
+            HAL.setShoulderMotorPower(shoulderPower);
+        }
         // shoulderPotEncStatus.recordOutputs(logger, prefix + "Arm/Shoulder/Encoder Status");
         logger.recordOutput(prefix + "Arm/Shoulder/Power",          shoulderPower);
         // logger.recordOutput(prefix + "Arm/Shoulder/Current",          getShoulderCurrent());
@@ -544,7 +547,9 @@ public class ArmStatus extends StatusBase {
             HAL.enableElbowSoftLimits(elbowRadiansToSensorUnits(getElbowMinAngleRad()), elbowRadiansToSensorUnits(getElbowMaxAngleRad()));
             oneShotElbowCalibrationEnabled = false;
         }        
-        HAL.setElbowMotorPower(elbowPower);
+        if(!AutoManagerStatus.getInstance().EnabledState.IsInitState) {
+            HAL.setElbowMotorPower(elbowPower);
+        }
         elbowPotEncStatus.recordOutputs(logger, prefix + "Arm/Elbow/Encoder Status");
         logger.recordOutput(prefix + "Arm/Elbow/Power",         elbowPower);
         // logger.recordOutput(prefix + "Arm/Elbow/Current",          getElbowCurrent());
