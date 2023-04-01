@@ -1,6 +1,7 @@
 package frc.robot.subsystems.driverAssist;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
 import frc.robot.subsystems.driverAssist.DriverAssistStatus.DriverAssistState;
 
 public class DriverAssistCommand {
@@ -18,4 +19,8 @@ public class DriverAssistCommand {
     private Pose2d targetPose = new Pose2d();
     public Pose2d getTargetPose()                               {return targetPose;}
     public DriverAssistCommand setTargetPose(Pose2d targetPose) {this.targetPose = targetPose; return this;}
+
+    private GamePiece           targetPiece;
+    public  GamePiece           getTargetGamePiece()                        {return targetPiece;}
+    public  DriverAssistCommand setTargetGamePiece(GamePiece targetPiece)   {this.targetPiece = targetPiece; return this;}
 }

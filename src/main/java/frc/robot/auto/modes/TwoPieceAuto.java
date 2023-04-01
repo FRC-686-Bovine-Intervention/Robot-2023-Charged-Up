@@ -68,9 +68,9 @@ public class TwoPieceAuto extends AutoMode {
                         new ArmCommandAction(new ArmCommand(ArmState.AlignWall))
                     )
                 ),
-                new ArmCommandAction(new ArmCommand(ArmState.AlignNode).setTargetNode(secondNode))/* ,
+                new ArmCommandAction(new ArmCommand(ArmState.Extend).setTargetNode(secondNode)),
                 new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Adjust),
-                new ArmCommandAction(new ArmCommand(ArmState.Release)) */
+                new ArmCommandAction(new ArmCommand(ArmState.Release))
             ),
             new IntakeCommandAction(new IntakeCommand(IntakeState.Defense))
         ));
