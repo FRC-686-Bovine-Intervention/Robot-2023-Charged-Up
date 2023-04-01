@@ -105,7 +105,7 @@ public class ArmHAL {
 
         if (turretMotor != null) {
             turretMotor.configFactoryDefault();
-            turretMotor.configOpenloopRamp(1);
+            // turretMotor.configOpenloopRamp(1);
             // set quadrature encoder to absolute encoder value
             turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kRelativePIDId, 0);
             turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, kAbsolutePIDId, 0);
@@ -118,6 +118,8 @@ public class ArmHAL {
 
             turretMotor.setSensorPhase(kTurretEncoderInverted);
             turretMotor.setInverted(kTurretMotorInverted);
+
+            turretMotor.setNeutralMode(NeutralMode.Brake);
         }
         
         shoulderPotAndEncoderConfig = new PotAndEncoder.Config(kShoulderPotentiometerGearRatio, kShoulderEncoderGearRatio, kShoulderPotentiometerNTurns, 
@@ -174,7 +176,7 @@ public class ArmHAL {
     public ArmHAL syncTurretEncoders() {
         if(turretMotor != null) {
             turretMotor.setSelectedSensorPosition(
-                ((turretMotor.getSelectedSensorPosition(kAbsolutePIDId) - kTurretEncoderZeroingCalib + (4096/2)) % (4096)) - (4096/2), 
+                ((kTurretEncoderZeroingCalib - (turretMotor.getSelectedSensorPosition(kAbsolutePIDId) % (4096)) + (4096/2)) % (4096)) - (4096/2), 
                 kRelativePIDId, 
                 0);
         }

@@ -23,10 +23,14 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.Constants;
 import frc.robot.FieldDimensions;
 import frc.robot.lib.util.GeomUtil;
@@ -63,8 +67,6 @@ public class ArmLoop extends LoopBase {
     private static final double kTurretMaxAngularVelocity = 180;
     private static final double kTurretMaxAngularAcceleration = kTurretMaxAngularVelocity * 2;
     private final TrapezoidProfile.Constraints turretPIDConstraints = new TrapezoidProfile.Constraints(kTurretMaxAngularVelocity, kTurretMaxAngularAcceleration);
-    private static final double kTurretFastP = 0.015;
-    private static final double kTurretSlowP = 0.015;
     private final ProfiledPIDController turretPID = 
         new ProfiledPIDController(
             0.015, 
@@ -242,12 +244,24 @@ public class ArmLoop extends LoopBase {
 
     double clawGrabTimestamp;
 
+    ShuffleboardTab tab = Shuffleboard.getTab("Turret PID");
+    GenericEntry kpEntry = tab.add("kP", turretPID.getP()).withWidget(BuiltInWidgets.kTextView).getEntry();
+    GenericEntry kiEntry = tab.add("kI", turretPID.getI()).withWidget(BuiltInWidgets.kTextView).getEntry();
+    GenericEntry kdEntry = tab.add("kD", turretPID.getD()).withWidget(BuiltInWidgets.kTextView).getEntry();
+    GenericEntry setEntry = tab.add("Set PID", false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
     @Override
     protected void Update() {
         checkArmCalibration();
 
         status.setTurretPIDPosition(turretPID.getSetpoint().position);
         status.setTurretPIDVelocity(turretPID.getSetpoint().velocity);
+
+        if(setEntry.getBoolean(false)) {
+            turretPID.setPID(kpEntry.getDouble(turretPID.getP()), 
+                             kiEntry.getDouble(turretPID.getI()), 
+                             kdEntry.getDouble(turretPID.getD()));
+            setEntry.setBoolean(false);
+        }
     }
     
     // call this every update cycle
@@ -459,7 +473,6 @@ public class ArmLoop extends LoopBase {
             break;
 
             case AlignWall:
-                turretPID.setP(kTurretFastP);
                 status.setTargetArmPose(ArmPose.Preset.HOLD);
                 pipeline = LimelightPipeline.Pole;
                 
@@ -473,9 +486,10 @@ public class ArmLoop extends LoopBase {
                 );
 
                 // Align turret to alliance wall
-                status.setTargetTurretAngleDeg(turretAngleDeg)
-                      .setTurretControlMode(MotorControlMode.PID);
-                
+                if(status.getCurrentArmPose() == ArmPose.Preset.HOLD) {
+                    status.setTargetTurretAngleDeg(turretAngleDeg)
+                          .setTurretControlMode(MotorControlMode.PID);
+                }
                 // Check if robot is in not in community, if so jump to Hold
                 if(stateTimer.get() == 0)
                     status.setStateLocked(false);
@@ -493,7 +507,6 @@ public class ArmLoop extends LoopBase {
                 status.setTargetTurretAngleDeg(getTurretBestAngle(getClosestNodeXY(status.getTargetNode(), status.getTurretToField().getTranslation().toTranslation2d()).get()))
                       .setTurretControlMode(MotorControlMode.PID);
                 if(status.getTargetNode().isCone && visionStatus.getCurrentPipeline() == pipeline && visionStatus.getTargetExists()) {
-                    turretPID.setP(kTurretSlowP);
                     status.setTargetTurretAngleDeg(status.getTurretAngleDeg() + visionStatus.getTargetYAngle())
                           .setArmState(ArmState.Extend);
                 }
@@ -511,7 +524,6 @@ public class ArmLoop extends LoopBase {
             break;
 
             case Adjust:
-                turretPID.setP(kTurretFastP);
                 if(stateTimer.get() == 0)
                     status.setElbowRaised(false);
                 // Rotate turret according to limelight and driver controls
@@ -552,6 +564,12 @@ public class ArmLoop extends LoopBase {
             startTrajectory(status.getCurrentArmPose(), status.getTargetArmPose());
     }
 
+
+    private static final double turretKs = 0.6102;
+    private static final double turretKv = 0.048375;
+    private static final double turretKa = 0.010214 * 0;
+    private double prevTurretVelo;
+    private double prevTimestamp;
     private boolean largeTurretError = false;
     private void runTurret() {
         turretPID.setGoal(status.getTargetTurretAngleDeg());
@@ -564,8 +582,11 @@ public class ArmLoop extends LoopBase {
             largeTurretError = false;
         }
         status.setTurretPIDOutput(turretPID.calculate(status.getTurretAngleDeg()));
+        status.setTurretFeedForward((turretKv * turretPID.getSetpoint().velocity + turretKa * ((turretPID.getSetpoint().velocity - prevTurretVelo) / (Timer.getFPGATimestamp() - prevTimestamp))) / 12);
         if(status.getTurretControlMode() == MotorControlMode.PID)
-            status.setTurretPower(status.getTurretPIDOutput());
+            status.setTurretPower(status.getTurretPIDOutput() + status.getTurretFeedforward());
+        prevTurretVelo = turretPID.getSetpoint().velocity;
+        prevTimestamp = Timer.getFPGATimestamp();
     }
 
     public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos) {

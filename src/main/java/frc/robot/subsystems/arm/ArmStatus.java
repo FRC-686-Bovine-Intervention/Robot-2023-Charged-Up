@@ -122,6 +122,10 @@ public class ArmStatus extends StatusBase {
     public double       getTurretPower()                    {return turretPower;}
     protected ArmStatus setTurretPower(double turretPower)  {this.turretPower = turretPower; return this;}
 
+    private double      turretFeedforward;
+    public double       getTurretFeedforward()                          {return turretFeedforward;}
+    protected ArmStatus setTurretFeedForward(double turretFeedforward)  {this.turretFeedforward = turretFeedforward; return this;}
+
     private double      turretPIDOutput;
     public double       getTurretPIDOutput()                        {return turretPIDOutput;}
     protected ArmStatus setTurretPIDOutput(double turretPIDOutput)  {this.turretPIDOutput = turretPIDOutput; return this;}
@@ -479,15 +483,16 @@ public class ArmStatus extends StatusBase {
                .setTurretNeutralMode(NeutralMode.Coast);
         }
 
-        // logger.recordOutput(prefix + "Turret/Power",                getTurretPower());
-        // logger.recordOutput(prefix + "Turret/PID/Output",           getTurretPIDOutput());
-        // logger.recordOutput(prefix + "Turret/PID/Position",         getTurretPIDPosition());
-        // logger.recordOutput(prefix + "Turret/PID/Velocity",         getTurretPIDVelocity());
+        logger.recordOutput(prefix + "Turret/Power",                getTurretPower());
+        logger.recordOutput(prefix + "Turret/PID/Output",           getTurretPIDOutput());
+        logger.recordOutput(prefix + "Turret/PID/Position",         getTurretPIDPosition());
+        logger.recordOutput(prefix + "Turret/PID/Velocity",         getTurretPIDVelocity());
+        logger.recordOutput(prefix + "Turret/PID/Feedforward",         getTurretFeedforward());
         // logger.recordOutput(prefix + "Turret/Control Mode",         turretControlMode != null ? turretControlMode.name() : "null");
         // logger.recordOutput(prefix + "Turret/Neutral Mode",         turretNeutralMode != null ? turretNeutralMode.name() : "null");
         logger.recordOutput(prefix + "Turret/Position (deg)",       getTurretAngleDeg());
         turretAngleEntry.setDouble(getTurretAngleDeg());
-        // logger.recordOutput(prefix + "Turret/Target Angle (deg)",   getTargetTurretAngleDeg());
+        logger.recordOutput(prefix + "Turret/Target Angle (deg)",   getTargetTurretAngleDeg());
         // logger.recordOutput(prefix + "Turret/Encoder/Relative",     HAL.getTurretRelative());
         // logger.recordOutput(prefix + "Turret/Encoder/Absolute",     HAL.getTurretAbsolute());
         logger.recordOutput(prefix + "Turret/Lockout",              getTurretLockout());

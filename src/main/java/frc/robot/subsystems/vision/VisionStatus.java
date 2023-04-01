@@ -249,7 +249,7 @@ public class VisionStatus extends StatusBase {
     private ShuffleboardTab tab = Shuffleboard.getTab("Vision");
     private GenericEntry yawEntry = tab.add("Camera Yaw", -686).withWidget(BuiltInWidgets.kTextView).getEntry();
     private GenericEntry setLeftEntry = tab.add("Set Left Camera", false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
-    private GenericEntry setRightEntry = tab.add("Set Right Camera", false).withWidget(BuiltInWidgets.kTextView).getEntry();
+    private GenericEntry setRightEntry = tab.add("Set Right Camera", false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
 
     @Override
     protected void updateInputs() {
