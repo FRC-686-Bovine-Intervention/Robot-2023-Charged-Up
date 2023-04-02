@@ -511,7 +511,7 @@ public class ArmLoop extends LoopBase {
                     status.setTargetTurretAngleDeg(status.getTurretAngleDeg() + visionStatus.getTargetYAngle())
                           .setArmState(ArmState.Extend);
                 }
-                if(!status.getTargetNode().isCone || Math.abs(status.getTargetTurretAngleDeg() - status.getTurretAngleDeg()) < kTurretExtendMaxError) {
+                if(Math.abs(status.getTargetTurretAngleDeg() - status.getTurretAngleDeg()) < kTurretExtendMaxError) {
                     status.setArmState(ArmState.Extend);
                 }
             break;
