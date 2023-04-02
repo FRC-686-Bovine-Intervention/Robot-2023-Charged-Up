@@ -35,8 +35,8 @@ class ArmPresetPoses:
             "score_hybrid": {"fileIdx": ArmPresetEnum.SCORE_HYBRID, "theta1": -2.688, "theta2": -0.516},
             "score_mid_cube": {"fileIdx": ArmPresetEnum.SCORE_MID_CUBE, "theta1": -1.800, "theta2": 0.284},
             "score_high_cube": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CUBE, "theta1": -0.727, "theta2": 0.322},
-            "score_mid_cone": {"fileIdx": ArmPresetEnum.SCORE_MID_CONE, "theta1": -1.763, "theta2": 0.448},
-            "score_high_cone": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CONE, "theta1": -0.733, "theta2": 0.608}
+            "score_mid_cone": {"fileIdx": ArmPresetEnum.SCORE_MID_CONE, "theta1": -1.763, "theta2": 0.40},
+            "score_high_cone": {"fileIdx": ArmPresetEnum.SCORE_HIGH_CONE, "theta1": -0.733, "theta2": 0.55}
         }
 
         return preset
