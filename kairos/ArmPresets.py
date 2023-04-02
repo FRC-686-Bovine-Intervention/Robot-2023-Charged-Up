@@ -27,7 +27,7 @@ class ArmPresetPoses:
 
         # preset = [None] * ((ArmPresetEnum.SCORE_HIGH_CONE).value+1)
         preset = {
-            "auto_start": {"fileIdx": ArmPresetEnum.AUTO_START, "theta1": -2.592, "theta2": -0.882},
+            "auto_start": {"fileIdx": ArmPresetEnum.AUTO_START, "theta1": -2.64, "theta2": -0.940},
             "defense": {"fileIdx": ArmPresetEnum.DEFENSE, "theta1": -2.933, "theta2": -0.815},
             "intake": {"fileIdx": ArmPresetEnum.INTAKE, "theta1": -2.40, "theta2": -1.00},
             "hold": {"fileIdx": ArmPresetEnum.HOLD, "theta1": -1.591, "theta2": 1.271},
