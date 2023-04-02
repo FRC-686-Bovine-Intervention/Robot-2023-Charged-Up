@@ -505,7 +505,7 @@ public class ArmLoop extends LoopBase {
 
             case AlignNode:
                 pipeline = LimelightPipeline.Pole;
-                status.setTargetTurretAngleDeg(getTurretBestAngle(getClosestNodeXY(status.getTargetNode(), status.getTurretToField().getTranslation().toTranslation2d()).get()))
+                status.setTargetTurretAngleDeg(getTurretBestAngle(getClosestNodeXY(status.getTargetNode(), status.getTurretToField().getTranslation().toTranslation2d())))
                       .setTurretControlMode(MotorControlMode.PID);
                 if(status.getTargetNode().isCone && visionStatus.getCurrentPipeline() == pipeline && visionStatus.getTargetExists()) {
                     status.setTargetTurretAngleDeg(status.getTurretAngleDeg() + visionStatus.getTargetYAngle())
@@ -658,8 +658,8 @@ public class ArmLoop extends LoopBase {
         // check if current trajectory is finished
         if (status.getCurrentArmTrajectory() != null && trajectoryTimer.hasElapsed(status.getCurrentArmTrajectory().getTotalTime()))
         {
-            status.setCurrentArmTrajectory(null)
-                  .setCurrentArmPose(status.getTargetArmPose())
+            status.setCurrentArmPose(ArmPose.Preset.valueOf(status.getCurrentArmTrajectory().getFinalString().toUpperCase()))
+                  .setCurrentArmTrajectory(null)
                   .setShoulderAdjustment(0)
                   .setElbowAdjustment(0);
         }
@@ -874,6 +874,10 @@ public class ArmLoop extends LoopBase {
         internalDisableTimer.reset();
     }
 
+    private double getTurretBestAngle(Optional<Translation2d> target) {
+        if(target.isEmpty()) return 0;
+        return getTurretBestAngle(target.get());
+    }
     private double getTurretBestAngle(Translation2d target) {
         Translation2d pointRel = new Pose2d(target, new Rotation2d()).relativeTo(odometryStatus.getRobotPose().transformBy(new Transform2d(ArmStatus.robotToTurretTranslation.toTranslation2d(), new Rotation2d()))).getTranslation();
         double raw = Units.radiansToDegrees(Math.atan2(pointRel.getY(), pointRel.getX()));
