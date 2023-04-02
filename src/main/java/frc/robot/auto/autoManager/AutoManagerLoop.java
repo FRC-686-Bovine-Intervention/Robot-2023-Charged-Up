@@ -32,10 +32,11 @@ public class AutoManagerLoop extends LoopBase {
             SubsystemController.getInstance().loadConfiguration(status.getCurrentAutoMode().startConfiguration);
             autoTimer.start();
         }
-        if(status.getActionIndex() < 0 && autoTimer.hasElapsed(status.getAutoConfiguration().initialDelay)) {
-            status.setActionIndex(0);
-        }
-        if(status.getActionIndex() >= 0 && status.getAutoRunning()) {
+        if(status.getActionIndex() < 0) {
+            if(autoTimer.hasElapsed(status.getAutoConfiguration().initialDelay)) {
+                status.setActionIndex(0);
+            }
+        } else if(status.getAutoRunning()) {
             Action action = status.getCurrentAutoMode().actionList.get(status.getActionIndex());
             action.onLoop();
             if(action.getEvaluatedDone()) {

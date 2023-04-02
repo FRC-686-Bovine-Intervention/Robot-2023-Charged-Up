@@ -44,16 +44,16 @@ public class TwoPieceAuto extends AutoMode {
 
         RamseteController ramseteController = new RamseteController(2, 0.7);
 
-        addAction(new WaitUntilAction(() -> armStatus.getCurrentArmPose() == ArmPose.Preset.HOLD));
+        // addAction(new WaitUntilAction(() -> armStatus.getCurrentArmPose() == ArmPose.Preset.HOLD));
         addAction(new ExtendToAction(config.startingPiece == GamePiece.Cube ? NodeEnum.TopCenter : (config.startingPosition == StartPosition.Loading ? NodeEnum.TopLoading : NodeEnum.TopLoading)));
         addAction(new ReleaseAction());
         addAction(new RamseteFollowerAction(trajectories[0], ramseteController));
-        addAction(new IntakeCommandAction(new IntakeCommand(IntakeState.Grab)));
+        // addAction(new IntakeCommandAction(new IntakeCommand(IntakeState.Grab)));
         // addAction(new ParallelAction(
         //     new RamseteFollowerAction(trajectories[1], ramseteController),
         //     new WaitUntilAction(() -> intakeStatus.getIntakeState() == IntakeState.Hold).setTimeout(1.5)
         // ));
-        addAction(new AutoPickupPieceAction(config.stagedPieces[config.startingPosition.ordinal()]).setTimeout(1));
+        addAction(new AutoPickupPieceAction(config.stagedPieces[config.startingPosition.ordinal()]).setTimeout(1.5));
         NodeEnum secondNode = NodeEnum.TopCenter;
         if(config.stagedPieces[config.startingPosition.ordinal()] == GamePiece.Cone) { // If second piece is a cone, override cube node
             if(config.startingPiece == config.stagedPieces[config.startingPosition.ordinal()]) { // Choose highest possible cone node

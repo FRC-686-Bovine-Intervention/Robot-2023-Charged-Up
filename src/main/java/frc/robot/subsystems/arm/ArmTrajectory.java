@@ -165,11 +165,11 @@ public class ArmTrajectory {
 
       boolean reversePath = false;
       double score_theta0, score_theta1;
-      if ((startPos.equals("defense")) && (finalPos.contains("cube") || finalPos.contains("cone"))) {
+      if ((startPos.equals("hold")) && (finalPos.contains("cube") || finalPos.contains("cone"))) {
         reversePath = false;
         score_theta0 = final_theta0;
         score_theta1 = final_theta1;
-      } else if ((finalPos.equals("defense")) && (startPos.contains("cube") || startPos.contains("cone"))) {
+      } else if ((finalPos.equals("hold")) && (startPos.contains("cube") || startPos.contains("cone"))) {
         reversePath = true;
         score_theta0 = start_theta0;
         score_theta1 = start_theta1;
