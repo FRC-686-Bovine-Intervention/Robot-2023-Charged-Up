@@ -55,7 +55,7 @@ public class PhotonHalHelper {
         return this;
     }
 
-    private static final double kEstimatePeriod = 0.1;
+    private static final double kEstimatePeriod = 0.5;
     final Timer estimateTimer = new Timer();
     public PhotonHalHelper processTable() {
         if(latestCameraResult != null) {
