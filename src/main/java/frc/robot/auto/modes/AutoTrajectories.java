@@ -27,6 +27,9 @@ public class AutoTrajectories {
     public static final Trajectory[][] PickupBackward;
     public static final Trajectory[][] ScoringForward;
 
+    public static final Trajectory[][] TwoPieceForward;
+    public static final Trajectory[][] TwoPieceBackward;
+
     // One Piece Balance
     public static final Trajectory[][] StationBackward;
 
@@ -39,12 +42,12 @@ public class AutoTrajectories {
         backwardConfig.setReversed(true);
 
         // Scoring Poses
-        double outsideScoringOffset = 6;
+        double outsideScoringOffset = FieldDimensions.Grids.nodeSeparationY / 2;
 
         Pose2d WallScoringPose = new Pose2d(
             new Translation2d(
                 FieldDimensions.Grids.outerX + Units.inchesToMeters(Constants.kCenterToFrontBumper),
-                FieldDimensions.Grids.nodeFirstY + FieldDimensions.Grids.nodeSeparationY * 1 - Units.inchesToMeters(outsideScoringOffset)
+                FieldDimensions.Grids.nodeFirstY + FieldDimensions.Grids.nodeSeparationY * 1 - outsideScoringOffset
             ),
             Rotation2d.fromDegrees(180)
         );
@@ -58,11 +61,23 @@ public class AutoTrajectories {
         Pose2d LoadingScoringPose = new Pose2d(
             new Translation2d(
                 FieldDimensions.Grids.outerX + Units.inchesToMeters(Constants.kCenterToFrontBumper),
-                FieldDimensions.Grids.nodeFirstY + FieldDimensions.Grids.nodeSeparationY * 7 + Units.inchesToMeters(outsideScoringOffset)
+                FieldDimensions.Grids.nodeFirstY + FieldDimensions.Grids.nodeSeparationY * 7 + outsideScoringOffset
             ),
             Rotation2d.fromDegrees(180)
         );
-        
+        Pose2d TwoPieceWallScoringPose = new Pose2d(
+            WallScoringPose.getTranslation(),
+            Rotation2d.fromDegrees(0)
+        );
+        Pose2d TwoPieceCenterScoringPose = new Pose2d(
+            CenterScoringPose.getTranslation(),
+            Rotation2d.fromDegrees(0)
+        );
+        Pose2d TwoPieceLoadScoringPose = new Pose2d(
+            LoadingScoringPose.getTranslation(),
+            Rotation2d.fromDegrees(0)
+        );
+
         // Backup Poses
         double onePointTurnRadius = 18;
         double onePointTurnCenterOffset = 18;
@@ -204,6 +219,40 @@ public class AutoTrajectories {
             Rotation2d.fromDegrees(0)
         );
 
+        ArrayList<Pose2d> TwoPieceWallForwardPath = new ArrayList<Pose2d>();
+        ArrayList<Pose2d> TwoPieceCenterWallForwardPath = new ArrayList<Pose2d>();
+        ArrayList<Pose2d> TwoPieceCenterLoadForwardPath = new ArrayList<Pose2d>();
+        ArrayList<Pose2d> TwoPieceLoadForwardPath = new ArrayList<Pose2d>();
+
+        TwoPieceWallForwardPath.add(TwoPieceWallScoringPose);
+        TwoPieceWallForwardPath.add(WallStagingPose);
+
+        TwoPieceCenterWallForwardPath.add(TwoPieceCenterScoringPose);
+        TwoPieceCenterWallForwardPath.add(CenterWallStagingPose);
+        
+        TwoPieceCenterLoadForwardPath.add(TwoPieceCenterScoringPose);
+        TwoPieceCenterLoadForwardPath.add(CenterLoadStagingPose);
+        
+        TwoPieceLoadForwardPath.add(TwoPieceLoadScoringPose);
+        TwoPieceLoadForwardPath.add(LoadingStagingPose);
+
+        ArrayList<Pose2d> TwoPieceWallBackwardPath = new ArrayList<Pose2d>();
+        ArrayList<Pose2d> TwoPieceCenterWallBackwardPath = new ArrayList<Pose2d>();
+        ArrayList<Pose2d> TwoPieceCenterLoadBackwardPath = new ArrayList<Pose2d>();
+        ArrayList<Pose2d> TwoPieceLoadBackwardPath = new ArrayList<Pose2d>();
+
+        TwoPieceWallBackwardPath.add(WallStagingPose);
+        TwoPieceWallBackwardPath.add(TwoPieceWallScoringPose);
+
+        TwoPieceCenterWallBackwardPath.add(CenterWallStagingPose);
+        TwoPieceCenterWallBackwardPath.add(TwoPieceCenterScoringPose);
+        
+        TwoPieceCenterLoadBackwardPath.add(CenterLoadStagingPose);
+        TwoPieceCenterLoadBackwardPath.add(TwoPieceCenterScoringPose);
+        
+        TwoPieceLoadBackwardPath.add(LoadingStagingPose);
+        TwoPieceLoadBackwardPath.add(TwoPieceLoadScoringPose);
+
         ArrayList<Pose2d> WallScoringBackwardPath = new ArrayList<Pose2d>();
         ArrayList<Pose2d> CenterWallScoringBackwardPath = new ArrayList<Pose2d>();
         ArrayList<Pose2d> CenterLoadScoringBackwardPath = new ArrayList<Pose2d>();
@@ -328,6 +377,16 @@ public class AutoTrajectories {
         LoadingStationBackwardPath.add(LoadingStagingPose);
         LoadingStationBackwardPath.add(ChargeStationBackupPose);
 
+        Trajectory BlueTwoPieceWallForward =        TrajectoryGenerator.generateTrajectory(TwoPieceWallForwardPath, forwardConfig);
+        Trajectory BlueTwoPieceCenterWallForward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterWallForwardPath, forwardConfig);
+        Trajectory BlueTwoPieceCenterLoadForward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterLoadForwardPath, forwardConfig);
+        Trajectory BlueTwoPieceLoadForward =        TrajectoryGenerator.generateTrajectory(TwoPieceLoadForwardPath, forwardConfig);
+
+        Trajectory BlueTwoPieceWallBackward =        TrajectoryGenerator.generateTrajectory(TwoPieceWallBackwardPath, backwardConfig);
+        Trajectory BlueTwoPieceCenterWallBackward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterWallBackwardPath, backwardConfig);
+        Trajectory BlueTwoPieceCenterLoadBackward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterLoadBackwardPath, forwardConfig);
+        Trajectory BlueTwoPieceLoadBackward =        TrajectoryGenerator.generateTrajectory(TwoPieceLoadBackwardPath, backwardConfig);
+
         // Generic
         
         Trajectory BlueWallScoringBackward =        TrajectoryGenerator.generateTrajectory(WallScoringBackwardPath, backwardConfig);
@@ -387,6 +446,43 @@ public class AutoTrajectories {
         CenterLoadStagingPose = AllianceFlipUtil.apply(CenterLoadStagingPose, Alliance.Red);
         LoadingStagingPose = AllianceFlipUtil.apply(LoadingStagingPose, Alliance.Red);
         ChargeStationBackupPose = AllianceFlipUtil.apply(ChargeStationBackupPose, Alliance.Red);
+        TwoPieceWallScoringPose = AllianceFlipUtil.apply(TwoPieceWallScoringPose, Alliance.Red);
+        TwoPieceCenterScoringPose = AllianceFlipUtil.apply(TwoPieceCenterScoringPose, Alliance.Red);
+        TwoPieceLoadScoringPose = AllianceFlipUtil.apply(TwoPieceLoadScoringPose, Alliance.Red);
+
+        TwoPieceWallForwardPath.clear();
+        TwoPieceCenterWallForwardPath.clear();
+        TwoPieceCenterLoadForwardPath.clear();
+        TwoPieceLoadForwardPath.clear();
+
+        TwoPieceWallForwardPath.add(TwoPieceWallScoringPose);
+        TwoPieceWallForwardPath.add(WallStagingPose);
+
+        TwoPieceCenterWallForwardPath.add(TwoPieceCenterScoringPose);
+        TwoPieceCenterWallForwardPath.add(CenterWallStagingPose);
+        
+        TwoPieceCenterLoadForwardPath.add(TwoPieceCenterScoringPose);
+        TwoPieceCenterLoadForwardPath.add(CenterLoadStagingPose);
+        
+        TwoPieceLoadForwardPath.add(TwoPieceLoadScoringPose);
+        TwoPieceLoadForwardPath.add(LoadingStagingPose);
+
+        TwoPieceWallBackwardPath.clear();
+        TwoPieceCenterWallBackwardPath.clear();
+        TwoPieceCenterLoadBackwardPath.clear();
+        TwoPieceLoadBackwardPath.clear();
+
+        TwoPieceWallBackwardPath.add(WallStagingPose);
+        TwoPieceWallBackwardPath.add(TwoPieceWallScoringPose);
+
+        TwoPieceCenterWallBackwardPath.add(CenterWallStagingPose);
+        TwoPieceCenterWallBackwardPath.add(TwoPieceCenterScoringPose);
+        
+        TwoPieceCenterLoadBackwardPath.add(CenterLoadStagingPose);
+        TwoPieceCenterLoadBackwardPath.add(TwoPieceCenterScoringPose);
+        
+        TwoPieceLoadBackwardPath.add(LoadingStagingPose);
+        TwoPieceLoadBackwardPath.add(TwoPieceLoadScoringPose);
 
         WallScoringBackwardPath.clear();
         CenterWallScoringBackwardPath.clear();
@@ -512,6 +608,16 @@ public class AutoTrajectories {
         LoadingStationBackwardPath.add(LoadingStagingPose);
         LoadingStationBackwardPath.add(ChargeStationBackupPose);
 
+        Trajectory RedTwoPieceWallForward =        TrajectoryGenerator.generateTrajectory(TwoPieceWallForwardPath, forwardConfig);
+        Trajectory RedTwoPieceCenterWallForward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterWallForwardPath, forwardConfig);
+        Trajectory RedTwoPieceCenterLoadForward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterLoadForwardPath, forwardConfig);
+        Trajectory RedTwoPieceLoadForward =        TrajectoryGenerator.generateTrajectory(TwoPieceLoadForwardPath, forwardConfig);
+
+        Trajectory RedTwoPieceWallBackward =        TrajectoryGenerator.generateTrajectory(TwoPieceWallBackwardPath, backwardConfig);
+        Trajectory RedTwoPieceCenterWallBackward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterWallBackwardPath, backwardConfig);
+        Trajectory RedTwoPieceCenterLoadBackward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterLoadBackwardPath, forwardConfig);
+        Trajectory RedTwoPieceLoadBackward =        TrajectoryGenerator.generateTrajectory(TwoPieceLoadBackwardPath, backwardConfig);
+
         // Generic
         
         Trajectory RedWallScoringBackward =       TrajectoryGenerator.generateTrajectory(WallScoringBackwardPath, backwardConfig);
@@ -549,6 +655,38 @@ public class AutoTrajectories {
         Trajectory RedCenterWallStationBackward = TrajectoryGenerator.generateTrajectory(CenterWallStationBackwardPath, backwardConfig);
         Trajectory RedCenterLoadStationBackward = TrajectoryGenerator.generateTrajectory(CenterLoadStationBackwardPath, backwardConfig);
         Trajectory RedLoadingStationBackward =    TrajectoryGenerator.generateTrajectory(LoadingStationBackwardPath, backwardConfig);
+
+        TwoPieceForward = new Trajectory[2][4];
+        for(AutoConfiguration.StartPosition startPosition : AutoConfiguration.StartPosition.values()) {
+            for(Alliance alliance : Alliance.values()) {
+                if(alliance != Alliance.Invalid) {
+                    Trajectory traj = null;
+                    switch(startPosition) {
+                        case Wall:          traj = (alliance == Alliance.Red ? RedTwoPieceWallForward : BlueTwoPieceWallForward);               break;
+                        case CenterWall:    traj = (alliance == Alliance.Red ? RedTwoPieceCenterWallForward : BlueTwoPieceCenterWallForward);   break;
+                        case CenterLoad:    traj = (alliance == Alliance.Red ? RedTwoPieceCenterLoadForward : BlueTwoPieceCenterLoadForward);   break;
+                        case Loading:       traj = (alliance == Alliance.Red ? RedTwoPieceLoadForward : BlueTwoPieceLoadForward);         break;
+                    }
+                    TwoPieceForward[alliance.ordinal()][startPosition.ordinal()] = traj;
+                }
+            }
+        }
+
+        TwoPieceBackward = new Trajectory[2][4];
+        for(AutoConfiguration.StartPosition startPosition : AutoConfiguration.StartPosition.values()) {
+            for(Alliance alliance : Alliance.values()) {
+                if(alliance != Alliance.Invalid) {
+                    Trajectory traj = null;
+                    switch(startPosition) {
+                        case Wall:          traj = (alliance == Alliance.Red ? RedTwoPieceWallBackward : BlueTwoPieceWallBackward);               break;
+                        case CenterWall:    traj = (alliance == Alliance.Red ? RedTwoPieceCenterWallBackward : BlueTwoPieceCenterWallBackward);   break;
+                        case CenterLoad:    traj = (alliance == Alliance.Red ? RedTwoPieceCenterLoadBackward : BlueTwoPieceCenterLoadBackward);   break;
+                        case Loading:       traj = (alliance == Alliance.Red ? RedTwoPieceLoadBackward : BlueTwoPieceLoadBackward);         break;
+                    }
+                    TwoPieceBackward[alliance.ordinal()][startPosition.ordinal()] = traj;
+                }
+            }
+        }
 
         ScoringBackward = new Trajectory[2][4];
         for(AutoConfiguration.StartPosition startPosition : AutoConfiguration.StartPosition.values()) {

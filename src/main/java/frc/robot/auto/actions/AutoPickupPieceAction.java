@@ -31,7 +31,8 @@ public class AutoPickupPieceAction extends Action {
     @Override
     public void run() {
         drive.setDriveCommand(new DriveCommand(0.1,0.1));
-        driverAssist.setCommand(new DriverAssistCommand(DriverAssistState.AutoIntake));
+        // driverAssist.setCommand(new DriverAssistCommand(DriverAssistState.AutoIntake).setTargetGamePiece(piece));
+        setFinished(intakeStatus.getIntakeState() == IntakeState.Hold);
     }
 
     @Override

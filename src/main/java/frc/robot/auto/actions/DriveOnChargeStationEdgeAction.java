@@ -5,8 +5,6 @@ import frc.robot.subsystems.drive.DriveCommand;
 import frc.robot.subsystems.drive.DriveStatus;
 
 public class DriveOnChargeStationEdgeAction extends Action {
-    private static final double kUpperPitchThreshold = 15;
-    private static final double kLowerPitchThreshold = 14;
     private static final double kDrivePercentOutput = 0.3;
     private final boolean reversed;
 
@@ -18,7 +16,6 @@ public class DriveOnChargeStationEdgeAction extends Action {
         this.reversed = reversed;
     }
 
-    private boolean hitUpperThreshold;
     private double prevPitch;
 
     @Override
@@ -30,12 +27,6 @@ public class DriveOnChargeStationEdgeAction extends Action {
         if(getPitchVelo() * (reversed ? -1 : 1) <= -0.2) {
             setFinished(true);
         }
-        // if(!hitUpperThreshold) {
-        //     if(Math.abs(driveStatus.getPitchDeg()) >= kUpperPitchThreshold)
-        //         hitUpperThreshold = true;
-        // } else {
-        //     if(Math.abs(driveStatus.getPitchDeg()) <= kLowerPitchThreshold)
-        // }
         prevPitch = driveStatus.getPitchDeg();
     }
 
