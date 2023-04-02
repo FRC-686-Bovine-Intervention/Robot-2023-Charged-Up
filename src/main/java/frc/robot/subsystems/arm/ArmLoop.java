@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
 import edu.wpi.first.math.MathUtil;
@@ -76,6 +78,7 @@ public class ArmLoop extends LoopBase {
         );
     private static final double kTurretPIDMaxError = 10;
     private static final double kTurretExtendMaxError = 3;
+    private static final double kLimelightAngleFactor = 1.38;
 
     private static final double kDistalZeroPower =      0.15;
     private static final double kProximalZeroPower =    0.1;
@@ -508,7 +511,7 @@ public class ArmLoop extends LoopBase {
                 status.setTargetTurretAngleDeg(getTurretBestAngle(getClosestNodeXY(status.getTargetNode(), status.getTurretToField().getTranslation().toTranslation2d())))
                       .setTurretControlMode(MotorControlMode.PID);
                 if(status.getTargetNode().isCone && visionStatus.getCurrentPipeline() == pipeline && visionStatus.getTargetExists()) {
-                    status.setTargetTurretAngleDeg(status.getTurretAngleDeg() + visionStatus.getTargetYAngle())
+                    status.setTargetTurretAngleDeg(status.getTurretAngleDeg() + visionStatus.getTargetYAngle() / kLimelightAngleFactor)
                           .setArmState(ArmState.Extend);
                 }
                 if(Math.abs(status.getTargetTurretAngleDeg() - status.getTurretAngleDeg()) < kTurretExtendMaxError) {
@@ -630,8 +633,8 @@ public class ArmLoop extends LoopBase {
                     finalElbowAngleRad = theta.get().get(1,0);
                 } else {
                     // if the arm can't reach the target node, reach out as far as we can
-                    finalShoulderAngleRad = -0.1;   // should reach to 60" extension, 53" above floor
-                    finalElbowAngleRad = 0.28;      // hardcoding to make sure we always get a result
+                    finalShoulderAngleRad = -0.3;//-0.1;   // should reach to 60" extension, 53" above floor
+                    finalElbowAngleRad = 0.3;//0.28;      // hardcoding to make sure we always get a result
                 }
             }
             // set outputs

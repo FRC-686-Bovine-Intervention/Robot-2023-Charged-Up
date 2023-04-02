@@ -44,7 +44,7 @@ public class AutoTrajectories {
         backwardConfig.setReversed(true);
         TrajectoryConfig forwardChargeStationConfig = new TrajectoryConfig(kMaxVelocityChargeStationMPS, kMaxAccelerationChargeStationMPSS);
         TrajectoryConfig backwardChargeStationConfig = new TrajectoryConfig(kMaxVelocityChargeStationMPS, kMaxAccelerationChargeStationMPSS);
-        backwardConfig.setReversed(true);
+        backwardChargeStationConfig.setReversed(true);
 
         // Scoring Poses
         double outsideScoringOffset = FieldDimensions.Grids.nodeSeparationY / 2;
