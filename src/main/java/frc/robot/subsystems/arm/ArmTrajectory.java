@@ -195,6 +195,9 @@ public class ArmTrajectory {
           idx = k;
         }
       }
+      
+      // avoid negative indices
+      idx = Math.max(idx, 1);
 
       // calculate total distance to move final trajectory points
       double delta_theta0 = score_theta0 - newPoints.get(newPoints.size()-1).get(0,0);
