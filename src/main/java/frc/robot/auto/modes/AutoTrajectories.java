@@ -246,16 +246,16 @@ public class AutoTrajectories {
         ArrayList<Pose2d> TwoPieceCenterLoadBackwardPath = new ArrayList<Pose2d>();
         ArrayList<Pose2d> TwoPieceLoadBackwardPath = new ArrayList<Pose2d>();
 
-        TwoPieceWallBackwardPath.add(WallStagingOffsetPose);
+        TwoPieceWallBackwardPath.add(WallStagingPose);
         TwoPieceWallBackwardPath.add(TwoPieceWallScoringPose);
 
-        TwoPieceCenterWallBackwardPath.add(CenterWallStagingOffsetPose);
+        TwoPieceCenterWallBackwardPath.add(CenterWallStagingPose);
         TwoPieceCenterWallBackwardPath.add(TwoPieceCenterScoringPose);
         
-        TwoPieceCenterLoadBackwardPath.add(CenterLoadStagingOffsetPose);
+        TwoPieceCenterLoadBackwardPath.add(CenterLoadStagingPose);
         TwoPieceCenterLoadBackwardPath.add(TwoPieceCenterScoringPose);
         
-        TwoPieceLoadBackwardPath.add(LoadingStagingOffsetPose);
+        TwoPieceLoadBackwardPath.add(LoadingStagingPose);
         TwoPieceLoadBackwardPath.add(TwoPieceLoadScoringPose);
 
         ArrayList<Pose2d> WallScoringBackwardPath = new ArrayList<Pose2d>();
@@ -477,16 +477,16 @@ public class AutoTrajectories {
         TwoPieceCenterLoadBackwardPath.clear();
         TwoPieceLoadBackwardPath.clear();
 
-        TwoPieceWallBackwardPath.add(WallStagingOffsetPose);
+        TwoPieceWallBackwardPath.add(WallStagingPose);
         TwoPieceWallBackwardPath.add(TwoPieceWallScoringPose);
 
-        TwoPieceCenterWallBackwardPath.add(CenterWallStagingOffsetPose);
+        TwoPieceCenterWallBackwardPath.add(CenterWallStagingPose);
         TwoPieceCenterWallBackwardPath.add(TwoPieceCenterScoringPose);
         
-        TwoPieceCenterLoadBackwardPath.add(CenterLoadStagingOffsetPose);
+        TwoPieceCenterLoadBackwardPath.add(CenterLoadStagingPose);
         TwoPieceCenterLoadBackwardPath.add(TwoPieceCenterScoringPose);
         
-        TwoPieceLoadBackwardPath.add(LoadingStagingOffsetPose);
+        TwoPieceLoadBackwardPath.add(LoadingStagingPose);
         TwoPieceLoadBackwardPath.add(TwoPieceLoadScoringPose);
 
         WallScoringBackwardPath.clear();

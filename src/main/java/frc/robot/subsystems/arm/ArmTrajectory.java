@@ -230,7 +230,7 @@ public class ArmTrajectory {
         newPoints.add(idx-1+k, VecBuilder.fill(interp_theta0, interp_theta1));
       }
 
-      newTotalTime += npoints * Constants.loopPeriodSecs;
+      // newTotalTime += npoints * Constants.loopPeriodSecs;
 
     if (reversePath) {
         // undo the earlier reversal
