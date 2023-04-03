@@ -8,6 +8,7 @@ import frc.robot.auto.actions.ArmCommandAction;
 import frc.robot.auto.actions.AutoPickupPieceAction;
 import frc.robot.auto.actions.ConditionalAction;
 import frc.robot.auto.actions.ExtendToAction;
+import frc.robot.auto.actions.IgnoreVisionAction;
 import frc.robot.auto.actions.IntakeCommandAction;
 import frc.robot.auto.actions.ParallelAction;
 import frc.robot.auto.actions.RamseteFollowerAction;
@@ -47,6 +48,7 @@ public class TwoPieceAuto extends AutoMode {
         // addAction(new WaitUntilAction(() -> armStatus.getCurrentArmPose() == ArmPose.Preset.HOLD));
         addAction(new ExtendToAction(config.startingPiece == GamePiece.Cube ? NodeEnum.TopCenter : (config.startingPosition == StartPosition.Loading ? NodeEnum.TopLoading : NodeEnum.TopLoading)));
         addAction(new ReleaseAction());
+        addAction(new IgnoreVisionAction(true));
         addAction(new RamseteFollowerAction(trajectories[0], ramseteController));
         // addAction(new IntakeCommandAction(new IntakeCommand(IntakeState.Grab)));
         // addAction(new ParallelAction(
