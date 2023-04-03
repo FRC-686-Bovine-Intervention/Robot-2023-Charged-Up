@@ -108,7 +108,7 @@ public class ArmLoop extends LoopBase {
 
     private final PIDController shoulderPID = 
         new PIDController(
-            20.0, 
+            10.0, 
             0.0, 
             0.0, 
             Constants.loopPeriodSecs
