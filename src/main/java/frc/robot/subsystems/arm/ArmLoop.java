@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.littletonrobotics.junction.Logger;
-
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
 import edu.wpi.first.math.MathUtil;
@@ -47,6 +45,8 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeCommand;
 import frc.robot.subsystems.intake.IntakeStatus;
 import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
+import frc.robot.subsystems.odometry.Odometry;
+import frc.robot.subsystems.odometry.OdometryCommand;
 import frc.robot.subsystems.odometry.OdometryStatus;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionCommand;
@@ -62,6 +62,7 @@ public class ArmLoop extends LoopBase {
     private final ArmStatus status = ArmStatus.getInstance();
     private final Intake intake = Intake.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
+    private final Odometry odometry = Odometry.getInstance();
     private final OdometryStatus odometryStatus = OdometryStatus.getInstance();
     private final Vision vision = Vision.getInstance();
     private final VisionStatus visionStatus = VisionStatus.getInstance();
@@ -479,6 +480,7 @@ public class ArmLoop extends LoopBase {
             case AlignWall:
                 status.setTargetArmPose(ArmPose.Preset.HOLD);
                 pipeline = LimelightPipeline.Pole;
+                odometry.setCommand(new OdometryCommand().setIngoreVision(false));
                 
                 // unwrap turret angle because odometry wraps it to +/-180
                 
@@ -508,6 +510,7 @@ public class ArmLoop extends LoopBase {
 
             case AlignNode:
                 pipeline = LimelightPipeline.Pole;
+                odometry.setCommand(new OdometryCommand().setIngoreVision(false));
                 status.setTargetTurretAngleDeg(getTurretBestAngle(getClosestNodeXY(status.getTargetNode(), status.getTurretToField().getTranslation().toTranslation2d())))
                       .setTurretControlMode(MotorControlMode.PID);
                 if(status.getTargetNode().isCone && visionStatus.getCurrentPipeline() == pipeline && visionStatus.getTargetExists()) {
