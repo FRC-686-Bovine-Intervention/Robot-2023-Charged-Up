@@ -1,15 +1,21 @@
 package frc.robot.subsystems.driverAssist;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive.WheelSpeeds;
 import frc.robot.RamseteFollower;
+import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveCommand;
 import frc.robot.subsystems.drive.DriveStatus;
 import frc.robot.subsystems.driverAssist.DriverAssistStatus.DriverAssistState;
 import frc.robot.subsystems.framework.LoopBase;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionCommand;
 import frc.robot.subsystems.vision.VisionStatus;
+import frc.robot.subsystems.vision.VisionStatus.LimelightPipeline;
 
 public class DriverAssistLoop extends LoopBase {
     private static DriverAssistLoop instance;
@@ -19,6 +25,7 @@ public class DriverAssistLoop extends LoopBase {
     private final DriveStatus driveStatus = DriveStatus.getInstance();
     private final DriverAssistStatus status = DriverAssistStatus.getInstance();
 
+    private final Vision vision = Vision.getInstance();
     private final VisionStatus visionStatus = VisionStatus.getInstance();
 
     private static final double kPowerAtMaxPitch = 0.25*0.65;
@@ -41,8 +48,13 @@ public class DriverAssistLoop extends LoopBase {
         double currentTimestamp = Timer.getFPGATimestamp();
 
         // Determine new state
-        if(newCommand.getDriverAssistState() != null)
+        if(newCommand.getDriverAssistState() != null) {
+            if(newCommand.getDriverAssistState() != DriverAssistState.AutoIntake && status.getDriverAssistState() == DriverAssistState.AutoIntake) {
+                status.setTargetPiece(null)
+                      .setTargetBelowCamera(false);
+            }
             status.setDriverAssistState(newCommand.getDriverAssistState());
+        }
         if(newCommand.getTargetGamePiece() != null)
             status.setTargetPiece(newCommand.getTargetGamePiece());
 
@@ -111,23 +123,66 @@ public class DriverAssistLoop extends LoopBase {
             break;
 
             case AutoIntake:
-                if(!visionStatus.getConeExists() && !visionStatus.getCubeExists()){
-                    break;
-                }
-                double xOff;
-                if(!visionStatus.getCubeExists() || (visionStatus.getConeExists() && (visionStatus.getLatestConeYAngle() < visionStatus.getLatestCubeYAngle()))){
-                    xOff = visionStatus.getLatestConeXAngle();
+                double xOff = -686;
+                if(status.getTargetPiece() == null) {
+                    if(visionStatus.getCurrentPipeline() == LimelightPipeline.Cone && visionStatus.getTargetExists()) {
+                        status.setTargetPiece(GamePiece.Cone);
+                    } else {
+                        if(visionStatus.getCurrentPipeline() == LimelightPipeline.Cube && visionStatus.getTargetExists()) {
+                            status.setTargetPiece(GamePiece.Cube);
+                        } else {
+                            LimelightPipeline pipeline;
+                            if(visionStatus.getCurrentPipeline() == LimelightPipeline.Cone) {
+                                pipeline = LimelightPipeline.Cube;
+                            } else {
+                                pipeline = LimelightPipeline.Cone;
+                            }
+                            vision.setVisionCommand(new VisionCommand(pipeline));
+                        }
+                    }
                 } else {
-                    xOff = visionStatus.getLatestCubeXAngle();
+                    switch(status.getTargetPiece()) {
+                        case Cone:
+                            vision.setVisionCommand(new VisionCommand(LimelightPipeline.Cone));
+                            if(visionStatus.getCurrentPipeline() != LimelightPipeline.Cone)
+                                break;
+                            if(visionStatus.getTargetExists()) {
+                                if(visionStatus.getTargetXAngle() > 0) {
+                                    status.setTargetBelowCamera(true);
+                                }
+                                if(!status.getTargetBelowCamera() || visionStatus.getTargetXAngle() > 0) {
+                                    xOff = visionStatus.getTargetYAngle();
+                                }
+                            }
+                        break;
+                        case Cube:
+                            vision.setVisionCommand(new VisionCommand(LimelightPipeline.Cube));
+                            if(visionStatus.getCurrentPipeline() != LimelightPipeline.Cube)
+                                break;
+                            if(visionStatus.getTargetExists()) {
+                                if(visionStatus.getTargetXAngle() > 0) {
+                                    status.setTargetBelowCamera(true);
+                                }
+                                if(!status.getTargetBelowCamera() || visionStatus.getTargetXAngle() > 0) {
+                                    xOff = visionStatus.getTargetYAngle();
+                                }
+                            }
+                        break;
+                    }
                 }
-
-                double threshold = 5;
+                double threshold = 2.5;
                 double speed = drive.getDriveCommand().getSpeed();
-                double kp = 0.1;
-                if(xOff > threshold){
+                double kp = 0.2/20;
+                if(xOff != -686) {
+                    if(Math.abs(xOff) < threshold) {
+                        xOff = 0;
+                    }
                     status.setDriveCommand(new DriveCommand(new WheelSpeeds(speed + xOff * kp, speed - xOff * kp)));
+                } else {
+                    status.setDriveCommand(drive.getDriveCommand());
                 }
-
+                Logger.getInstance().recordOutput("DEBUG/xOff", xOff);
+                Logger.getInstance().recordOutput("DEBUG/speed", speed);
             break;
         }
         // Don't override drive command if disabled

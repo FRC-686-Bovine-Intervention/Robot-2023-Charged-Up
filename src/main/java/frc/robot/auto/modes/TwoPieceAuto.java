@@ -14,6 +14,7 @@ import frc.robot.auto.actions.ParallelAction;
 import frc.robot.auto.actions.RamseteFollowerAction;
 import frc.robot.auto.actions.ReleaseAction;
 import frc.robot.auto.actions.SeriesAction;
+import frc.robot.auto.actions.WaitAction;
 import frc.robot.auto.actions.WaitUntilAction;
 import frc.robot.auto.autoManager.AutoConfiguration;
 import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
@@ -46,16 +47,17 @@ public class TwoPieceAuto extends AutoMode {
         RamseteController ramseteController = new RamseteController(2, 0.7);
 
         // addAction(new WaitUntilAction(() -> armStatus.getCurrentArmPose() == ArmPose.Preset.HOLD));
+        addAction(new IgnoreVisionAction(true));
         addAction(new ExtendToAction(config.startingPiece == GamePiece.Cube ? NodeEnum.TopCenter : (config.startingPosition == StartPosition.Loading ? NodeEnum.TopLoading : NodeEnum.TopLoading)));
         addAction(new ReleaseAction());
-        addAction(new IgnoreVisionAction(true));
         addAction(new RamseteFollowerAction(trajectories[0], ramseteController));
         // addAction(new IntakeCommandAction(new IntakeCommand(IntakeState.Grab)));
         // addAction(new ParallelAction(
         //     new RamseteFollowerAction(trajectories[1], ramseteController),
         //     new WaitUntilAction(() -> intakeStatus.getIntakeState() == IntakeState.Hold).setTimeout(1.5)
         // ));
-        addAction(new AutoPickupPieceAction(config.stagedPieces[config.startingPosition.ordinal()]).setTimeout(1.5));
+        addAction(new AutoPickupPieceAction(config.stagedPieces[config.startingPosition.ordinal()], 6*12).setTimeout(3));
+        addAction(new WaitAction(0.75));
         NodeEnum secondNode = NodeEnum.TopCenter;
         if(config.stagedPieces[config.startingPosition.ordinal()] == GamePiece.Cone) { // If second piece is a cone, override cube node
             if(config.startingPiece == config.stagedPieces[config.startingPosition.ordinal()]) { // Choose highest possible cone node
@@ -81,11 +83,18 @@ public class TwoPieceAuto extends AutoMode {
                     new RamseteFollowerAction(trajectories[1], ramseteController),
                     new SeriesAction(
                         new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Hold),
-                        new ArmCommandAction(new ArmCommand(ArmState.AlignWall))
+                        new ArmCommandAction(new ArmCommand(ArmState.AlignWall)),
+                        new WaitUntilAction(() -> {
+                            boolean turretTargetBackward = Math.abs(180 - Math.abs(armStatus.getTargetTurretAngleDeg())) < 90;
+                            boolean turretNearTarget = Math.abs(armStatus.getTargetTurretAngleDeg() - armStatus.getTurretAngleDeg()) < 5;
+                            boolean turretNotSpinning = Math.abs(0 - Math.abs(armStatus.getTurretVeloDegPerSec())) < 1;
+                            boolean turretNotActivelyPowered = Math.abs(0 - Math.abs(armStatus.getTurretPower())) < 0.1;
+                            return turretTargetBackward && turretNearTarget && turretNotSpinning && turretNotActivelyPowered;
+                        })
                     )
                 ),
-                new ExtendToAction(secondNode)/* ,
-                new ReleaseAction() */
+                new ExtendToAction(secondNode),
+                new ReleaseAction()
             ),
             new IntakeCommandAction(new IntakeCommand(IntakeState.Defense))
         ));

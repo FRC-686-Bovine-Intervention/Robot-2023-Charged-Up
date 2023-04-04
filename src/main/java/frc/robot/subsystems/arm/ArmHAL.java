@@ -31,7 +31,7 @@ public class ArmHAL {
     private static final boolean kTurretMotorInverted = false;
     private static final boolean kTurretEncoderInverted = true;
     private static final double kTurretEncoderZeroingCalib = 436;//943;   // value read from encoder when turret is set to 0 degrees
-    private static final double kTurretSoftLimitDeg = 225;
+    private static final double kTurretSoftLimitDeg = 265;
 
     public static final double kArmMotorFullVoltage = 10.0;  // voltage compensation     
 
@@ -183,6 +183,7 @@ public class ArmHAL {
         return this;
     }
 
+    public double getTurretVeloDegPerSec() {return turretMotor != null ? turretMotor.getSelectedSensorVelocity(kRelativePIDId) * kTurretGearRatio * kTurretEncoderUnitsToDegrees * 10 : 0;}
     public double getTurretAngleDeg()   {return getTurretRelative() * kTurretGearRatio * kTurretEncoderUnitsToDegrees;}
     public double getTurretRelative()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kRelativePIDId) : 0;}
     public double getTurretAbsolute()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) : 0;}

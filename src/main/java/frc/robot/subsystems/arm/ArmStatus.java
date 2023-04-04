@@ -119,6 +119,10 @@ public class ArmStatus extends StatusBase {
     public double       getTargetTurretAngleDeg()              {return targetTurretAngleDeg;}
     public ArmStatus    setTargetTurretAngleDeg(double angle)  {targetTurretAngleDeg = angle; return this;}
 
+    private double      turretVeloDegPerSec;
+    public double       getTurretVeloDegPerSec()                            {return turretVeloDegPerSec;}
+    protected ArmStatus setTurretVeloDegPerSec(double turretVeloDegPerSec)  {this.turretVeloDegPerSec = turretVeloDegPerSec; return this;}
+
     private double      turretPower;
     public double       getTurretPower()                    {return turretPower;}
     protected ArmStatus setTurretPower(double turretPower)  {this.turretPower = turretPower; return this;}
@@ -405,6 +409,7 @@ public class ArmStatus extends StatusBase {
     public void updateInputs() {
         setCommand(arm.getCommand());
         setTurretAngleDeg(HAL.getTurretAngleDeg());
+        setTurretVeloDegPerSec(HAL.getTurretVeloDegPerSec());
         setShoulderPotEncReading(HAL.getShoulderPotEncoder().getReading());
         setElbowPotEncReading(HAL.getElbowPotEncoder().getReading());
         setShoulderFalconSensorPosition(HAL.getShoulderFalconSensorPosition());
@@ -440,13 +445,15 @@ public class ArmStatus extends StatusBase {
     @Override
     public void exportToTable(LogTable table) {
         table.put("Turret Position (deg)", getTurretAngleDeg());
+        table.put("Turret Velocity (deg|sec)", getTurretVeloDegPerSec());
         shoulderPotEncReading.exportToTable(table, "Shoulder Reading");
         elbowPotEncReading.exportToTable(table, "Elbow Reading");     
     }
     
     @Override
     public void importFromTable(LogTable table) {
-        setTurretAngleDeg(table.getDouble("Turret Position (deg)", turretAngleDeg));
+        setTurretAngleDeg(table.getDouble("Turret Position (deg)", getTurretAngleDeg()));
+        setTurretAngleDeg(table.getDouble("Turret Velocity (deg|sec)", getTurretVeloDegPerSec()));
         setShoulderPotEncReading(shoulderPotEncReading.importFromTable(table, "Shoulder Reading"));
         setElbowPotEncReading(elbowPotEncReading.importFromTable(table, "Elbow Reading"));
     }
