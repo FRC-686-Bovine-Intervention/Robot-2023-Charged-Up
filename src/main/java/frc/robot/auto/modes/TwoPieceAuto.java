@@ -94,6 +94,7 @@ public class TwoPieceAuto extends AutoMode {
                     )
                 ),
                 new ExtendToAction(secondNode),
+                new WaitAction(0.5),
                 new ReleaseAction()
             ),
             new IntakeCommandAction(new IntakeCommand(IntakeState.Defense))

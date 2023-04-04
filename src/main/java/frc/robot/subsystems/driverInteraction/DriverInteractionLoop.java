@@ -32,7 +32,7 @@ public class DriverInteractionLoop extends LoopBase {
     private static final double kExtendedDrivePowerMultiplier = 0.5;
     private static final double kHandoffPowerMultiplier = 0.5;
 
-    private static final double kAdjustmentDeadband = 0.1;
+    private static final double kAdjustmentDeadband = 0.15;
 
     private final Drive drive = Drive.getInstance();
     private final DriverAssist driverAssist = DriverAssist.getInstance();

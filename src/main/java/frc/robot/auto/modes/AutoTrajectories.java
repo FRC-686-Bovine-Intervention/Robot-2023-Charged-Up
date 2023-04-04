@@ -35,7 +35,7 @@ public class AutoTrajectories {
 
     static {
         double kMaxVelocityMPS =      Units.inchesToMeters(7*12);
-        double kMaxAccelerationMPSS = kMaxVelocityMPS / 0.5;
+        double kMaxAccelerationMPSS = kMaxVelocityMPS / 0.75;
         double kMaxVelocityChargeStationMPS =      Units.inchesToMeters(48);
         double kMaxAccelerationChargeStationMPSS = kMaxVelocityChargeStationMPS / 1;
 
