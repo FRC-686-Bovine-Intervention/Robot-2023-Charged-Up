@@ -97,8 +97,9 @@ public class DriverInteractionLoop extends LoopBase {
         drive.setDriveCommand(generateDriveCommand());
 
         DriverAssistCommand assistCommand = new DriverAssistCommand();
-        if(DriverControlButtons.AutoDrive.getButton())
-            assistCommand.setDriverAssistState(DriverAssistState.AutoBalance);
+        if(DriverControlButtons.AutoDrive.getButton()) {
+            assistCommand.setDriverAssistState(intakeStatus.getIntakeState() == IntakeState.Grab ? DriverAssistState.AutoIntake : DriverAssistState.AutoBalance);
+        }
         driverAssist.setCommand(assistCommand);
 
         IntakeCommand intakeCommand = new IntakeCommand();

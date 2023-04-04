@@ -10,6 +10,7 @@ import frc.robot.auto.autoManager.AutoConfiguration.GamePiece;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveCommand;
 import frc.robot.subsystems.drive.DriveStatus;
+import frc.robot.subsystems.drive.DriveCommand.DriveControlMode;
 import frc.robot.subsystems.driverAssist.DriverAssistStatus.DriverAssistState;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.vision.Vision;
@@ -28,7 +29,7 @@ public class DriverAssistLoop extends LoopBase {
     private final Vision vision = Vision.getInstance();
     private final VisionStatus visionStatus = VisionStatus.getInstance();
 
-    private static final double kPowerAtMaxPitch = 0.25*0.65;
+    private static final double kPowerAtMaxPitch = 12;//0.25*0.65;
     private static final double kMaxPitch = 15;
 
     private DriverAssistLoop() {Subsystem = DriverAssist.getInstance();}
@@ -95,6 +96,7 @@ public class DriverAssistLoop extends LoopBase {
                 //         status.setUsingProportional(true);
                 // }
                 driveCommand.setWheelSpeed(new WheelSpeeds(output,output));
+                driveCommand.setDriveMode(DriveControlMode.VELOCITY_SETPOINT);
                 // if(estimatedPitch >= kForwardPitchThreshold)
                 //     driveCommand.setWheelSpeed(new WheelSpeeds(kForwardBalancePercent, kForwardBalancePercent));
                 // if(estimatedPitch <= kBackwardPitchThreshold)

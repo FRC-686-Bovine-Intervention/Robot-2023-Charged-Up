@@ -51,8 +51,8 @@ public class ArmHAL {
     private final static double kShoulderEncoderGearRatio                 = 72.0/16.0;
     private final static double kShoulderPotentiometerNTurns              = 5.0;    
     private final static double kShoulderAngleAtCalibration               = -90.0;      // calibrated 3/30 (straight down)
-    private final static double kShoulderPotNormalizedVoltageAtCalib      = 0.3778;
-    private final static double kShoulderAbsoluteEncoderAngleDegAtCalib   = 195.7;
+    private final static double kShoulderPotNormalizedVoltageAtCalib      = 0.341;//0.367;//0.369;//0.3778;
+    private final static double kShoulderAbsoluteEncoderAngleDegAtCalib   = 180.77;//183.56;//181.84;//195.7;
     private final static boolean kShoulderPotInverted                     = false;
     private final static boolean kShoulderEncInverted                     = false;
 
@@ -64,8 +64,8 @@ public class ArmHAL {
     private final static double kElbowEncoderGearRatio                    = 64.0/16.0;
     private final static double kElbowPotentiometerNTurns                 = 5.0;
     private final static double kElbowAngleAtCalibration                  = 0.0;       // calibrated 3/30 (straight out)
-    private final static double kElbowPotNormalizedVoltageAtCalib         = 0.4279;
-    private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 0.205;
+    private final static double kElbowPotNormalizedVoltageAtCalib         = 0.418;//0.418;//0.435;//0.4279;
+    private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 10.94;//11.69;//13.12;//0.205;
     private final static boolean kElbowPotInverted                        = true;
     private final static boolean kElbowEncInverted                        = true;
 
