@@ -16,12 +16,13 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.RobotConfiguration;
+import frc.robot.auto.autoManager.AutoManagerStatus;
 import frc.robot.lib.sensorCalibration.PotAndEncoder;
-import frc.robot.lib.util.AdvantageUtil;
 import frc.robot.subsystems.framework.StatusBase;
 import frc.robot.subsystems.odometry.OdometryStatus;
 
@@ -460,8 +461,16 @@ public class ArmStatus extends StatusBase {
     boolean oneShotShoulderCalibrationEnabled = true;
     boolean oneShotElbowCalibrationEnabled = true;
 
+    Timer turretSyncTimer = new Timer();
     @Override
     public void processOutputs(Logger logger, String prefix) {
+        if(turretSyncTimer != null) {
+            turretSyncTimer.start();
+            if(turretSyncTimer.hasElapsed(5)) {
+                HAL.syncTurretEncoders();
+                turretSyncTimer = null;
+            }
+        }
         // Generic
         // command.recordOutputs(logger, prefix + "Command");
         arm.setCommand(new ArmCommand());
@@ -504,7 +513,7 @@ public class ArmStatus extends StatusBase {
         logger.recordOutput(prefix + "Arm/Current Pose",            currentArmPose != null ? currentArmPose.name() : "null");
         currentPoseEntry.setString(currentArmPose != null ? currentArmPose.name() : "null");
         // logger.recordOutput(prefix + "Arm/Target Node",             targetNode != null ? targetNode.name() : "null");
-        // nodeEntry.setString(targetNode != null ? targetNode.name() : "null");
+        nodeEntry.setString(targetNode != null ? targetNode.name() : "null");
         // logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Shoulder",  shoulderThrottle);
         // logger.recordOutput(prefix + "Arm/Adjustments/Throttle/Elbow",  elbowThrottle);
         // logger.recordOutput(prefix + "Arm/Adjustments/Shoulder",           shoulderAdjustment);
@@ -527,7 +536,9 @@ public class ArmStatus extends StatusBase {
             HAL.enableShoulderSoftLimits(shoulderRadiansToSensorUnits(getShoulderMinAngleRad()), shoulderRadiansToSensorUnits(getShoulderMaxAngleRad()));
             oneShotShoulderCalibrationEnabled = false;
         }
-        HAL.setShoulderMotorPower(shoulderPower);
+        if(!AutoManagerStatus.getInstance().EnabledState.IsInitState) {
+            HAL.setShoulderMotorPower(shoulderPower);
+        }
         // shoulderPotEncStatus.recordOutputs(logger, prefix + "Arm/Shoulder/Encoder Status");
         logger.recordOutput(prefix + "Arm/Shoulder/Power",          shoulderPower);
         // logger.recordOutput(prefix + "Arm/Shoulder/Current",          getShoulderCurrent());
@@ -544,7 +555,9 @@ public class ArmStatus extends StatusBase {
             HAL.enableElbowSoftLimits(elbowRadiansToSensorUnits(getElbowMinAngleRad()), elbowRadiansToSensorUnits(getElbowMaxAngleRad()));
             oneShotElbowCalibrationEnabled = false;
         }        
-        HAL.setElbowMotorPower(elbowPower);
+        if(!AutoManagerStatus.getInstance().EnabledState.IsInitState) {
+            HAL.setElbowMotorPower(elbowPower);
+        }
         elbowPotEncStatus.recordOutputs(logger, prefix + "Arm/Elbow/Encoder Status");
         logger.recordOutput(prefix + "Arm/Elbow/Power",         elbowPower);
         // logger.recordOutput(prefix + "Arm/Elbow/Current",          getElbowCurrent());

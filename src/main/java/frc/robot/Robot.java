@@ -59,15 +59,13 @@ public class Robot extends LoggedRobot {
     subsystemController.register(Odometry.getInstance());
     subsystemController.start();
 
-    // gcTimer.start();
+    gcTimer.start();
   }
 
   final Timer gcTimer = new Timer();
   @Override
   public void robotPeriodic() {
     subsystemController.run();
-    if(gcTimer.advanceIfElapsed(1))
-      System.gc();
   }
   @Override
   public void autonomousInit() {
@@ -82,7 +80,10 @@ public class Robot extends LoggedRobot {
   @Override
   public void disabledInit() {}
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    if(gcTimer.advanceIfElapsed(1))
+      System.gc();
+  }
   @Override
   public void testInit() {}
   @Override

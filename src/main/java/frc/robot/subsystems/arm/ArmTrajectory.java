@@ -165,11 +165,11 @@ public class ArmTrajectory {
 
       boolean reversePath = false;
       double score_theta0, score_theta1;
-      if ((startPos.equals("defense")) && (finalPos.contains("cube") || finalPos.contains("cone"))) {
+      if ((startPos.equals("hold")) && (finalPos.contains("cube") || finalPos.contains("cone"))) {
         reversePath = false;
         score_theta0 = final_theta0;
         score_theta1 = final_theta1;
-      } else if ((finalPos.equals("defense")) && (startPos.contains("cube") || startPos.contains("cone"))) {
+      } else if ((finalPos.equals("hold")) && (startPos.contains("cube") || startPos.contains("cone"))) {
         reversePath = true;
         score_theta0 = start_theta0;
         score_theta1 = start_theta1;
@@ -195,6 +195,9 @@ public class ArmTrajectory {
           idx = k;
         }
       }
+      
+      // avoid negative indices
+      idx = Math.max(idx, 1);
 
       // calculate total distance to move final trajectory points
       double delta_theta0 = score_theta0 - newPoints.get(newPoints.size()-1).get(0,0);
@@ -227,7 +230,7 @@ public class ArmTrajectory {
         newPoints.add(idx-1+k, VecBuilder.fill(interp_theta0, interp_theta1));
       }
 
-      newTotalTime += npoints * Constants.loopPeriodSecs;
+      // newTotalTime += npoints * Constants.loopPeriodSecs;
 
     if (reversePath) {
         // undo the earlier reversal

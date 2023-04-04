@@ -27,24 +27,32 @@ public class AutoTrajectories {
     public static final Trajectory[][] PickupBackward;
     public static final Trajectory[][] ScoringForward;
 
+    public static final Trajectory[][] TwoPieceForward;
+    public static final Trajectory[][] TwoPieceBackward;
+
     // One Piece Balance
     public static final Trajectory[][] StationBackward;
 
     static {
-        double kMaxVelocityMPS =      Units.inchesToMeters(48);
+        double kMaxVelocityMPS =      Units.inchesToMeters(72);
         double kMaxAccelerationMPSS = kMaxVelocityMPS / 1;
+        double kMaxVelocityChargeStationMPS =      Units.inchesToMeters(48);
+        double kMaxAccelerationChargeStationMPSS = kMaxVelocityChargeStationMPS / 1;
 
         TrajectoryConfig forwardConfig = new TrajectoryConfig(kMaxVelocityMPS, kMaxAccelerationMPSS);
         TrajectoryConfig backwardConfig = new TrajectoryConfig(kMaxVelocityMPS, kMaxAccelerationMPSS);
         backwardConfig.setReversed(true);
+        TrajectoryConfig forwardChargeStationConfig = new TrajectoryConfig(kMaxVelocityChargeStationMPS, kMaxAccelerationChargeStationMPSS);
+        TrajectoryConfig backwardChargeStationConfig = new TrajectoryConfig(kMaxVelocityChargeStationMPS, kMaxAccelerationChargeStationMPSS);
+        backwardChargeStationConfig.setReversed(true);
 
         // Scoring Poses
-        double outsideScoringOffset = 6;
+        double outsideScoringOffset = FieldDimensions.Grids.nodeSeparationY / 2;
 
         Pose2d WallScoringPose = new Pose2d(
             new Translation2d(
                 FieldDimensions.Grids.outerX + Units.inchesToMeters(Constants.kCenterToFrontBumper),
-                FieldDimensions.Grids.nodeFirstY + FieldDimensions.Grids.nodeSeparationY * 1 - Units.inchesToMeters(outsideScoringOffset)
+                FieldDimensions.Grids.nodeFirstY + FieldDimensions.Grids.nodeSeparationY * 1 - outsideScoringOffset
             ),
             Rotation2d.fromDegrees(180)
         );
@@ -58,11 +66,23 @@ public class AutoTrajectories {
         Pose2d LoadingScoringPose = new Pose2d(
             new Translation2d(
                 FieldDimensions.Grids.outerX + Units.inchesToMeters(Constants.kCenterToFrontBumper),
-                FieldDimensions.Grids.nodeFirstY + FieldDimensions.Grids.nodeSeparationY * 7 + Units.inchesToMeters(outsideScoringOffset)
+                FieldDimensions.Grids.nodeFirstY + FieldDimensions.Grids.nodeSeparationY * 7 + outsideScoringOffset
             ),
             Rotation2d.fromDegrees(180)
         );
-        
+        Pose2d TwoPieceWallScoringPose = new Pose2d(
+            WallScoringPose.getTranslation(),
+            Rotation2d.fromDegrees(0)
+        );
+        Pose2d TwoPieceCenterScoringPose = new Pose2d(
+            CenterScoringPose.getTranslation(),
+            Rotation2d.fromDegrees(0)
+        );
+        Pose2d TwoPieceLoadScoringPose = new Pose2d(
+            LoadingScoringPose.getTranslation(),
+            Rotation2d.fromDegrees(0)
+        );
+
         // Backup Poses
         double onePointTurnRadius = 18;
         double onePointTurnCenterOffset = 18;
@@ -204,6 +224,40 @@ public class AutoTrajectories {
             Rotation2d.fromDegrees(0)
         );
 
+        ArrayList<Pose2d> TwoPieceWallForwardPath = new ArrayList<Pose2d>();
+        ArrayList<Pose2d> TwoPieceCenterWallForwardPath = new ArrayList<Pose2d>();
+        ArrayList<Pose2d> TwoPieceCenterLoadForwardPath = new ArrayList<Pose2d>();
+        ArrayList<Pose2d> TwoPieceLoadForwardPath = new ArrayList<Pose2d>();
+
+        TwoPieceWallForwardPath.add(TwoPieceWallScoringPose);
+        TwoPieceWallForwardPath.add(WallStagingOffsetPose);
+
+        TwoPieceCenterWallForwardPath.add(TwoPieceCenterScoringPose);
+        TwoPieceCenterWallForwardPath.add(CenterWallStagingOffsetPose);
+        
+        TwoPieceCenterLoadForwardPath.add(TwoPieceCenterScoringPose);
+        TwoPieceCenterLoadForwardPath.add(CenterLoadStagingOffsetPose);
+        
+        TwoPieceLoadForwardPath.add(TwoPieceLoadScoringPose);
+        TwoPieceLoadForwardPath.add(LoadingStagingOffsetPose);
+
+        ArrayList<Pose2d> TwoPieceWallBackwardPath = new ArrayList<Pose2d>();
+        ArrayList<Pose2d> TwoPieceCenterWallBackwardPath = new ArrayList<Pose2d>();
+        ArrayList<Pose2d> TwoPieceCenterLoadBackwardPath = new ArrayList<Pose2d>();
+        ArrayList<Pose2d> TwoPieceLoadBackwardPath = new ArrayList<Pose2d>();
+
+        TwoPieceWallBackwardPath.add(WallStagingPose);
+        TwoPieceWallBackwardPath.add(TwoPieceWallScoringPose);
+
+        TwoPieceCenterWallBackwardPath.add(CenterWallStagingPose);
+        TwoPieceCenterWallBackwardPath.add(TwoPieceCenterScoringPose);
+        
+        TwoPieceCenterLoadBackwardPath.add(CenterLoadStagingPose);
+        TwoPieceCenterLoadBackwardPath.add(TwoPieceCenterScoringPose);
+        
+        TwoPieceLoadBackwardPath.add(LoadingStagingPose);
+        TwoPieceLoadBackwardPath.add(TwoPieceLoadScoringPose);
+
         ArrayList<Pose2d> WallScoringBackwardPath = new ArrayList<Pose2d>();
         ArrayList<Pose2d> CenterWallScoringBackwardPath = new ArrayList<Pose2d>();
         ArrayList<Pose2d> CenterLoadScoringBackwardPath = new ArrayList<Pose2d>();
@@ -328,11 +382,21 @@ public class AutoTrajectories {
         LoadingStationBackwardPath.add(LoadingStagingPose);
         LoadingStationBackwardPath.add(ChargeStationBackupPose);
 
+        Trajectory BlueTwoPieceWallForward =        TrajectoryGenerator.generateTrajectory(TwoPieceWallForwardPath, forwardConfig);
+        Trajectory BlueTwoPieceCenterWallForward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterWallForwardPath, forwardChargeStationConfig);
+        Trajectory BlueTwoPieceCenterLoadForward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterLoadForwardPath, forwardChargeStationConfig);
+        Trajectory BlueTwoPieceLoadForward =        TrajectoryGenerator.generateTrajectory(TwoPieceLoadForwardPath, forwardConfig);
+
+        Trajectory BlueTwoPieceWallBackward =        TrajectoryGenerator.generateTrajectory(TwoPieceWallBackwardPath, backwardConfig);
+        Trajectory BlueTwoPieceCenterWallBackward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterWallBackwardPath, backwardChargeStationConfig);
+        Trajectory BlueTwoPieceCenterLoadBackward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterLoadBackwardPath, backwardChargeStationConfig);
+        Trajectory BlueTwoPieceLoadBackward =        TrajectoryGenerator.generateTrajectory(TwoPieceLoadBackwardPath, backwardConfig);
+
         // Generic
         
         Trajectory BlueWallScoringBackward =        TrajectoryGenerator.generateTrajectory(WallScoringBackwardPath, backwardConfig);
-        Trajectory BlueCenterWallScoringBackward =  TrajectoryGenerator.generateTrajectory(CenterWallScoringBackwardPath, backwardConfig);
-        Trajectory BlueCenterLoadScoringBackward =  TrajectoryGenerator.generateTrajectory(CenterLoadScoringBackwardPath, backwardConfig);
+        Trajectory BlueCenterWallScoringBackward =  TrajectoryGenerator.generateTrajectory(CenterWallScoringBackwardPath, backwardChargeStationConfig);
+        Trajectory BlueCenterLoadScoringBackward =  TrajectoryGenerator.generateTrajectory(CenterLoadScoringBackwardPath, backwardChargeStationConfig);
         Trajectory BlueLoadingScoringBackward =     TrajectoryGenerator.generateTrajectory(LoadingScoringBackwardPath, backwardConfig);
 
         Trajectory BlueWallPickupForward =          TrajectoryGenerator.generateTrajectory(WallPickupForwardPath, forwardConfig);
@@ -343,8 +407,8 @@ public class AutoTrajectories {
         // One Piece Skip
 
         Trajectory BlueWallSkipBackward =           TrajectoryGenerator.generateTrajectory(WallSkipBackwardPath, backwardConfig);
-        Trajectory BlueCenterWallSkipBackward =     TrajectoryGenerator.generateTrajectory(CenterWallSkipBackwardPath, backwardConfig);
-        Trajectory BlueCenterLoadSkipBackward =     TrajectoryGenerator.generateTrajectory(CenterLoadSkipBackwardPath, backwardConfig);
+        Trajectory BlueCenterWallSkipBackward =     TrajectoryGenerator.generateTrajectory(CenterWallSkipBackwardPath, backwardChargeStationConfig);
+        Trajectory BlueCenterLoadSkipBackward =     TrajectoryGenerator.generateTrajectory(CenterLoadSkipBackwardPath, backwardChargeStationConfig);
         Trajectory BlueLoadingSkipBackward =        TrajectoryGenerator.generateTrajectory(LoadingSkipBackwardPath, backwardConfig);
         
         // Two Piece
@@ -355,8 +419,8 @@ public class AutoTrajectories {
         Trajectory BlueLoadingPickupBackward =      TrajectoryGenerator.generateTrajectory(LoadingPickupBackwardPath, backwardConfig);
 
         Trajectory BlueWallScoringForward =         TrajectoryGenerator.generateTrajectory(WallScoringForwardPath, forwardConfig);
-        Trajectory BlueCenterWallScoringForward =   TrajectoryGenerator.generateTrajectory(CenterWallScoringForwardPath, forwardConfig);
-        Trajectory BlueCenterLoadScoringForward =   TrajectoryGenerator.generateTrajectory(CenterLoadScoringForwardPath, forwardConfig);
+        Trajectory BlueCenterWallScoringForward =   TrajectoryGenerator.generateTrajectory(CenterWallScoringForwardPath, forwardChargeStationConfig);
+        Trajectory BlueCenterLoadScoringForward =   TrajectoryGenerator.generateTrajectory(CenterLoadScoringForwardPath, forwardChargeStationConfig);
         Trajectory BlueLoadingScoringForward =      TrajectoryGenerator.generateTrajectory(LoadingScoringForwardPath, forwardConfig);
 
         // One Piece Balance
@@ -387,6 +451,43 @@ public class AutoTrajectories {
         CenterLoadStagingPose = AllianceFlipUtil.apply(CenterLoadStagingPose, Alliance.Red);
         LoadingStagingPose = AllianceFlipUtil.apply(LoadingStagingPose, Alliance.Red);
         ChargeStationBackupPose = AllianceFlipUtil.apply(ChargeStationBackupPose, Alliance.Red);
+        TwoPieceWallScoringPose = AllianceFlipUtil.apply(TwoPieceWallScoringPose, Alliance.Red);
+        TwoPieceCenterScoringPose = AllianceFlipUtil.apply(TwoPieceCenterScoringPose, Alliance.Red);
+        TwoPieceLoadScoringPose = AllianceFlipUtil.apply(TwoPieceLoadScoringPose, Alliance.Red);
+
+        TwoPieceWallForwardPath.clear();
+        TwoPieceCenterWallForwardPath.clear();
+        TwoPieceCenterLoadForwardPath.clear();
+        TwoPieceLoadForwardPath.clear();
+
+        TwoPieceWallForwardPath.add(TwoPieceWallScoringPose);
+        TwoPieceWallForwardPath.add(WallStagingOffsetPose);
+
+        TwoPieceCenterWallForwardPath.add(TwoPieceCenterScoringPose);
+        TwoPieceCenterWallForwardPath.add(CenterWallStagingOffsetPose);
+        
+        TwoPieceCenterLoadForwardPath.add(TwoPieceCenterScoringPose);
+        TwoPieceCenterLoadForwardPath.add(CenterLoadStagingOffsetPose);
+        
+        TwoPieceLoadForwardPath.add(TwoPieceLoadScoringPose);
+        TwoPieceLoadForwardPath.add(LoadingStagingOffsetPose);
+
+        TwoPieceWallBackwardPath.clear();
+        TwoPieceCenterWallBackwardPath.clear();
+        TwoPieceCenterLoadBackwardPath.clear();
+        TwoPieceLoadBackwardPath.clear();
+
+        TwoPieceWallBackwardPath.add(WallStagingPose);
+        TwoPieceWallBackwardPath.add(TwoPieceWallScoringPose);
+
+        TwoPieceCenterWallBackwardPath.add(CenterWallStagingPose);
+        TwoPieceCenterWallBackwardPath.add(TwoPieceCenterScoringPose);
+        
+        TwoPieceCenterLoadBackwardPath.add(CenterLoadStagingPose);
+        TwoPieceCenterLoadBackwardPath.add(TwoPieceCenterScoringPose);
+        
+        TwoPieceLoadBackwardPath.add(LoadingStagingPose);
+        TwoPieceLoadBackwardPath.add(TwoPieceLoadScoringPose);
 
         WallScoringBackwardPath.clear();
         CenterWallScoringBackwardPath.clear();
@@ -512,11 +613,21 @@ public class AutoTrajectories {
         LoadingStationBackwardPath.add(LoadingStagingPose);
         LoadingStationBackwardPath.add(ChargeStationBackupPose);
 
+        Trajectory RedTwoPieceWallForward =        TrajectoryGenerator.generateTrajectory(TwoPieceWallForwardPath, forwardConfig);
+        Trajectory RedTwoPieceCenterWallForward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterWallForwardPath, forwardChargeStationConfig);
+        Trajectory RedTwoPieceCenterLoadForward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterLoadForwardPath, forwardChargeStationConfig);
+        Trajectory RedTwoPieceLoadForward =        TrajectoryGenerator.generateTrajectory(TwoPieceLoadForwardPath, forwardConfig);
+
+        Trajectory RedTwoPieceWallBackward =        TrajectoryGenerator.generateTrajectory(TwoPieceWallBackwardPath, backwardConfig);
+        Trajectory RedTwoPieceCenterWallBackward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterWallBackwardPath, backwardChargeStationConfig);
+        Trajectory RedTwoPieceCenterLoadBackward =  TrajectoryGenerator.generateTrajectory(TwoPieceCenterLoadBackwardPath, backwardChargeStationConfig);
+        Trajectory RedTwoPieceLoadBackward =        TrajectoryGenerator.generateTrajectory(TwoPieceLoadBackwardPath, backwardConfig);
+
         // Generic
         
         Trajectory RedWallScoringBackward =       TrajectoryGenerator.generateTrajectory(WallScoringBackwardPath, backwardConfig);
-        Trajectory RedCenterWallScoringBackward = TrajectoryGenerator.generateTrajectory(CenterWallScoringBackwardPath, backwardConfig);
-        Trajectory RedCenterLoadScoringBackward = TrajectoryGenerator.generateTrajectory(CenterLoadScoringBackwardPath, backwardConfig);
+        Trajectory RedCenterWallScoringBackward = TrajectoryGenerator.generateTrajectory(CenterWallScoringBackwardPath, backwardChargeStationConfig);
+        Trajectory RedCenterLoadScoringBackward = TrajectoryGenerator.generateTrajectory(CenterLoadScoringBackwardPath, backwardChargeStationConfig);
         Trajectory RedLoadingScoringBackward =    TrajectoryGenerator.generateTrajectory(LoadingScoringBackwardPath, backwardConfig);
 
         Trajectory RedWallPickupForward =         TrajectoryGenerator.generateTrajectory(WallPickupForwardPath, forwardConfig);
@@ -527,8 +638,8 @@ public class AutoTrajectories {
         // One Piece Skip
 
         Trajectory RedWallSkipBackward =           TrajectoryGenerator.generateTrajectory(WallSkipBackwardPath, backwardConfig);
-        Trajectory RedCenterWallSkipBackward =     TrajectoryGenerator.generateTrajectory(CenterWallSkipBackwardPath, backwardConfig);
-        Trajectory RedCenterLoadSkipBackward =     TrajectoryGenerator.generateTrajectory(CenterLoadSkipBackwardPath, backwardConfig);
+        Trajectory RedCenterWallSkipBackward =     TrajectoryGenerator.generateTrajectory(CenterWallSkipBackwardPath, backwardChargeStationConfig);
+        Trajectory RedCenterLoadSkipBackward =     TrajectoryGenerator.generateTrajectory(CenterLoadSkipBackwardPath, backwardChargeStationConfig);
         Trajectory RedLoadingSkipBackward =        TrajectoryGenerator.generateTrajectory(LoadingSkipBackwardPath, backwardConfig);
 
         // Two Piece
@@ -539,8 +650,8 @@ public class AutoTrajectories {
         Trajectory RedLoadingPickupBackward =     TrajectoryGenerator.generateTrajectory(LoadingPickupBackwardPath, backwardConfig);
 
         Trajectory RedWallScoringForward =        TrajectoryGenerator.generateTrajectory(WallScoringForwardPath, forwardConfig);
-        Trajectory RedCenterWallScoringForward =  TrajectoryGenerator.generateTrajectory(CenterWallScoringForwardPath, forwardConfig);
-        Trajectory RedCenterLoadScoringForward =  TrajectoryGenerator.generateTrajectory(CenterLoadScoringForwardPath, forwardConfig);
+        Trajectory RedCenterWallScoringForward =  TrajectoryGenerator.generateTrajectory(CenterWallScoringForwardPath, forwardChargeStationConfig);
+        Trajectory RedCenterLoadScoringForward =  TrajectoryGenerator.generateTrajectory(CenterLoadScoringForwardPath, forwardChargeStationConfig);
         Trajectory RedLoadingScoringForward =     TrajectoryGenerator.generateTrajectory(LoadingScoringForwardPath, forwardConfig);
 
         // One Piece Balance
@@ -549,6 +660,38 @@ public class AutoTrajectories {
         Trajectory RedCenterWallStationBackward = TrajectoryGenerator.generateTrajectory(CenterWallStationBackwardPath, backwardConfig);
         Trajectory RedCenterLoadStationBackward = TrajectoryGenerator.generateTrajectory(CenterLoadStationBackwardPath, backwardConfig);
         Trajectory RedLoadingStationBackward =    TrajectoryGenerator.generateTrajectory(LoadingStationBackwardPath, backwardConfig);
+
+        TwoPieceForward = new Trajectory[2][4];
+        for(AutoConfiguration.StartPosition startPosition : AutoConfiguration.StartPosition.values()) {
+            for(Alliance alliance : Alliance.values()) {
+                if(alliance != Alliance.Invalid) {
+                    Trajectory traj = null;
+                    switch(startPosition) {
+                        case Wall:          traj = (alliance == Alliance.Red ? RedTwoPieceWallForward : BlueTwoPieceWallForward);               break;
+                        case CenterWall:    traj = (alliance == Alliance.Red ? RedTwoPieceCenterWallForward : BlueTwoPieceCenterWallForward);   break;
+                        case CenterLoad:    traj = (alliance == Alliance.Red ? RedTwoPieceCenterLoadForward : BlueTwoPieceCenterLoadForward);   break;
+                        case Loading:       traj = (alliance == Alliance.Red ? RedTwoPieceLoadForward : BlueTwoPieceLoadForward);         break;
+                    }
+                    TwoPieceForward[alliance.ordinal()][startPosition.ordinal()] = traj;
+                }
+            }
+        }
+
+        TwoPieceBackward = new Trajectory[2][4];
+        for(AutoConfiguration.StartPosition startPosition : AutoConfiguration.StartPosition.values()) {
+            for(Alliance alliance : Alliance.values()) {
+                if(alliance != Alliance.Invalid) {
+                    Trajectory traj = null;
+                    switch(startPosition) {
+                        case Wall:          traj = (alliance == Alliance.Red ? RedTwoPieceWallBackward : BlueTwoPieceWallBackward);               break;
+                        case CenterWall:    traj = (alliance == Alliance.Red ? RedTwoPieceCenterWallBackward : BlueTwoPieceCenterWallBackward);   break;
+                        case CenterLoad:    traj = (alliance == Alliance.Red ? RedTwoPieceCenterLoadBackward : BlueTwoPieceCenterLoadBackward);   break;
+                        case Loading:       traj = (alliance == Alliance.Red ? RedTwoPieceLoadBackward : BlueTwoPieceLoadBackward);         break;
+                    }
+                    TwoPieceBackward[alliance.ordinal()][startPosition.ordinal()] = traj;
+                }
+            }
+        }
 
         ScoringBackward = new Trajectory[2][4];
         for(AutoConfiguration.StartPosition startPosition : AutoConfiguration.StartPosition.values()) {

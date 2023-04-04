@@ -21,10 +21,11 @@ points = [theta1; theta2];
 
 % Make Trajectory ====================================
 
-spline_T = orig_T;
+spline_T = 0.625;
 points = make_spline_trajectory(startIdx, finalIdx, points, orig_points, spline_T);
 
 % write new spline trajectory
+s.totalTime = 0.625;
 s.grannyFactor = 1.25;
 s.theta1 = points(1,:);
 s.theta2 = points(2,:);

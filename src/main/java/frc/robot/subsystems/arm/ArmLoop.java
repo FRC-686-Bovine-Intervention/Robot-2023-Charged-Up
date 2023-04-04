@@ -45,6 +45,8 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeCommand;
 import frc.robot.subsystems.intake.IntakeStatus;
 import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
+import frc.robot.subsystems.odometry.Odometry;
+import frc.robot.subsystems.odometry.OdometryCommand;
 import frc.robot.subsystems.odometry.OdometryStatus;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionCommand;
@@ -60,6 +62,7 @@ public class ArmLoop extends LoopBase {
     private final ArmStatus status = ArmStatus.getInstance();
     private final Intake intake = Intake.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
+    private final Odometry odometry = Odometry.getInstance();
     private final OdometryStatus odometryStatus = OdometryStatus.getInstance();
     private final Vision vision = Vision.getInstance();
     private final VisionStatus visionStatus = VisionStatus.getInstance();
@@ -76,6 +79,7 @@ public class ArmLoop extends LoopBase {
         );
     private static final double kTurretPIDMaxError = 10;
     private static final double kTurretExtendMaxError = 3;
+    private static final double kLimelightAngleFactor = 1.38;
 
     private static final double kDistalZeroPower =      0.15;
     private static final double kProximalZeroPower =    0.1;
@@ -105,7 +109,7 @@ public class ArmLoop extends LoopBase {
 
     private final PIDController shoulderPID = 
         new PIDController(
-            20.0, 
+            10.0, 
             0.0, 
             0.0, 
             Constants.loopPeriodSecs
@@ -476,6 +480,7 @@ public class ArmLoop extends LoopBase {
             case AlignWall:
                 status.setTargetArmPose(ArmPose.Preset.HOLD);
                 pipeline = LimelightPipeline.Pole;
+                odometry.setCommand(new OdometryCommand().setIngoreVision(false));
                 
                 // unwrap turret angle because odometry wraps it to +/-180
                 
@@ -505,13 +510,14 @@ public class ArmLoop extends LoopBase {
 
             case AlignNode:
                 pipeline = LimelightPipeline.Pole;
-                status.setTargetTurretAngleDeg(getTurretBestAngle(getClosestNodeXY(status.getTargetNode(), status.getTurretToField().getTranslation().toTranslation2d()).get()))
+                odometry.setCommand(new OdometryCommand().setIngoreVision(false));
+                status.setTargetTurretAngleDeg(getTurretBestAngle(getClosestNodeXY(status.getTargetNode(), status.getTurretToField().getTranslation().toTranslation2d())))
                       .setTurretControlMode(MotorControlMode.PID);
                 if(status.getTargetNode().isCone && visionStatus.getCurrentPipeline() == pipeline && visionStatus.getTargetExists()) {
-                    status.setTargetTurretAngleDeg(status.getTurretAngleDeg() + visionStatus.getTargetYAngle())
+                    status.setTargetTurretAngleDeg(status.getTurretAngleDeg() + visionStatus.getTargetYAngle() / kLimelightAngleFactor)
                           .setArmState(ArmState.Extend);
                 }
-                if(!status.getTargetNode().isCone || Math.abs(status.getTargetTurretAngleDeg() - status.getTurretAngleDeg()) < kTurretExtendMaxError) {
+                if(Math.abs(status.getTargetTurretAngleDeg() - status.getTurretAngleDeg()) < kTurretExtendMaxError) {
                     status.setArmState(ArmState.Extend);
                 }
             break;
@@ -630,8 +636,8 @@ public class ArmLoop extends LoopBase {
                     finalElbowAngleRad = theta.get().get(1,0);
                 } else {
                     // if the arm can't reach the target node, reach out as far as we can
-                    finalShoulderAngleRad = -0.1;   // should reach to 60" extension, 53" above floor
-                    finalElbowAngleRad = 0.28;      // hardcoding to make sure we always get a result
+                    finalShoulderAngleRad = -0.3;//-0.1;   // should reach to 60" extension, 53" above floor
+                    finalElbowAngleRad = 0.3;//0.28;      // hardcoding to make sure we always get a result
                 }
             }
             // set outputs
@@ -658,8 +664,8 @@ public class ArmLoop extends LoopBase {
         // check if current trajectory is finished
         if (status.getCurrentArmTrajectory() != null && trajectoryTimer.hasElapsed(status.getCurrentArmTrajectory().getTotalTime()))
         {
-            status.setCurrentArmTrajectory(null)
-                  .setCurrentArmPose(status.getTargetArmPose())
+            status.setCurrentArmPose(ArmPose.Preset.valueOf(status.getCurrentArmTrajectory().getFinalString().toUpperCase()))
+                  .setCurrentArmTrajectory(null)
                   .setShoulderAdjustment(0)
                   .setElbowAdjustment(0);
         }
@@ -874,6 +880,10 @@ public class ArmLoop extends LoopBase {
         internalDisableTimer.reset();
     }
 
+    private double getTurretBestAngle(Optional<Translation2d> target) {
+        if(target.isEmpty()) return 0;
+        return getTurretBestAngle(target.get());
+    }
     private double getTurretBestAngle(Translation2d target) {
         Translation2d pointRel = new Pose2d(target, new Rotation2d()).relativeTo(odometryStatus.getRobotPose().transformBy(new Transform2d(ArmStatus.robotToTurretTranslation.toTranslation2d(), new Rotation2d()))).getTranslation();
         double raw = Units.radiansToDegrees(Math.atan2(pointRel.getY(), pointRel.getX()));

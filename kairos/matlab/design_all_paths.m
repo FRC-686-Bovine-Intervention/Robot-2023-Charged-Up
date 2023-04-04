@@ -6,6 +6,6 @@ design_path_9_3
 design_path_3_9
 
 generate_elbow_up_trajectories
-concatenate_elbow_up_trajectories
+% concatenate_elbow_up_trajectories
 
 plot_all_paths
