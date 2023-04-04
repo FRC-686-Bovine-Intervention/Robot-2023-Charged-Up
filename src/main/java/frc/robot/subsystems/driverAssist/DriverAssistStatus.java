@@ -34,6 +34,10 @@ public class DriverAssistStatus extends StatusBase {
     public      GamePiece           getTargetPiece()                        {return targetPiece;}
     protected   DriverAssistStatus  setTargetPiece(GamePiece targetPiece)   {this.targetPiece = targetPiece; return this;}
 
+    private boolean                 targetBelowCamera;
+    public boolean                  getTargetBelowCamera()                          {return targetBelowCamera;}
+    protected DriverAssistStatus    setTargetBelowCamera(boolean targetBelowCamera) {this.targetBelowCamera = targetBelowCamera; return this;}
+
     private Trajectory trajectory = new Trajectory();
     public Trajectory getTrajectory()                               {return trajectory;}
     public DriverAssistStatus setTrajectory(Trajectory trajectory)  {this.trajectory = trajectory; return this;}

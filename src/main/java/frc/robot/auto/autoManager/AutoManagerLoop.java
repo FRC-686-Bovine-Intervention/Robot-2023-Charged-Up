@@ -24,7 +24,7 @@ public class AutoManagerLoop extends LoopBase {
             ArmTrajectory.setGlobalGrannyFactor(1.5); // teleop
             return;
         }
-        ArmTrajectory.setGlobalGrannyFactor(1.5);  // auto
+        ArmTrajectory.setGlobalGrannyFactor(1);  // auto
         if(status.EnabledState.IsInitState) {
             status.setCurrentAutoMode(status.getNewAutomode())
                   .setAutoRunning(true)

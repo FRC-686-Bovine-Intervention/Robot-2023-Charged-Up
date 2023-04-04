@@ -67,15 +67,18 @@ public class ArmLoop extends LoopBase {
     private final Vision vision = Vision.getInstance();
     private final VisionStatus visionStatus = VisionStatus.getInstance();
 
-    private static final double kTurretMaxAngularVelocity = 180;
-    private static final double kTurretMaxAngularAcceleration = kTurretMaxAngularVelocity * 2;
-    private final TrapezoidProfile.Constraints turretPIDConstraints = new TrapezoidProfile.Constraints(kTurretMaxAngularVelocity, kTurretMaxAngularAcceleration);
+    private static final double kTurretTeleopMaxAngularVelocity = 180;
+    private static final double kTurretTeleopMaxAngularAcceleration = kTurretTeleopMaxAngularVelocity / 0.25;
+    private static final double kTurretAutoMaxAngularVelocity = 180 + 45;
+    private static final double kTurretAutoMaxAngularAcceleration = kTurretAutoMaxAngularVelocity / 0.25;
+    private final TrapezoidProfile.Constraints turretTeleopPIDConstraints = new TrapezoidProfile.Constraints(kTurretTeleopMaxAngularVelocity, kTurretTeleopMaxAngularAcceleration);
+    private final TrapezoidProfile.Constraints turretAutoPIDConstraints = new TrapezoidProfile.Constraints(kTurretAutoMaxAngularVelocity, kTurretAutoMaxAngularAcceleration);
     private final ProfiledPIDController turretPID = 
         new ProfiledPIDController(
             0.015, 
             0, 
             0, 
-            turretPIDConstraints
+            turretTeleopPIDConstraints
         );
     private static final double kTurretPIDMaxError = 10;
     private static final double kTurretExtendMaxError = 3;
@@ -249,24 +252,14 @@ public class ArmLoop extends LoopBase {
 
     double clawGrabTimestamp;
 
-    ShuffleboardTab tab = Shuffleboard.getTab("Turret PID");
-    GenericEntry kpEntry = tab.add("kP", turretPID.getP()).withWidget(BuiltInWidgets.kTextView).getEntry();
-    GenericEntry kiEntry = tab.add("kI", turretPID.getI()).withWidget(BuiltInWidgets.kTextView).getEntry();
-    GenericEntry kdEntry = tab.add("kD", turretPID.getD()).withWidget(BuiltInWidgets.kTextView).getEntry();
-    GenericEntry setEntry = tab.add("Set PID", false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
     @Override
     protected void Update() {
         checkArmCalibration();
 
         status.setTurretPIDPosition(turretPID.getSetpoint().position);
         status.setTurretPIDVelocity(turretPID.getSetpoint().velocity);
-
-        if(setEntry.getBoolean(false)) {
-            turretPID.setPID(kpEntry.getDouble(turretPID.getP()), 
-                             kiEntry.getDouble(turretPID.getI()), 
-                             kdEntry.getDouble(turretPID.getD()));
-            setEntry.setBoolean(false);
-        }
+        
+        turretPID.setConstraints(DriverStation.isAutonomous() ? turretAutoPIDConstraints : turretTeleopPIDConstraints);
     }
     
     // call this every update cycle
@@ -480,7 +473,9 @@ public class ArmLoop extends LoopBase {
             case AlignWall:
                 status.setTargetArmPose(ArmPose.Preset.HOLD);
                 pipeline = LimelightPipeline.Pole;
-                odometry.setCommand(new OdometryCommand().setIngoreVision(false));
+                if(!DriverStation.isAutonomous()) {
+                    odometry.setCommand(new OdometryCommand().setIngoreVision(false));
+                }
                 
                 // unwrap turret angle because odometry wraps it to +/-180
                 
@@ -510,7 +505,9 @@ public class ArmLoop extends LoopBase {
 
             case AlignNode:
                 pipeline = LimelightPipeline.Pole;
-                odometry.setCommand(new OdometryCommand().setIngoreVision(false));
+                if(!DriverStation.isAutonomous()) {
+                    odometry.setCommand(new OdometryCommand().setIngoreVision(false));
+                }
                 status.setTargetTurretAngleDeg(getTurretBestAngle(getClosestNodeXY(status.getTargetNode(), status.getTurretToField().getTranslation().toTranslation2d())))
                       .setTurretControlMode(MotorControlMode.PID);
                 if(status.getTargetNode().isCone && visionStatus.getCurrentPipeline() == pipeline && visionStatus.getTargetExists()) {
