@@ -3,8 +3,10 @@ plugins {
     id "edu.wpi.first.GradleRIO" version "2023.4.3"
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+wpi.jreArtifactLocation = 'edu.wpi.first.jdk:roborio-2021:11.0.9u11-1'
 
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
@@ -20,11 +22,13 @@ deploy {
             team = project.frc.getTeamNumber()
             debug = project.frc.getDebugOrDefault(false)
 
+
             artifacts {
                 // First part is artifact name, 2nd is artifact type
                 // getTargetTypeClass is a shortcut to get the class type using a string
 
                 frcJava(getArtifactTypeClass('FRCJavaArtifact')) {
+                    gcType = 'CMS'                      
                 }
 
                 // Static files artifact
@@ -35,6 +39,7 @@ deploy {
             }
         }
     }
+  
 }
 
 def deployArtifact = deploy.targets.roborio.artifacts.frcJava

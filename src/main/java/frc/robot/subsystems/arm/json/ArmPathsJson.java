@@ -4,18 +4,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 
-public record ArmPathsJson(
-  String startPos,
-  String finalPos,
-  double totalTime,                 // total path time
-  double grannyFactor,              // per-path total time multiplier
-  List<Double> theta1,      // angle of shoulder in radians
-  List<Double> theta2)      // angle of elbow in radians
-  {     
+public class ArmPathsJson {
+  String startPos;
+  String finalPos;
+  double totalTime;                 // total path time
+  double grannyFactor;              // per-path total time multiplier
+  List<Double> theta1;      // angle of shoulder in radians
+  List<Double> theta2;      // angle of elbow in radians
   
   public static final String jsonFilename = "paths/arm_path_%d_%d.json";
 
@@ -46,21 +45,25 @@ public record ArmPathsJson(
 /** Generates a config instance by reading from a JSON file. */
   public static ArmPathsJson loadJson(File source) {
        // Set up object mapper
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    SimpleModule module = new SimpleModule();
-    mapper.registerModule(module);
+    ObjectMapper objectMapper = new ObjectMapper();
+    ArmPathsJson path = new ArmPathsJson();
 
-    // Read config data
-    ArmPathsJson paths;
     try {
-        paths = mapper.readValue(source, ArmPathsJson.class);
+      JsonNode rootNode = objectMapper.readTree(source);
+
+      path.startPos = rootNode.get("startPos").asText();
+      path.finalPos = rootNode.get("finalPos").asText();
+      path.totalTime = rootNode.get("totalTime").asDouble();
+      path.grannyFactor = rootNode.get("grannyFactor").asDouble();
+      path.theta1 = objectMapper.convertValue(rootNode.get("theta1"), new TypeReference<List<Double>>() {});
+      path.theta2 = objectMapper.convertValue(rootNode.get("theta2"), new TypeReference<List<Double>>() {});      
+
     } catch (IOException e) {
       throw new RuntimeException("Failed to parse " + source.getName());
     }
-
+    
     // Return result
-    return paths;
+    return path;
   }
 
 }

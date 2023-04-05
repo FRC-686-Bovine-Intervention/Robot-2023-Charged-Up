@@ -4,12 +4,22 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.subsystems.arm.json.ArmPresetsJson;
 
 /** Represents a target position for the arm. */
-public record ArmPose(
-  Translation2d endEffectorPosition,
-  double shoulderAngleRad,
-  double elbowAngleRad) {
+public class ArmPose {
+  Translation2d endEffectorPosition;
+  double shoulderAngleRad;
+  double elbowAngleRad;
+  
 
+  
   // Preset arm position are read from arm_preset_poses.json
+
+  public ArmPose(Translation2d endEffectorPosition, double shoulderAngleRad, double elbowAngleRad) {
+    this.endEffectorPosition = endEffectorPosition;
+    this.shoulderAngleRad = shoulderAngleRad;
+    this.elbowAngleRad = elbowAngleRad;
+  }
+
+
 
   public enum Preset {
     DEFENSE(0, null),

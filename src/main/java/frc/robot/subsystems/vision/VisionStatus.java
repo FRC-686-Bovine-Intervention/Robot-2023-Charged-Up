@@ -158,7 +158,19 @@ public class VisionStatus extends StatusBase {
     protected VisionStatus   setCubeExists(Boolean cubeExists)          {this.cubeExists = cubeExists; return this;}
 
     // AprilTags
-    public record VisionData(AprilTag aprilTag, Transform3d camToTarget, Transform3d robotToCam, double timestamp) {
+    public static class VisionData {
+        AprilTag aprilTag;
+        Transform3d camToTarget;
+        Transform3d robotToCam;
+        double timestamp;
+     
+        public VisionData(AprilTag aprilTag, Transform3d camToTarget, Transform3d robotToCam, double timestamp) {
+            this.aprilTag = aprilTag;
+            this.camToTarget = camToTarget;
+            this.robotToCam = robotToCam;
+            this.timestamp = timestamp;
+        }
+
         private static final Translation3d camOrigin = new Translation3d();
         private static final double kMaxDistToTarget = FieldDimensions.Community.chargingStationOuterX;
         
