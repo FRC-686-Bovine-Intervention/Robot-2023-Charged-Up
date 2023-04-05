@@ -320,6 +320,7 @@ public class ArmLoop extends LoopBase {
               .setElbowPower(0);
 
         LimelightPipeline pipeline = LimelightPipeline.Cone;
+        Boolean ignoreVision = null;
         // ================= Trajectory Logic =================
 
         runTrajectory();
@@ -474,7 +475,7 @@ public class ArmLoop extends LoopBase {
                 status.setTargetArmPose(ArmPose.Preset.HOLD);
                 pipeline = LimelightPipeline.Pole;
                 if(!DriverStation.isAutonomous()) {
-                    odometry.setCommand(new OdometryCommand().setIngoreVision(false));
+                    ignoreVision = false;
                 }
                 
                 // unwrap turret angle because odometry wraps it to +/-180
@@ -506,7 +507,7 @@ public class ArmLoop extends LoopBase {
             case AlignNode:
                 pipeline = LimelightPipeline.Pole;
                 if(!DriverStation.isAutonomous()) {
-                    odometry.setCommand(new OdometryCommand().setIngoreVision(false));
+                    ignoreVision = false;
                 }
                 status.setTargetTurretAngleDeg(getTurretBestAngle(getClosestNodeXY(status.getTargetNode(), status.getTurretToField().getTranslation().toTranslation2d())))
                       .setTurretControlMode(MotorControlMode.PID);
@@ -528,6 +529,7 @@ public class ArmLoop extends LoopBase {
             break;
 
             case Adjust:
+                ignoreVision = true;
                 if(stateTimer.get() == 0)
                     status.setElbowRaised(false);
                 // Rotate turret according to limelight and driver controls
@@ -560,7 +562,7 @@ public class ArmLoop extends LoopBase {
             break;
         }
 
-        vision.setVisionCommand(new VisionCommand(pipeline));
+        vision.setVisionCommand(new VisionCommand(pipeline).setIngoreVision(ignoreVision));
 
         runTurret();
 

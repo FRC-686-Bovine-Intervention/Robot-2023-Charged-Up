@@ -94,6 +94,10 @@ public class VisionStatus extends StatusBase {
     protected VisionCommand getCommand()                        {return command;}
     private VisionStatus    setCommand(VisionCommand command)   {this.command = command; return this;}
 
+    private boolean         ignoreVision = true;
+    public boolean          getIngoreVision()                       {return ignoreVision;}
+    public VisionStatus     setIngoreVision(boolean ignoreVision)   {this.ignoreVision = ignoreVision; return this;}
+
     // Limelight
     private LimelightPipeline   currentPipeline = null;
     public LimelightPipeline    getCurrentPipeline()                                    {return currentPipeline;}
@@ -247,28 +251,32 @@ public class VisionStatus extends StatusBase {
     public PhotonHalHelper[]        getAprilTagCameras()        {return aprilTagCameras;}
     public PhotonHalHelper          getAprilTagCamera(int i)    {return aprilTagCameras[i];}
 
-    private ShuffleboardTab tab = Shuffleboard.getTab("Vision");
-    private GenericEntry yawEntry = tab.add("Camera Yaw", -686).withWidget(BuiltInWidgets.kTextView).getEntry();
-    private GenericEntry widthEntry = tab.add("Camera Width", -686).withWidget(BuiltInWidgets.kTextView).getEntry();
-    private GenericEntry setLeftEntry = tab.add("Set Left Camera", false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
-    private GenericEntry setRightEntry = tab.add("Set Right Camera", false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    // private ShuffleboardTab tab = Shuffleboard.getTab("Vision");
+    // private GenericEntry yawEntry = tab.add("Camera Yaw", -686).withWidget(BuiltInWidgets.kTextView).getEntry();
+    // private GenericEntry widthEntry = tab.add("Camera Width", -686).withWidget(BuiltInWidgets.kTextView).getEntry();
+    // private GenericEntry setLeftEntry = tab.add("Set Left Camera", false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
+    // private GenericEntry setRightEntry = tab.add("Set Right Camera", false).withWidget(BuiltInWidgets.kToggleButton).getEntry();
 
     @Override
     protected void updateInputs() {
         setCommand(vision.getVisionCommand());
+        if(getCommand().getIngoreVision() != null)
+            setIngoreVision(getCommand().getIngoreVision());
 
-        if(setLeftEntry.getBoolean(false)) {
-            turretToCameras[1] = new Transform3d(new Translation3d(turretToCameras[1].getX(), Units.inchesToMeters(widthEntry.getDouble(0)),turretToCameras[1].getZ()), new Rotation3d(0,0,-Units.degreesToRadians(yawEntry.getDouble(0))));
-            setLeftEntry.setBoolean(false);
-        }
-        if(setRightEntry.getBoolean(false)) {
-            turretToCameras[0] = new Transform3d(new Translation3d(turretToCameras[0].getX(), -Units.inchesToMeters(widthEntry.getDouble(0)),turretToCameras[0].getZ()), new Rotation3d(0,0,Units.degreesToRadians(yawEntry.getDouble(0))));
-            setRightEntry.setBoolean(false);
-        }
+        // if(setLeftEntry.getBoolean(false)) {
+        //     turretToCameras[1] = new Transform3d(new Translation3d(turretToCameras[1].getX(), Units.inchesToMeters(widthEntry.getDouble(0)),turretToCameras[1].getZ()), new Rotation3d(0,0,-Units.degreesToRadians(yawEntry.getDouble(0))));
+        //     setLeftEntry.setBoolean(false);
+        // }
+        // if(setRightEntry.getBoolean(false)) {
+        //     turretToCameras[0] = new Transform3d(new Translation3d(turretToCameras[0].getX(), -Units.inchesToMeters(widthEntry.getDouble(0)),turretToCameras[0].getZ()), new Rotation3d(0,0,Units.degreesToRadians(yawEntry.getDouble(0))));
+        //     setRightEntry.setBoolean(false);
+        // }
 
-        for(int i = 0; i < aprilTagCameras.length; i++) {
-            aprilTagCameras[i].setCameraTransform(armStatus.getRobotToTurret().plus(turretToCameras[i]))
-                              .updateInputs();
+        if(!getIngoreVision()) {
+            for(int i = 0; i < aprilTagCameras.length; i++) {
+                aprilTagCameras[i].setCameraTransform(armStatus.getRobotToTurret().plus(turretToCameras[i]))
+                                  .updateInputs();
+            }
         }
         // for (int i = 0; i < camResults.length; i++) {
         //     camResults[i] = HAL.getCameraResults()[i];
@@ -283,8 +291,10 @@ public class VisionStatus extends StatusBase {
 
     @Override
     protected void exportToTable(LogTable table) {
-        for(PhotonHalHelper cam : aprilTagCameras) {
-            cam.exportToTable(table);
+        if(!getIngoreVision()) {
+            for(PhotonHalHelper cam : aprilTagCameras) {
+                cam.exportToTable(table);
+            }
         }
 
         table.put("Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null");
@@ -297,10 +307,11 @@ public class VisionStatus extends StatusBase {
 
     @Override
     protected void importFromTable(LogTable table) {
-        for(PhotonHalHelper cam : aprilTagCameras) {
-            cam.importFromTable(table);
+        if(!getIngoreVision()) {
+            for(PhotonHalHelper cam : aprilTagCameras) {
+                cam.importFromTable(table);
+            }
         }
-
         setCurrentPipeline(LimelightPipeline.getFromName(table.getString("Limelight/Current Pipeline", currentPipeline != null ? currentPipeline.name() : "null")));
         setTargetXAngle(table.getDouble("Limelight/Target X Angle (Deg)", targetXAngle));
         setTargetYAngle(table.getDouble("Limelight/Target Y Angle (Deg)", targetYAngle));
@@ -310,8 +321,10 @@ public class VisionStatus extends StatusBase {
 
     @Override
     protected void processTable() {
-        for(PhotonHalHelper cam : aprilTagCameras) {
-            cam.processTable();
+        if(!getIngoreVision()) {
+            for(PhotonHalHelper cam : aprilTagCameras) {
+                cam.processTable();
+            }
         }
     }
 

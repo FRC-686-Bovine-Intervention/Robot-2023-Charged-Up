@@ -38,9 +38,6 @@ public class OdometryLoop extends LoopBase {
     public void Update() {
         OdometryCommand newCommand = status.getCommand();
 
-        if(newCommand.getIngoreVision() != null)
-            status.setIgnoreVision(newCommand.getIngoreVision());
-
         Pose2d poseEstimate = 
             poseEstimator.update(
                 driveStatus.getRotation(), 
@@ -60,11 +57,9 @@ public class OdometryLoop extends LoopBase {
         //         poseEstimator.addVisionMeasurement(data.estimatedPose.toPose2d(), data.timestampSeconds);
         // }
         
-        if(!status.getIgnoreVision()) {
-            for(EstimatedRobotPose data : visionStatus.getVisionData()) {
-                if(data.targetsUsed.size() > 1 || (data.targetsUsed.size() == 1 && data.targetsUsed.get(0).getBestCameraToTarget().getTranslation().getDistance(camOrigin) <= kMaxTrustedCamDistance))
-                    poseEstimator.addVisionMeasurement(data.estimatedPose.toPose2d(), data.timestampSeconds/* , data.getStdDevs() */);
-            }
+        for(EstimatedRobotPose data : visionStatus.getVisionData()) {
+            if(data.targetsUsed.size() > 1 || (data.targetsUsed.size() == 1 && data.targetsUsed.get(0).getBestCameraToTarget().getTranslation().getDistance(camOrigin) <= kMaxTrustedCamDistance))
+                poseEstimator.addVisionMeasurement(data.estimatedPose.toPose2d(), data.timestampSeconds/* , data.getStdDevs() */);
         }
 
         if(newCommand.getResetPose() != null) {

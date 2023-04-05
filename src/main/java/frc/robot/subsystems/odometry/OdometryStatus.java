@@ -26,10 +26,6 @@ public class OdometryStatus extends StatusBase {
     public Pose2d           getRobotPose()                  {return robotPose;}
     public OdometryStatus   setRobotPose(Pose2d robotPose)  {this.robotPose = robotPose; return this;}
 
-    private boolean         ignoreVision;
-    public boolean          getIgnoreVision()                       {return ignoreVision;}
-    public OdometryStatus   setIgnoreVision(boolean ignoreVision)   {this.ignoreVision = ignoreVision; return this;}
-
     //TODO:change to meters per sec
     private WheelSpeeds     robotSpeed = new WheelSpeeds();
     public WheelSpeeds      getRobotSpeedInPerSec()                         {return robotSpeed;}
@@ -44,7 +40,6 @@ public class OdometryStatus extends StatusBase {
     @Override
     protected void processOutputs(Logger logger, String prefix) {
         logger.recordOutput(prefix + "Robot Pose (Meters, Rad)", AdvantageUtil.deconstruct(getRobotPose()));
-        logger.recordOutput(prefix + "Is Ignoring Vision", getIgnoreVision());
         // logger.recordOutput(prefix + "Robot Speed (M|Sec)/Left", getRobotSpeedMeterPerSec().left);
         // logger.recordOutput(prefix + "Robot Speed (M|Sec)/Right", getRobotSpeedMeterPerSec().right);
 

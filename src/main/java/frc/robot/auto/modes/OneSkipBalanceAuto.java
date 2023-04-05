@@ -38,8 +38,8 @@ public class OneSkipBalanceAuto extends AutoMode {
         addAction(new ArmCommandAction(new ArmCommand(ArmState.Release)));
         addAction(new WaitUntilAction(() -> armStatus.getClawGrabbing() == false));
         addAction(new RamseteFollowerAction(trajectory, ramseteController));
-        addAction(new DriveOnChargeStationEdgeAction(true).setTimeout(3));
-        addAction(new DrivePercentAction(12, -0.3));
+        // addAction(new DriveOnChargeStationEdgeAction(true).setTimeout(3));
+        addAction(new DrivePercentAction(39+12, -0.3));
         addAction(new DriverAssistCommandAction(new DriverAssistCommand(DriverAssistState.AutoBalance)));
     }
 }
