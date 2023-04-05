@@ -1,7 +1,7 @@
 package frc.robot.auto.actions;
 
-import frc.robot.subsystems.odometry.Odometry;
-import frc.robot.subsystems.odometry.OdometryCommand;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionCommand;
 
 public class IgnoreVisionAction extends Action {
     private final boolean ignoreVision;
@@ -12,7 +12,7 @@ public class IgnoreVisionAction extends Action {
 
     @Override
     protected void start() {
-        Odometry.getInstance().setCommand(new OdometryCommand().setIngoreVision(ignoreVision));
+        Vision.getInstance().setVisionCommand(new VisionCommand().setIngoreVision(ignoreVision));
         setFinished(true);
     }
 

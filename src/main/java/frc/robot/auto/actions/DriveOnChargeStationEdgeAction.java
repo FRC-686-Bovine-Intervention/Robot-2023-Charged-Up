@@ -1,5 +1,8 @@
 package frc.robot.auto.actions;
 
+import org.littletonrobotics.junction.Logger;
+
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveCommand;
 import frc.robot.subsystems.drive.DriveStatus;
@@ -17,21 +20,27 @@ public class DriveOnChargeStationEdgeAction extends Action {
     }
 
     private double prevPitch;
+    private double prevTimestamp;
 
     @Override
-    protected void start() {}
+    protected void start() {
+        prevPitch = driveStatus.getPitchDeg();
+        prevTimestamp = Timer.getFPGATimestamp();
+    }
 
     @Override
     protected void run() {
         drive.setDriveCommand(new DriveCommand(kDrivePercentOutput * (reversed ? -1 : 1), kDrivePercentOutput * (reversed ? -1 : 1)));
-        if(getPitchVelo() * (reversed ? -1 : 1) <= -0.2) {
+        if(getPitchVelo() * (reversed ? -1 : 1) <= -1) {
             setFinished(true);
         }
+        Logger.getInstance().recordOutput("DEBUG/pitch velo", getPitchVelo());
         prevPitch = driveStatus.getPitchDeg();
+        prevTimestamp = Timer.getFPGATimestamp();
     }
 
     private double getPitchVelo() {
-        return driveStatus.getPitchDeg() - prevPitch;
+        return (driveStatus.getPitchDeg() - prevPitch) / (Timer.getFPGATimestamp() - prevTimestamp);
     }
 
     @Override
