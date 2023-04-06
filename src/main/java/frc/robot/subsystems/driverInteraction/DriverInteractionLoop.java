@@ -118,17 +118,23 @@ public class DriverInteractionLoop extends LoopBase {
             break;
 
             case Hold:
-                if(armStatus.EnabledState.IsEnabled)
-                    break;
-                if(DriverControlButtons.MainAction.getRisingEdge())
-                    intakeCommand.setIntakeState(IntakeState.Release);
+                if(armStatus.EnabledState.IsEnabled) {
+                    if(DriverControlButtons.MainAction.getButton() && DriverControlButtons.Undo.getRisingEdge())
+                        intakeCommand.setIntakeState(IntakeState.Release);
+                } else {
+                    if(DriverControlButtons.MainAction.getRisingEdge())
+                        intakeCommand.setIntakeState(IntakeState.Release);
+                }
             break;
             
             case Release:
-                if(armStatus.EnabledState.IsEnabled)
-                    break;
-                if(!DriverControlButtons.MainAction.getButton())
-                    intakeCommand.setIntakeState(IntakeState.Defense);
+                if(armStatus.EnabledState.IsEnabled) {
+                    if(armStatus.getArmState() == ArmState.Defense && (DriverControlButtons.MainAction.getFallingEdge() || DriverControlButtons.Undo.getFallingEdge()))
+                        intakeCommand.setIntakeState(IntakeState.Defense);
+                } else {
+                    if(!DriverControlButtons.MainAction.getButton())
+                        intakeCommand.setIntakeState(IntakeState.Defense);
+                }
             break;
         }
         intake.setCommand(intakeCommand);
@@ -158,7 +164,7 @@ public class DriverInteractionLoop extends LoopBase {
         switch(ArmStatus.getInstance().getArmState())
         {
             case Defense:
-                if(DriverControlButtons.Undo.getRisingEdge())
+                if(DriverControlButtons.Undo.getRisingEdge() && !DriverControlButtons.MainAction.getButton())
                     armCommand.setArmState(ArmState.SubstationExtend);
             break;
 

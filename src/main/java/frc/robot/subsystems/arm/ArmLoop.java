@@ -40,6 +40,7 @@ import frc.robot.subsystems.arm.ArmStatus.MotorControlMode;
 import frc.robot.subsystems.arm.json.ArmConfigJson;
 import frc.robot.subsystems.arm.json.ArmPathsJson;
 import frc.robot.subsystems.arm.json.ArmPresetsJson;
+import frc.robot.subsystems.driverInteraction.DriverInteractionStatus.DriverControlButtons;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeCommand;
@@ -406,7 +407,7 @@ public class ArmLoop extends LoopBase {
                       .setTargetTurretAngleDeg(0)
                       .setTargetArmPose(ArmPose.Preset.DEFENSE)
                       .setClawGrabbing(false);
-                if(intakeStatus.getIntakeState() == IntakeState.Hold)
+                if(intakeStatus.getIntakeState() == IntakeState.Hold && !DriverControlButtons.MainAction.getButton())
                     status.setArmState(ArmState.Grab);
             break;
 
