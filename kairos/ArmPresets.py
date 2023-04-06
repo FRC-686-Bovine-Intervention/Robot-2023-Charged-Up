@@ -29,7 +29,7 @@ class ArmPresetPoses:
         preset = {
             "auto_start": {"fileIdx": ArmPresetEnum.AUTO_START, "theta1": -2.64, "theta2": -0.940},
             "defense": {"fileIdx": ArmPresetEnum.DEFENSE, "theta1": -2.933, "theta2": -0.815},
-            "intake": {"fileIdx": ArmPresetEnum.INTAKE, "theta1": -2.40, "theta2": -1.00},
+            "intake": {"fileIdx": ArmPresetEnum.INTAKE, "theta1": -2.30, "theta2": -0.955},
             "hold": {"fileIdx": ArmPresetEnum.HOLD, "theta1": -1.591, "theta2": 1.271},
             "double_substation": {"fileIdx": ArmPresetEnum.DOUBLE_SUBSTATION, "theta1": -0.898, "theta2": 0.29},
             "score_hybrid": {"fileIdx": ArmPresetEnum.SCORE_HYBRID, "theta1": -2.688, "theta2": -0.516},
