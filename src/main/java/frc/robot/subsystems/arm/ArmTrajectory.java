@@ -20,7 +20,6 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
-import frc.robot.Constants;
 
 /**
  * Represents a trajectory of arm states that can be generated asynchronously.
@@ -198,6 +197,13 @@ public class ArmTrajectory {
       
       // avoid negative indices
       idx = Math.max(idx, 1);
+
+    // try to stop jerky karate chop by moving interpolation to middle of path 
+    if (finalPos.contains("mid")) {
+      idx = newPoints.size() / 2;       // move interpolation to middle of path
+      newTotalTime *= 2.0;              // also slow down path
+    }
+ 
 
       // calculate total distance to move final trajectory points
       double delta_theta0 = score_theta0 - newPoints.get(newPoints.size()-1).get(0,0);
