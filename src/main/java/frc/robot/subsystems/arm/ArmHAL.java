@@ -30,7 +30,7 @@ public class ArmHAL {
     private static final double kTurretGearRatio = 1; // Gear ratio is 1:1 because of worm gear
     private static final boolean kTurretMotorInverted = false;
     private static final boolean kTurretEncoderInverted = true;
-    private static final double kTurretEncoderZeroingCalib = 419;//436;//943;   // value read from encoder when turret is set to 0 degrees
+    private static final double kTurretEncoderZeroingCalib = 473;//457;//419;//436;//943;   // value read from encoder when turret is set to 0 degrees
     private static final double kTurretSoftLimitDeg = 265;
 
     public static final double kArmMotorFullVoltage = 10.0;  // voltage compensation     

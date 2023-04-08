@@ -196,6 +196,7 @@ public class ArmLoop extends LoopBase {
         loadArmTrajectory(ArmPose.Preset.DEFENSE, ArmPose.Preset.DOUBLE_SUBSTATION);
 
         loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.DEFENSE);
+        loadArmTrajectory(ArmPose.Preset.INTAKE, ArmPose.Preset.DEFENSE);
         loadArmTrajectory(ArmPose.Preset.DOUBLE_SUBSTATION, ArmPose.Preset.DEFENSE);
 
         loadArmTrajectory(ArmPose.Preset.INTAKE, ArmPose.Preset.HOLD);
@@ -394,7 +395,8 @@ public class ArmLoop extends LoopBase {
                               .setTargetArmPose(ArmPose.Preset.DEFENSE)
                               .setInternalDisable(false, "")
                               .setElbowAdjustment(0)
-                              .setShoulderAdjustment(0);     // enable arm trajectories
+                              .setShoulderAdjustment(0)
+                              .recalFalcons();     // enable arm trajectories
                     }
                 }
             break;

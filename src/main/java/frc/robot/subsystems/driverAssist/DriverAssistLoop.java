@@ -29,7 +29,7 @@ public class DriverAssistLoop extends LoopBase {
     private final Vision vision = Vision.getInstance();
     private final VisionStatus visionStatus = VisionStatus.getInstance();
 
-    private static final double kPowerAtMaxPitch = 9;//0.25*0.65;
+    private static final double kPowerAtMaxPitch = 6;//0.25*0.65;
     private static final double kMaxPitch = 15;
     private static final double kPitchDeadzone = 5;
 

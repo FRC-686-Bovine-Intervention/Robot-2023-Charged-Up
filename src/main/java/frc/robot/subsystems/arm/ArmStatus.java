@@ -565,7 +565,7 @@ public class ArmStatus extends StatusBase {
         if(!AutoManagerStatus.getInstance().EnabledState.IsInitState) {
             HAL.setElbowMotorPower(elbowPower);
         }
-        elbowPotEncStatus.recordOutputs(logger, prefix + "Arm/Elbow/Encoder Status");
+        // elbowPotEncStatus.recordOutputs(logger, prefix + "Arm/Elbow/Encoder Status");
         logger.recordOutput(prefix + "Arm/Elbow/Power",         elbowPower);
         // logger.recordOutput(prefix + "Arm/Elbow/Current",          getElbowCurrent());
         // logger.recordOutput(prefix + "Arm/Elbow/PotEnc Angle (Rad)",    Units.degreesToRadians(getElbowPotEncStatus().positionDeg));
