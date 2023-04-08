@@ -30,7 +30,7 @@ public class DriverInteractionLoop extends LoopBase {
 
     private static final double kExtendedThreshold = Units.degreesToRadians(15);
     private static final double kExtendedDrivePowerMultiplier = 0.5;
-    private static final double kHandoffPowerMultiplier = 0.5;
+    private static final double kHandoffPowerMultiplier = 0.7;
 
     private static final double kAdjustmentDeadband = 0.15;
 
@@ -64,7 +64,7 @@ public class DriverInteractionLoop extends LoopBase {
 
         double leftPower = throttle+turn;
         double rightPower = throttle-turn;
-        double handoffPowerMultiplier = (armStatus.getArmState() == ArmState.Grab ? kHandoffPowerMultiplier : 1);
+        double handoffPowerMultiplier = (armStatus.getArmState() == ArmState.Grab && !armStatus.getClawGrabbing() ? kHandoffPowerMultiplier : 1);
         leftPower *= handoffPowerMultiplier;
         rightPower *= handoffPowerMultiplier;
         return new DriveCommand(DriveControlMode.OPEN_LOOP, leftPower, rightPower, (DriverControlButtons.ParkingBrake.getButton() ? NeutralMode.Brake : NeutralMode.Coast));

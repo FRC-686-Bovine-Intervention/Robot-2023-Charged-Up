@@ -84,6 +84,7 @@ public class TwoPieceAuto extends AutoMode {
                     new SeriesAction(
                         new WaitUntilAction(() -> armStatus.getArmState() == ArmState.Hold),
                         new ArmCommandAction(new ArmCommand(ArmState.AlignWall)),
+                        new IgnoreVisionAction(false),
                         new WaitUntilAction(() -> {
                             boolean turretTargetBackward = Math.abs(180 - Math.abs(armStatus.getTargetTurretAngleDeg())) < 90;
                             boolean turretNearTarget = Math.abs(armStatus.getTargetTurretAngleDeg() - armStatus.getTurretAngleDeg()) < 5;
@@ -93,7 +94,8 @@ public class TwoPieceAuto extends AutoMode {
                         })
                     )
                 ),
-                new ExtendToAction(secondNode)/* ,
+                new ExtendToAction(secondNode),
+                new IgnoreVisionAction(true)/* ,
                 new WaitAction(0.5),
                 new ReleaseAction() */
             ),
