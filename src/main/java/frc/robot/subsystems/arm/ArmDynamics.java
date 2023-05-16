@@ -32,15 +32,62 @@ public class ArmDynamics {
   private static final double g = 9.80665;
 
   /** Physics constants for a single joint. */
-  public static record JointConfig(
-      double mass,
-      double length,
-      double moi,
-      double cgRadius,
-      double minAngle,
-      double maxAngle,
-      double reduction,
-      DCMotor motor) {}
+  public static class JointConfig {
+      double mass;
+      double length;
+      double moi;
+      double cgRadius;
+      double minAngle;
+      double maxAngle;
+      double reduction;
+      DCMotor motor;
+
+    public JointConfig(double mass, double length, double moi, double cgRadius, double minAngle, double maxAngle,
+    double reduction, DCMotor motor) {
+      this.mass = mass;
+      this.length = length;
+      this.moi = moi;
+      this.cgRadius = cgRadius;
+      this.minAngle = minAngle;
+      this.maxAngle = maxAngle;
+      this.reduction = reduction;
+      this.motor = motor;
+    }
+
+    public double mass() {
+      return mass;
+    }
+
+    public double length() {
+      return length;
+    }
+
+    public double moi() {
+      return moi;
+    }
+
+    public double cgRadius() {
+      return cgRadius;
+    }
+
+    public double minAngle() {
+      return minAngle;
+    }
+
+    public double maxAngle() {
+      return maxAngle;
+    }
+
+    public double reduction() {
+      return reduction;
+    }
+
+    public DCMotor motor() {
+      return motor;
+    }
+
+    
+  }
 
   public ArmDynamics(JointConfig proximal, JointConfig distal) {
     this.proximal = proximal;

@@ -11,6 +11,7 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.auto.autoManager.AutoManager;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.Drive;
@@ -57,8 +58,11 @@ public class Robot extends LoggedRobot {
     subsystemController.register(Drive.getInstance());
     subsystemController.register(Odometry.getInstance());
     subsystemController.start();
+
+    gcTimer.start();
   }
 
+  final Timer gcTimer = new Timer();
   @Override
   public void robotPeriodic() {
     subsystemController.run();
@@ -76,7 +80,10 @@ public class Robot extends LoggedRobot {
   @Override
   public void disabledInit() {}
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    if(gcTimer.advanceIfElapsed(1))
+      System.gc();
+  }
   @Override
   public void testInit() {}
   @Override

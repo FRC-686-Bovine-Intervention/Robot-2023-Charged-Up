@@ -24,7 +24,7 @@ public class AutoManagerLoop extends LoopBase {
             ArmTrajectory.setGlobalGrannyFactor(1.5); // teleop
             return;
         }
-        ArmTrajectory.setGlobalGrannyFactor(1.5);  // auto
+        ArmTrajectory.setGlobalGrannyFactor(1);  // auto
         if(status.EnabledState.IsInitState) {
             status.setCurrentAutoMode(status.getNewAutomode())
                   .setAutoRunning(true)
@@ -33,25 +33,19 @@ public class AutoManagerLoop extends LoopBase {
             autoTimer.start();
         }
         if(status.getActionIndex() < 0) {
-            if(autoTimer.hasElapsed(status.getAutoConfiguration().initialDelay))
+            if(autoTimer.hasElapsed(status.getAutoConfiguration().initialDelay)) {
                 status.setActionIndex(0);
-        } else {
-            checkAutoFinished();
-            if(!status.getAutoRunning())
-                return;
+            }
+        } else if(status.getAutoRunning()) {
             Action action = status.getCurrentAutoMode().actionList.get(status.getActionIndex());
             action.onLoop();
             if(action.getEvaluatedDone()) {
                 status.incrementActionIndex(1);
             }
-            checkAutoFinished();
-        }
-    }
-
-    private void checkAutoFinished() {
-        if(status.getActionIndex() >= status.getCurrentAutoMode().actionList.size()) {
-            status.setAutoRunning(false);
-            System.out.println(status.getSelectedAutoMode().autoName + " finished");
+            if(status.getActionIndex() >= status.getCurrentAutoMode().actionList.size()) {
+                status.setAutoRunning(false);
+                System.out.println(status.getSelectedAutoMode().autoName + " finished");
+            }
         }
     }
 

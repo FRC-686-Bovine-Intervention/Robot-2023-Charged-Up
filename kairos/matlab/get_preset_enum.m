@@ -10,3 +10,4 @@ presetEnum.SCORE_HIGH_CUBE  = 6;
 presetEnum.SCORE_MID_CONE    = 7;
 presetEnum.SCORE_HIGH_CONE   = 8;
 presetEnum.AUTO_START   = 9;
+presetEnum.HOLD   = 10;

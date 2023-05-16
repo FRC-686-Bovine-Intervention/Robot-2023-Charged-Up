@@ -30,9 +30,9 @@ public class DriverInteractionLoop extends LoopBase {
 
     private static final double kExtendedThreshold = Units.degreesToRadians(15);
     private static final double kExtendedDrivePowerMultiplier = 0.5;
-    private static final double kHandoffPowerMultiplier = 0.5;
+    private static final double kHandoffPowerMultiplier = 0.7;
 
-    private static final double kAdjustmentDeadband = 0.1;
+    private static final double kAdjustmentDeadband = 0.15;
 
     private final Drive drive = Drive.getInstance();
     private final DriverAssist driverAssist = DriverAssist.getInstance();
@@ -64,7 +64,7 @@ public class DriverInteractionLoop extends LoopBase {
 
         double leftPower = throttle+turn;
         double rightPower = throttle-turn;
-        double handoffPowerMultiplier = (armStatus.getArmState() == ArmState.Grab ? kHandoffPowerMultiplier : 1);
+        double handoffPowerMultiplier = (armStatus.getArmState() == ArmState.Grab && !armStatus.getClawGrabbing() ? kHandoffPowerMultiplier : 1);
         leftPower *= handoffPowerMultiplier;
         rightPower *= handoffPowerMultiplier;
         return new DriveCommand(DriveControlMode.OPEN_LOOP, leftPower, rightPower, (DriverControlButtons.ParkingBrake.getButton() ? NeutralMode.Brake : NeutralMode.Coast));
@@ -97,8 +97,9 @@ public class DriverInteractionLoop extends LoopBase {
         drive.setDriveCommand(generateDriveCommand());
 
         DriverAssistCommand assistCommand = new DriverAssistCommand();
-        if(DriverControlButtons.AutoDrive.getButton())
-            assistCommand.setDriverAssistState(DriverAssistState.AutoBalance);
+        if(DriverControlButtons.AutoDrive.getButton()) {
+            assistCommand.setDriverAssistState(intakeStatus.getIntakeState() == IntakeState.Grab ? DriverAssistState.AutoIntake : DriverAssistState.AutoBalance);
+        }
         driverAssist.setCommand(assistCommand);
 
         IntakeCommand intakeCommand = new IntakeCommand();
@@ -117,17 +118,23 @@ public class DriverInteractionLoop extends LoopBase {
             break;
 
             case Hold:
-                if(armStatus.EnabledState.IsEnabled)
-                    break;
-                if(DriverControlButtons.MainAction.getRisingEdge())
-                    intakeCommand.setIntakeState(IntakeState.Release);
+                if(armStatus.EnabledState.IsEnabled) {
+                    if(DriverControlButtons.MainAction.getButton() && DriverControlButtons.Undo.getRisingEdge())
+                        intakeCommand.setIntakeState(IntakeState.Release);
+                } else {
+                    if(DriverControlButtons.MainAction.getRisingEdge())
+                        intakeCommand.setIntakeState(IntakeState.Release);
+                }
             break;
             
             case Release:
-                if(armStatus.EnabledState.IsEnabled)
-                    break;
-                if(!DriverControlButtons.MainAction.getButton())
-                    intakeCommand.setIntakeState(IntakeState.Defense);
+                if(armStatus.EnabledState.IsEnabled) {
+                    if(armStatus.getArmState() == ArmState.Defense && (DriverControlButtons.MainAction.getFallingEdge() || DriverControlButtons.Undo.getFallingEdge()))
+                        intakeCommand.setIntakeState(IntakeState.Defense);
+                } else {
+                    if(!DriverControlButtons.MainAction.getButton())
+                        intakeCommand.setIntakeState(IntakeState.Defense);
+                }
             break;
         }
         intake.setCommand(intakeCommand);
@@ -157,7 +164,7 @@ public class DriverInteractionLoop extends LoopBase {
         switch(ArmStatus.getInstance().getArmState())
         {
             case Defense:
-                if(DriverControlButtons.Undo.getRisingEdge())
+                if(DriverControlButtons.Undo.getRisingEdge() && !DriverControlButtons.MainAction.getButton())
                     armCommand.setArmState(ArmState.SubstationExtend);
             break;
 

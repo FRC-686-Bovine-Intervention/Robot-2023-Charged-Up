@@ -1,9 +1,9 @@
 function [theta1, theta2] = get_elbow_up_path(start_theta1, start_theta2, final_theta1, final_theta2)
 
-minimum_shoulder_elbow_angle_deg = 32.5;
+minimum_shoulder_elbow_angle_deg = 30;
 
 % shoulder forward
-shoulderFwd.theta1 = -125.0 * pi/180;   % forward enough that elbow can come up
+shoulderFwd.theta1 = -140.0 * pi/180;   % forward enough that elbow can come up
 shoulderFwd.theta2 =   10.0 * pi/180;
 
 % now that we've cleared the superstructure, 
@@ -35,6 +35,10 @@ end
 
 
 % angular trajectory
-theta1 = [start_theta1  elbowUp.theta1  shoulderOut.theta1 final_theta1];
-theta2 = [start_theta2  elbowUp.theta2  shoulderOut.theta2 final_theta2];
-
+if start_theta1 < elbowUp.theta1
+    theta1 = [start_theta1  elbowUp.theta1  shoulderOut.theta1 final_theta1];
+    theta2 = [start_theta2  elbowUp.theta2  shoulderOut.theta2 final_theta2];
+else
+    theta1 = [start_theta1  shoulderOut.theta1 final_theta1];
+    theta2 = [start_theta2  shoulderOut.theta2 final_theta2];
+end    

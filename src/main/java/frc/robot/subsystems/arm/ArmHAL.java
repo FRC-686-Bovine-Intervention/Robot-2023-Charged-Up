@@ -30,8 +30,8 @@ public class ArmHAL {
     private static final double kTurretGearRatio = 1; // Gear ratio is 1:1 because of worm gear
     private static final boolean kTurretMotorInverted = false;
     private static final boolean kTurretEncoderInverted = true;
-    private static final double kTurretEncoderZeroingCalib = 436;//943;   // value read from encoder when turret is set to 0 degrees
-    private static final double kTurretSoftLimitDeg = 225;
+    private static final double kTurretEncoderZeroingCalib = 473;//457;//419;//436;//943;   // value read from encoder when turret is set to 0 degrees
+    private static final double kTurretSoftLimitDeg = 265;
 
     public static final double kArmMotorFullVoltage = 10.0;  // voltage compensation     
 
@@ -50,9 +50,9 @@ public class ArmHAL {
     private final static double kShoulderPotentiometerGearRatio           = 72.0/16.0;
     private final static double kShoulderEncoderGearRatio                 = 72.0/16.0;
     private final static double kShoulderPotentiometerNTurns              = 5.0;    
-    private final static double kShoulderAngleAtCalibration               = -90.0;      // calibrated 2/23 (straight down)
-    private final static double kShoulderPotNormalizedVoltageAtCalib      = 0.514;//0.514;//0.513;//0.516;//0.524;//0.522;     // calibrated 2/23
-    private final static double kShoulderAbsoluteEncoderAngleDegAtCalib   = 82.87;//82.25;//80.55;//83.68;//88.93;//85.20;     // calibrated 2/23
+    private final static double kShoulderAngleAtCalibration               = -90.0;      // calibrated 3/30 (straight down)
+    private final static double kShoulderPotNormalizedVoltageAtCalib      = 0.344;//0.341;//0.367;//0.369;//0.3778;
+    private final static double kShoulderAbsoluteEncoderAngleDegAtCalib   = 184.31;//180.77;//183.56;//181.84;//195.7;
     private final static boolean kShoulderPotInverted                     = false;
     private final static boolean kShoulderEncInverted                     = false;
 
@@ -63,9 +63,9 @@ public class ArmHAL {
     private final static double kElbowPotentiometerGearRatio              = 64.0/16.0;
     private final static double kElbowEncoderGearRatio                    = 64.0/16.0;
     private final static double kElbowPotentiometerNTurns                 = 5.0;
-    private final static double kElbowAngleAtCalibration                  = 0.0;       // calibrated 2/23 (straight out)
-    private final static double kElbowPotNormalizedVoltageAtCalib         = 0.486;//0.494;//0.497;//0.5;//0.518;//0.442;//0.473;    // calibrated 2/23
-    private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 106.52;//104.41;//106.9;//110.7;//104.83;//108.28;//108.8;    // calibrated 2/23
+    private final static double kElbowAngleAtCalibration                  = 0.0;       // calibrated 3/30 (straight out)
+    private final static double kElbowPotNormalizedVoltageAtCalib         = 0.415;//0.418;//0.418;//0.435;//0.4279;
+    private final static double kElbowAbsoluteEncoderAngleDegAtCalib      = 7.08;//10.94;//11.69;//13.12;//0.205;
     private final static boolean kElbowPotInverted                        = true;
     private final static boolean kElbowEncInverted                        = true;
 
@@ -105,7 +105,7 @@ public class ArmHAL {
 
         if (turretMotor != null) {
             turretMotor.configFactoryDefault();
-            turretMotor.configOpenloopRamp(1);
+            // turretMotor.configOpenloopRamp(1);
             // set quadrature encoder to absolute encoder value
             turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kRelativePIDId, 0);
             turretMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, kAbsolutePIDId, 0);
@@ -118,6 +118,8 @@ public class ArmHAL {
 
             turretMotor.setSensorPhase(kTurretEncoderInverted);
             turretMotor.setInverted(kTurretMotorInverted);
+
+            turretMotor.setNeutralMode(NeutralMode.Brake);
         }
         
         shoulderPotAndEncoderConfig = new PotAndEncoder.Config(kShoulderPotentiometerGearRatio, kShoulderEncoderGearRatio, kShoulderPotentiometerNTurns, 
@@ -174,13 +176,14 @@ public class ArmHAL {
     public ArmHAL syncTurretEncoders() {
         if(turretMotor != null) {
             turretMotor.setSelectedSensorPosition(
-                ((turretMotor.getSelectedSensorPosition(kAbsolutePIDId) - kTurretEncoderZeroingCalib + (4096/2)) % (4096)) - (4096/2), 
+                ((kTurretEncoderZeroingCalib - (turretMotor.getSelectedSensorPosition(kAbsolutePIDId) % (4096)) + (4096/2)) % (4096)) - (4096/2), 
                 kRelativePIDId, 
                 0);
         }
         return this;
     }
 
+    public double getTurretVeloDegPerSec() {return turretMotor != null ? turretMotor.getSelectedSensorVelocity(kRelativePIDId) * kTurretGearRatio * kTurretEncoderUnitsToDegrees * 10 : 0;}
     public double getTurretAngleDeg()   {return getTurretRelative() * kTurretGearRatio * kTurretEncoderUnitsToDegrees;}
     public double getTurretRelative()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kRelativePIDId) : 0;}
     public double getTurretAbsolute()   {return turretMotor != null ? turretMotor.getSelectedSensorPosition(kAbsolutePIDId) : 0;}

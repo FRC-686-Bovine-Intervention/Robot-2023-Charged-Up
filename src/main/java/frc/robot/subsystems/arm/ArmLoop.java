@@ -23,10 +23,14 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.Constants;
 import frc.robot.FieldDimensions;
 import frc.robot.lib.util.GeomUtil;
@@ -36,11 +40,14 @@ import frc.robot.subsystems.arm.ArmStatus.MotorControlMode;
 import frc.robot.subsystems.arm.json.ArmConfigJson;
 import frc.robot.subsystems.arm.json.ArmPathsJson;
 import frc.robot.subsystems.arm.json.ArmPresetsJson;
+import frc.robot.subsystems.driverInteraction.DriverInteractionStatus.DriverControlButtons;
 import frc.robot.subsystems.framework.LoopBase;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeCommand;
 import frc.robot.subsystems.intake.IntakeStatus;
 import frc.robot.subsystems.intake.IntakeStatus.IntakeState;
+import frc.robot.subsystems.odometry.Odometry;
+import frc.robot.subsystems.odometry.OdometryCommand;
 import frc.robot.subsystems.odometry.OdometryStatus;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionCommand;
@@ -56,24 +63,27 @@ public class ArmLoop extends LoopBase {
     private final ArmStatus status = ArmStatus.getInstance();
     private final Intake intake = Intake.getInstance();
     private final IntakeStatus intakeStatus = IntakeStatus.getInstance();
+    private final Odometry odometry = Odometry.getInstance();
     private final OdometryStatus odometryStatus = OdometryStatus.getInstance();
     private final Vision vision = Vision.getInstance();
     private final VisionStatus visionStatus = VisionStatus.getInstance();
 
-    private static final double kTurretMaxAngularVelocity = 180;
-    private static final double kTurretMaxAngularAcceleration = kTurretMaxAngularVelocity * 2;
-    private final TrapezoidProfile.Constraints turretPIDConstraints = new TrapezoidProfile.Constraints(kTurretMaxAngularVelocity, kTurretMaxAngularAcceleration);
-    private static final double kTurretFastP = 0.015;
-    private static final double kTurretSlowP = 0.015;
+    private static final double kTurretTeleopMaxAngularVelocity = 180;
+    private static final double kTurretTeleopMaxAngularAcceleration = kTurretTeleopMaxAngularVelocity / 0.25;
+    private static final double kTurretAutoMaxAngularVelocity = 180 + 45;
+    private static final double kTurretAutoMaxAngularAcceleration = kTurretAutoMaxAngularVelocity / 0.25;
+    private final TrapezoidProfile.Constraints turretTeleopPIDConstraints = new TrapezoidProfile.Constraints(kTurretTeleopMaxAngularVelocity, kTurretTeleopMaxAngularAcceleration);
+    private final TrapezoidProfile.Constraints turretAutoPIDConstraints = new TrapezoidProfile.Constraints(kTurretAutoMaxAngularVelocity, kTurretAutoMaxAngularAcceleration);
     private final ProfiledPIDController turretPID = 
         new ProfiledPIDController(
             0.015, 
             0, 
             0, 
-            turretPIDConstraints
+            turretTeleopPIDConstraints
         );
     private static final double kTurretPIDMaxError = 10;
     private static final double kTurretExtendMaxError = 3;
+    private static final double kLimelightAngleFactor = 1.38;
 
     private static final double kDistalZeroPower =      0.15;
     private static final double kProximalZeroPower =    0.1;
@@ -83,7 +93,7 @@ public class ArmLoop extends LoopBase {
     private static final double kTurretZeroErrorThreshold = 2.5;
     private static final double kProximalZeroErrorThreshold = Units.degreesToRadians(2.5);
 
-    private static final double kDistalZeroRadUp = Units.degreesToRadians(125);
+    private static final double kDistalZeroRadUp = Units.degreesToRadians(150);
 
     private ArmState prevState;
 
@@ -110,7 +120,7 @@ public class ArmLoop extends LoopBase {
         );
     private final PIDController elbowPID = 
         new PIDController(
-            10.0, 
+            15.0, 
             0.0, 
             0.0, 
             Constants.loopPeriodSecs
@@ -127,10 +137,10 @@ public class ArmLoop extends LoopBase {
     private final double shoulderMinAngleRad;
     private final double elbowMaxAngleRad;
     private final double elbowMinAngleRad;
-    public static final double kRelativeMaxAngleRad = Math.toRadians(180.0 - 25.0);    // don't let grabber smash into proximal arm
+    public static final double kRelativeMaxAngleRad = Math.toRadians(180.0);    // don't let grabber smash into proximal arm
     public static final double kRelativeMinAngleRad = Math.toRadians(-135.0);   // we'll probably never need this one
 
-    private static final double kMaxElbowPlusClawLength = Units.inchesToMeters(26.0); 
+    private static final double kMaxElbowPlusClawLength = Units.inchesToMeters(33.0); 
  
     private final double xMinSetpoint = Units.inchesToMeters(0.0);
     private final double xMaxSetpoint;  // calculated
@@ -182,31 +192,67 @@ public class ArmLoop extends LoopBase {
         
         // Get paths from JSON
         // also create trajectories for each path
-        for (ArmPose.Preset startPos : ArmPose.Preset.values()) {
-            for (ArmPose.Preset finalPos : ArmPose.Preset.values()) {
-                int startIdx = startPos.getFileIdx();
-                int finalIdx = finalPos.getFileIdx();
+        loadArmTrajectory(ArmPose.Preset.DEFENSE, ArmPose.Preset.INTAKE);
+        loadArmTrajectory(ArmPose.Preset.DEFENSE, ArmPose.Preset.DOUBLE_SUBSTATION);
 
-                String pathFilename = String.format(ArmPathsJson.jsonFilename, startIdx, finalIdx);
-                
-                File pathFile = new File(Filesystem.getDeployDirectory(), pathFilename);
-                var path = ArmPathsJson.loadJson(pathFile);
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.DEFENSE);
+        loadArmTrajectory(ArmPose.Preset.INTAKE, ArmPose.Preset.DEFENSE);
+        loadArmTrajectory(ArmPose.Preset.DOUBLE_SUBSTATION, ArmPose.Preset.DEFENSE);
 
-                // create trajectory for each path
-                List<Vector<N2>> points = new ArrayList<>();
-                for (int k=0; k<path.theta1().size(); k++) {
-                    points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
-                }
+        loadArmTrajectory(ArmPose.Preset.INTAKE, ArmPose.Preset.HOLD);
+        loadArmTrajectory(ArmPose.Preset.DOUBLE_SUBSTATION, ArmPose.Preset.HOLD);
 
-                armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), path.grannyFactor(), points);
-            }
-        }
+        loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_HYBRID);
+        loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_MID_CUBE);
+        loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_HIGH_CUBE);
+        loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_MID_CONE);
+        loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.SCORE_HIGH_CONE);
+        loadArmTrajectory(ArmPose.Preset.AUTO_START, ArmPose.Preset.HOLD);
 
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.SCORE_HYBRID);
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.SCORE_MID_CUBE);
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.SCORE_HIGH_CUBE);
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.SCORE_MID_CONE);
+        loadArmTrajectory(ArmPose.Preset.HOLD, ArmPose.Preset.SCORE_HIGH_CONE);
+
+        loadArmTrajectory(ArmPose.Preset.SCORE_HYBRID, ArmPose.Preset.DEFENSE);
+        loadArmTrajectory(ArmPose.Preset.SCORE_MID_CUBE, ArmPose.Preset.DEFENSE);
+        loadArmTrajectory(ArmPose.Preset.SCORE_HIGH_CUBE, ArmPose.Preset.DEFENSE);
+        loadArmTrajectory(ArmPose.Preset.SCORE_MID_CONE, ArmPose.Preset.DEFENSE);
+        loadArmTrajectory(ArmPose.Preset.SCORE_HIGH_CONE, ArmPose.Preset.DEFENSE);
+
+        loadArmTrajectory(ArmPose.Preset.SCORE_HYBRID, ArmPose.Preset.HOLD);
+        loadArmTrajectory(ArmPose.Preset.SCORE_MID_CUBE, ArmPose.Preset.HOLD);
+        loadArmTrajectory(ArmPose.Preset.SCORE_HIGH_CUBE, ArmPose.Preset.HOLD);
+        loadArmTrajectory(ArmPose.Preset.SCORE_MID_CONE, ArmPose.Preset.HOLD);
+        loadArmTrajectory(ArmPose.Preset.SCORE_HIGH_CONE, ArmPose.Preset.HOLD);
 
         double clawLengthPastToolCenterPoint = kMaxElbowPlusClawLength - config.elbow().length() - config.wrist().length();
         xMaxSetpoint = Units.inchesToMeters(config.frame_width_inches() + 48.0 - clawLengthPastToolCenterPoint);
         resetTrajectoryState();
     }
+
+
+    private void loadArmTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos)
+    {
+        int startIdx = startPos.getFileIdx();
+        int finalIdx = finalPos.getFileIdx();
+
+        String pathFilename = String.format(ArmPathsJson.jsonFilename, startIdx, finalIdx);
+        
+        File pathFile = new File(Filesystem.getDeployDirectory(), pathFilename);
+        var path = ArmPathsJson.loadJson(pathFile);
+
+        // create trajectory for each path
+        List<Vector<N2>> points = new ArrayList<>();
+        for (int k=0; k<path.theta1().size(); k++) {
+            points.add(VecBuilder.fill(path.theta1().get(k), path.theta2().get(k)));
+        }
+
+        armTrajectories[startIdx][finalIdx] = new ArmTrajectory(path.startPos(), path.finalPos(), path.totalTime(), path.grannyFactor(), points);
+    }
+
+    double clawGrabTimestamp;
 
     @Override
     protected void Update() {
@@ -214,6 +260,8 @@ public class ArmLoop extends LoopBase {
 
         status.setTurretPIDPosition(turretPID.getSetpoint().position);
         status.setTurretPIDVelocity(turretPID.getSetpoint().velocity);
+        
+        turretPID.setConstraints(DriverStation.isAutonomous() ? turretAutoPIDConstraints : turretTeleopPIDConstraints);
     }
     
     // call this every update cycle
@@ -236,6 +284,8 @@ public class ArmLoop extends LoopBase {
     }
     
     private final Timer stateTimer = new Timer();
+
+    double intakeRotations;
     
     @Override
     protected void Enabled() {
@@ -272,6 +322,7 @@ public class ArmLoop extends LoopBase {
               .setElbowPower(0);
 
         LimelightPipeline pipeline = LimelightPipeline.Cone;
+        Boolean ignoreVision = null;
         // ================= Trajectory Logic =================
 
         runTrajectory();
@@ -344,7 +395,8 @@ public class ArmLoop extends LoopBase {
                               .setTargetArmPose(ArmPose.Preset.DEFENSE)
                               .setInternalDisable(false, "")
                               .setElbowAdjustment(0)
-                              .setShoulderAdjustment(0);     // enable arm trajectories
+                              .setShoulderAdjustment(0)
+                              .recalFalcons();     // enable arm trajectories
                     }
                 }
             break;
@@ -357,7 +409,7 @@ public class ArmLoop extends LoopBase {
                       .setTargetTurretAngleDeg(0)
                       .setTargetArmPose(ArmPose.Preset.DEFENSE)
                       .setClawGrabbing(false);
-                if(intakeStatus.getIntakeState() == IntakeState.Hold)
+                if(intakeStatus.getIntakeState() == IntakeState.Hold && !DriverControlButtons.MainAction.getButton())
                     status.setArmState(ArmState.Grab);
             break;
 
@@ -376,7 +428,7 @@ public class ArmLoop extends LoopBase {
                 status.setTurretControlMode(MotorControlMode.PercentOutput)
                       .setTurretPower(0)
                       .setTurretNeutralMode(NeutralMode.Coast);
-                if(!stateTimer.hasElapsed(0.5))
+                if(!stateTimer.hasElapsed(1))
                     break;
                 if(!status.getClawGrabbing()) {
                     status.setTargetArmPose(ArmPose.Preset.INTAKE);
@@ -384,21 +436,27 @@ public class ArmLoop extends LoopBase {
                     {
                         // Grab piece
                         status.setClawGrabbing(true);
-                        // Set intake to release
-                        intake.setCommand(new IntakeCommand(IntakeState.Release));
-                        status.setTargetArmPose(ArmPose.Preset.DEFENSE);
+                        clawGrabTimestamp = stateTimer.get();
                     }
                 } else {
-                    status.setTargetArmPose(ArmPose.Preset.DEFENSE);
-                    if(status.getCurrentArmPose() == ArmPose.Preset.DEFENSE)
-                        status.setArmState(ArmState.Hold);
+                    // Set intake to release
+                    if(stateTimer.hasElapsed(clawGrabTimestamp + 0.5)) {
+                        intake.setCommand(new IntakeCommand(Math.abs(intakeStatus.getIntakeRotations() - intakeRotations) >= 0.25 ? IntakeState.Defense : IntakeState.Release));
+                    } else {
+                        intakeRotations = intakeStatus.getIntakeRotations();
+                    }
+                    if(stateTimer.hasElapsed(clawGrabTimestamp + 0.75)) {
+                        status.setTargetArmPose(ArmPose.Preset.HOLD);
+                        if(status.getCurrentArmPose() == ArmPose.Preset.HOLD)
+                            status.setArmState(ArmState.Hold);
+                    }
                 }
             break;
 
             case Hold:
                 intake.setCommand(new IntakeCommand(IntakeState.Defense));
                 // Move arm to hold position
-                status.setTargetArmPose(ArmPose.Preset.DEFENSE)
+                status.setTargetArmPose(ArmPose.Preset.HOLD)
                       .setTargetTurretAngleDeg(0)
                       .setTurretControlMode(MotorControlMode.PID)
                       .setClawGrabbing(true);
@@ -417,9 +475,11 @@ public class ArmLoop extends LoopBase {
             break;
 
             case AlignWall:
-                turretPID.setP(kTurretFastP);
-                status.setTargetArmPose(ArmPose.Preset.DEFENSE);
+                status.setTargetArmPose(ArmPose.Preset.HOLD);
                 pipeline = LimelightPipeline.Pole;
+                if(!DriverStation.isAutonomous()) {
+                    ignoreVision = false;
+                }
                 
                 // unwrap turret angle because odometry wraps it to +/-180
                 
@@ -431,9 +491,10 @@ public class ArmLoop extends LoopBase {
                 );
 
                 // Align turret to alliance wall
-                status.setTargetTurretAngleDeg(turretAngleDeg)
-                      .setTurretControlMode(MotorControlMode.PID);
-                
+                if(status.getCurrentArmPose() == ArmPose.Preset.HOLD) {
+                    status.setTargetTurretAngleDeg(turretAngleDeg)
+                          .setTurretControlMode(MotorControlMode.PID);
+                }
                 // Check if robot is in not in community, if so jump to Hold
                 if(stateTimer.get() == 0)
                     status.setStateLocked(false);
@@ -448,14 +509,16 @@ public class ArmLoop extends LoopBase {
 
             case AlignNode:
                 pipeline = LimelightPipeline.Pole;
-                status.setTargetTurretAngleDeg(getTurretBestAngle(getClosestNodeXY(status.getTargetNode(), status.getTurretToField().getTranslation().toTranslation2d()).get()))
+                if(!DriverStation.isAutonomous()) {
+                    ignoreVision = false;
+                }
+                status.setTargetTurretAngleDeg(getTurretBestAngle(getClosestNodeXY(status.getTargetNode(), status.getTurretToField().getTranslation().toTranslation2d())))
                       .setTurretControlMode(MotorControlMode.PID);
                 if(status.getTargetNode().isCone && visionStatus.getCurrentPipeline() == pipeline && visionStatus.getTargetExists()) {
-                    turretPID.setP(kTurretSlowP);
-                    status.setTargetTurretAngleDeg(status.getTurretAngleDeg() + visionStatus.getTargetYAngle())
+                    status.setTargetTurretAngleDeg(status.getTurretAngleDeg() + visionStatus.getTargetYAngle() / kLimelightAngleFactor)
                           .setArmState(ArmState.Extend);
                 }
-                if(!status.getTargetNode().isCone || Math.abs(status.getTargetTurretAngleDeg() - status.getTurretAngleDeg()) < kTurretExtendMaxError) {
+                if(Math.abs(status.getTargetTurretAngleDeg() - status.getTurretAngleDeg()) < kTurretExtendMaxError) {
                     status.setArmState(ArmState.Extend);
                 }
             break;
@@ -469,7 +532,7 @@ public class ArmLoop extends LoopBase {
             break;
 
             case Adjust:
-                turretPID.setP(kTurretFastP);
+                ignoreVision = true;
                 if(stateTimer.get() == 0)
                     status.setElbowRaised(false);
                 // Rotate turret according to limelight and driver controls
@@ -483,8 +546,8 @@ public class ArmLoop extends LoopBase {
                 status.setClawGrabbing(false);
                 // Wait a bit then jump to Defense
                 if(stateTimer.hasElapsed(0.25))
-                    status.setTargetArmPose(ArmPose.Preset.DEFENSE);
-                if(status.getCurrentArmPose() == ArmPose.Preset.DEFENSE)
+                    status.setTargetArmPose(ArmPose.Preset.HOLD);
+                if(status.getCurrentArmPose() == ArmPose.Preset.HOLD)
                     status.setArmState(ArmState.Defense);
             break;
 
@@ -502,7 +565,7 @@ public class ArmLoop extends LoopBase {
             break;
         }
 
-        vision.setVisionCommand(new VisionCommand(pipeline));
+        vision.setVisionCommand(new VisionCommand(pipeline).setIngoreVision(ignoreVision));
 
         runTurret();
 
@@ -510,6 +573,12 @@ public class ArmLoop extends LoopBase {
             startTrajectory(status.getCurrentArmPose(), status.getTargetArmPose());
     }
 
+
+    private static final double turretKs = 0.6102;
+    private static final double turretKv = 0.048375;
+    private static final double turretKa = 0.010214 * 0;
+    private double prevTurretVelo;
+    private double prevTimestamp;
     private boolean largeTurretError = false;
     private void runTurret() {
         turretPID.setGoal(status.getTargetTurretAngleDeg());
@@ -522,8 +591,11 @@ public class ArmLoop extends LoopBase {
             largeTurretError = false;
         }
         status.setTurretPIDOutput(turretPID.calculate(status.getTurretAngleDeg()));
+        status.setTurretFeedForward((turretKv * turretPID.getSetpoint().velocity + turretKa * ((turretPID.getSetpoint().velocity - prevTurretVelo) / (Timer.getFPGATimestamp() - prevTimestamp))) / 12);
         if(status.getTurretControlMode() == MotorControlMode.PID)
-            status.setTurretPower(status.getTurretPIDOutput());
+            status.setTurretPower(status.getTurretPIDOutput() + status.getTurretFeedforward());
+        prevTurretVelo = turretPID.getSetpoint().velocity;
+        prevTimestamp = Timer.getFPGATimestamp();
     }
 
     public void startTrajectory(ArmPose.Preset startPos, ArmPose.Preset finalPos) {
@@ -566,8 +638,8 @@ public class ArmLoop extends LoopBase {
                     finalElbowAngleRad = theta.get().get(1,0);
                 } else {
                     // if the arm can't reach the target node, reach out as far as we can
-                    finalShoulderAngleRad = -0.1;   // should reach to 60" extension, 53" above floor
-                    finalElbowAngleRad = 0.28;      // hardcoding to make sure we always get a result
+                    finalShoulderAngleRad = -0.3;//-0.1;   // should reach to 60" extension, 53" above floor
+                    finalElbowAngleRad = 0.3;//0.28;      // hardcoding to make sure we always get a result
                 }
             }
             // set outputs
@@ -579,7 +651,7 @@ public class ArmLoop extends LoopBase {
 
 
     public void resetTrajectoryState()  {
-        finalTrajectoryState = armTrajectories[ArmPose.Preset.DEFENSE.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
+        finalTrajectoryState = armTrajectories[ArmPose.Preset.HOLD.getFileIdx()][ArmPose.Preset.DEFENSE.getFileIdx()].getFinalState();
         setpointState = finalTrajectoryState;
     }
 
@@ -594,8 +666,8 @@ public class ArmLoop extends LoopBase {
         // check if current trajectory is finished
         if (status.getCurrentArmTrajectory() != null && trajectoryTimer.hasElapsed(status.getCurrentArmTrajectory().getTotalTime()))
         {
-            status.setCurrentArmTrajectory(null)
-                  .setCurrentArmPose(status.getTargetArmPose())
+            status.setCurrentArmPose(ArmPose.Preset.valueOf(status.getCurrentArmTrajectory().getFinalString().toUpperCase()))
+                  .setCurrentArmTrajectory(null)
                   .setShoulderAdjustment(0)
                   .setElbowAdjustment(0);
         }
@@ -810,6 +882,10 @@ public class ArmLoop extends LoopBase {
         internalDisableTimer.reset();
     }
 
+    private double getTurretBestAngle(Optional<Translation2d> target) {
+        if(target.isEmpty()) return 0;
+        return getTurretBestAngle(target.get());
+    }
     private double getTurretBestAngle(Translation2d target) {
         Translation2d pointRel = new Pose2d(target, new Rotation2d()).relativeTo(odometryStatus.getRobotPose().transformBy(new Transform2d(ArmStatus.robotToTurretTranslation.toTranslation2d(), new Rotation2d()))).getTranslation();
         double raw = Units.radiansToDegrees(Math.atan2(pointRel.getY(), pointRel.getX()));

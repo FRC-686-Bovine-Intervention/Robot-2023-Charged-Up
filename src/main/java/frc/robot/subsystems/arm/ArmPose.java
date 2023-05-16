@@ -4,12 +4,22 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.subsystems.arm.json.ArmPresetsJson;
 
 /** Represents a target position for the arm. */
-public record ArmPose(
-  Translation2d endEffectorPosition,
-  double shoulderAngleRad,
-  double elbowAngleRad) {
+public class ArmPose {
+  Translation2d endEffectorPosition;
+  double shoulderAngleRad;
+  double elbowAngleRad;
+  
 
+  
   // Preset arm position are read from arm_preset_poses.json
+
+  public ArmPose(Translation2d endEffectorPosition, double shoulderAngleRad, double elbowAngleRad) {
+    this.endEffectorPosition = endEffectorPosition;
+    this.shoulderAngleRad = shoulderAngleRad;
+    this.elbowAngleRad = elbowAngleRad;
+  }
+
+
 
   public enum Preset {
     DEFENSE(0, null),
@@ -20,7 +30,8 @@ public record ArmPose(
     SCORE_HIGH_CUBE(0, null),
     SCORE_MID_CONE(0, null),
     SCORE_HIGH_CONE(0, null),
-    AUTO_START(0, null);
+    AUTO_START(0, null),
+    HOLD(0, null);
 
     private ArmPose pose;
     private int fileIdx;
@@ -93,6 +104,10 @@ public record ArmPose(
       AUTO_START.fileIdx = jsonPresets.auto_start().getFileIdx();
       AUTO_START.pose = new ArmPose(new Translation2d(jsonPresets.auto_start().getX(), jsonPresets.auto_start().getY()),
                                           jsonPresets.auto_start().getTheta1(), jsonPresets.auto_start().getTheta2());
-}
+
+      HOLD.fileIdx = jsonPresets.hold().getFileIdx();
+      HOLD.pose = new ArmPose(new Translation2d(jsonPresets.hold().getX(), jsonPresets.hold().getY()),
+                                          jsonPresets.hold().getTheta1(), jsonPresets.hold().getTheta2());
+    }
   }
 }

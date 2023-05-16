@@ -7,11 +7,12 @@ def main():
                   "bumper_width_inches": 30.5,
                   "origin": [0.343, 1.270],
                   "shoulder": {
-                      "mass": ((3.52 * lb).to("kg")).value.tolist(),
-                      "length": ((27.0 * inch).to("meter")).value.tolist(),
+                      # "mass": ((3.52 * lb).to("kg")).value.tolist(),
+                      "mass": ((2.0 * lb).to("kg")).value.tolist(),
+                      "length": ((20.5 * inch).to("meter")).value.tolist(),
                       "moi": 0.153,
                       "cgRadius": ((4.875 * inch).to("meter")).value.tolist(),
-                      "minAngle": -2.8,
+                      "minAngle": -3.0,
                       "maxAngle": 0,
                       "motor": {
                           "type": "falcon",
@@ -20,10 +21,11 @@ def main():
                       }
                   },
                   "elbow": {
-                      "mass": ((1.21 * lb).to("kg")).value.tolist(),
-                      "length": ((14.0 * inch).to("meter")).value.tolist(),
+                      # "mass": ((1.21 * lb).to("kg")).value.tolist(),
+                      "mass": ((2.5 * lb).to("kg")).value.tolist(),
+                      "length": ((21.0 * inch).to("meter")).value.tolist(),
                       "moi": 0.013,
-                      "cgRadius": ((2.5 * inch).to("meter")).value.tolist(),
+                      "cgRadius": ((16.0 * inch).to("meter")).value.tolist(),
                       "minAngle": -1.57,
                       "maxAngle": 3.00,
                       "motor": {
@@ -34,7 +36,7 @@ def main():
                   },
                   "wrist": {
                       "mass": ((2.8 * lb).to("kg")).value.tolist(),
-                      "length": (((20.5 - 14.0) * inch).to("meter")).value.tolist(),
+                      "length": (((29.0 - 21.0) * inch).to("meter")).value.tolist(),
                       "moi": 0.8,
                       "cgRadius": ((1.5 * inch).to("meter")).value.tolist()
                   },
